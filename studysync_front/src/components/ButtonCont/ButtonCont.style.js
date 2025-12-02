@@ -9,11 +9,13 @@ export const PrimaryButton = styled(Button)(({ theme }) => ({
   fontSize: "1.1rem",
   fontWeight: 500,
   paddingBlock: theme.spacing(1.5),
+  border: `1px solid ${theme.palette.primary.main}`,
   borderRadius: theme.shape.borderRadius * 2,
   boxShadow: "0px 4px 12px rgba(15, 23, 42, 0.25)",
 
   "&:hover": {
-    // backgroundColor: theme.palette.primary.dark,
+    border: `1px solid ${theme.palette.primary.main}`,
+    color: theme.palette.primary.main,
     boxShadow: "0px 6px 16px rgba(15, 23, 42, 0.35)",
   },
 }));
