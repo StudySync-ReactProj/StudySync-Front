@@ -1,5 +1,6 @@
-import { useState } from "react";
+// import { useState } from "react";
 import NavBar from "../../components/Header/Header.jsx";
+import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 
 const HomePage = ({ onLogout }) => {
     return (
@@ -10,6 +11,8 @@ const HomePage = ({ onLogout }) => {
                 <h1>Welcome to StudySync!</h1>
                 <p>You have successfully logged in.</p>
             </div>
+            <MainTitle title="Good morning!" />
+
         </div>
     );
 }
