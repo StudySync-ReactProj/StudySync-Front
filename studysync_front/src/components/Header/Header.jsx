@@ -1,4 +1,4 @@
-// src/components/NavBar/NavBar.jsx
+// src/components/Header/Header.jsx
 import * as React from "react";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
@@ -20,17 +20,16 @@ import {
   UserBox,
 } from "./Header.style";
 
-const pages = ["Products", "Pricing", "Blog"];
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
+const pages = ["Tasks"];
+const settings = ["Logout"];
 
-function Header({ onLogout }) {
+function Header({ onLogout, onGoToTasks, onGoToHome }) {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
-
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -41,109 +40,75 @@ function Header({ onLogout }) {
 
   const handleCloseUserMenu = (setting) => {
     setAnchorElUser(null);
-    if (setting === "Logout" && onLogout) {
-      onLogout();
-    }
+    if (setting === "Logout" && onLogout) onLogout();
   };
 
   return (
     <NavAppBar position="static">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          {/* Left icon + brand (desktop) */}
-          <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
+
+          {/* Desktop Logo */}
           <BrandDesktop
-            variant="h6"
             noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
+            variant="h6"
+            sx={{ mr: 2, cursor: "pointer" }}
+            onClick={onGoToHome}
           >
             StudySync
           </BrandDesktop>
 
-          {/* Mobile hamburger + mobile logo */}
+          {/* Mobile menu icon */}
           <MobileNavBox>
-            <IconButton
-              size="large"
-              aria-label="open navigation menu"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
-            >
-              <MenuIcon />
+            <IconButton onClick={handleOpenNavMenu}>
+              <MenuIcon sx={{ color: "#fff" }} />
             </IconButton>
-
             <Menu
-              id="menu-appbar"
               anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "left",
-              }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
-              sx={{ display: { xs: "block", md: "none" } }}
             >
               {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <BrandMobile
-                    component="span"
-                    variant="body1"
-                    sx={{ flexGrow: 0 }}
-                  >
-                    {page}
-                  </BrandMobile>
+                <MenuItem
+                  key={page}
+                  onClick={() => {
+                    handleCloseNavMenu();
+                    // if (page === "Home" && onGoToHome) onGoToHome();
+                    if (page === "Tasks" && onGoToTasks) onGoToTasks();
+                  }}
+                >
+                  <BrandMobile component="span">{page}</BrandMobile>
                 </MenuItem>
               ))}
             </Menu>
           </MobileNavBox>
 
-          {/* Brand text for mobile (center) */}
-          <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
-          <BrandMobile
-            variant="h5"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-          >
-            StudySync
-          </BrandMobile>
-
-          {/* Desktop nav links */}
+          {/* Desktop Nav */}
           <DesktopNavBox>
             {pages.map((page) => (
-              <NavButton key={page} onClick={handleCloseNavMenu}>
+              <NavButton
+                key={page}
+                onClick={() => {
+                  handleCloseNavMenu();
+                  if (page === "Home" && onGoToHome) onGoToHome();
+                  if (page === "Tasks" && onGoToTasks) onGoToTasks();
+                }}
+              >
                 {page}
               </NavButton>
             ))}
           </DesktopNavBox>
 
-          {/* User avatar + menu */}
+          {/* User Avatar */}
           <UserBox>
             <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="User Avatar" src="/static/images/avatar/2.jpg" />
+              <IconButton onClick={handleOpenUserMenu}>
+                <Avatar alt="User Avatar" />
               </IconButton>
             </Tooltip>
+
             <Menu
-              sx={{ mt: "45px" }}
-              id="menu-appbar"
               anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
               open={Boolean(anchorElUser)}
               onClose={() => handleCloseUserMenu()}
             >
@@ -157,6 +122,7 @@ function Header({ onLogout }) {
               ))}
             </Menu>
           </UserBox>
+
         </Toolbar>
       </Container>
     </NavAppBar>

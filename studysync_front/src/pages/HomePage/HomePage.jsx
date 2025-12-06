@@ -3,10 +3,10 @@ import NavBar from "../../components/Header/Header.jsx";
 import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import CardContainerComp from "../../components/CardContainer/CardContainer.jsx";
 
-const HomePage = ({ onLogout }) => {
+const HomePage = ({ onLogout, onGoToTasks }) => {
     return (
         <div>
-            <NavBar onLogout={onLogout} />
+            <NavBar onLogout={onLogout} onGoToTasks={onGoToTasks} />
             <MainTitle title="Good morning!" />
             <div>
                 <CardContainerComp />
