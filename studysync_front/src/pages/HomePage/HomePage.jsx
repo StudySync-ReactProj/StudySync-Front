@@ -1,6 +1,7 @@
 // import { useState } from "react";
 import NavBar from "../../components/Header/Header.jsx";
 import MainTitle from "../../components/MainTitle/MainTitle.jsx";
+import CardContainerComp from "../../components/CardContainer/CardContainer.jsx";
 
 const HomePage = ({ onLogout }) => {
     return (
@@ -12,7 +13,9 @@ const HomePage = ({ onLogout }) => {
                 <p>You have successfully logged in.</p>
             </div>
             <MainTitle title="Good morning!" />
-
+            <div>
+                <CardContainerComp />
+            </div>
         </div>
     );
 }
