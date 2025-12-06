@@ -4,11 +4,11 @@ import Card from "../Card/Card";
 const CardContainerComp = () => {
     return (
         <CardContainer>
-            <Card>card1</Card>
-            <Card>card2</Card>
-            <Card>card3</Card>
-            <Card>card4</Card>
-            <Card>card5</Card>
+            <Card>Daily progress</Card>
+            <Card>Today's tasks</Card>
+            <Card>Weekly progress</Card>
+            <Card>Upcoming sessions</Card>
+            <Card>Upcoming deadlines</Card>
         </CardContainer>
     );
 };
