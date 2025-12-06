@@ -1,8 +1,9 @@
-import styled from "styled-components";
+import { styled } from "@mui/material/styles";
 
-export const CardContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  padding: 20px;
-`;
+export const CardContainer = styled("div")({
+    display: "grid",
+    gap: "20px",
+    padding: "20px",
+    gridTemplateColumns: "repeat(2, 1fr)",
+});
+
