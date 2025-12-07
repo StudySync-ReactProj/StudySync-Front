@@ -3,7 +3,7 @@ import NavBar from "../../components/Header/Header.jsx";
 import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import CardContainerComp from "../../components/CardContainer/CardContainer.jsx";
 
-const HomePage = ({ onLogout, onGoToTasks }) => {
+const Dashboard = ({ onLogout, onGoToTasks }) => {
     return (
         <div>
             <NavBar onLogout={onLogout} onGoToTasks={onGoToTasks} />
@@ -15,4 +15,4 @@ const HomePage = ({ onLogout, onGoToTasks }) => {
     );
 }
 
-export default HomePage;
+export default Dashboard;
