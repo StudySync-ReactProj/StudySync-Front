@@ -3,7 +3,7 @@
 StudySync designed to help students efficiently manage their learning workflow.
 Users can track weekly progress, schedule study sessions using calendar synchronization, and organize course tasks — all in one place.
 
-## Required Pages (3 Main Components)**
+## Required Pages (3 Main Components)
 
 | Page               | Component    | Description                                                            |
 | ------------------ | ------------ | ---------------------------------------------------------------------- |
