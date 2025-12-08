@@ -1,5 +1,7 @@
 # StudySync — Personal Study Management App
 
+project by: Shahar Girtler, Noam Sinay
+
 StudySync designed to help students efficiently manage their learning workflow.
 Users can track weekly progress, schedule study sessions using calendar synchronization, and organize course tasks — all in one place.
 
