@@ -1,6 +1,6 @@
 
 const TaskItem = ({ task }) => {
-    const isCompleted = task.Completed;
+    const isCompleted = task.completed;
     return (
         <li style={{
             marginBottom: "8px",
