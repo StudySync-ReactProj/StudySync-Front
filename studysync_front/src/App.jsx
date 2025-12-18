@@ -2,7 +2,6 @@
 import { useState } from "react";
 import Theme from "./MuiTheme.style.js";
 import { ThemeProvider } from "@mui/material/styles";
-
 import Login from "./pages/Login/Login.jsx";
 import HomePage from "./pages/Dashboard/Dashboard.jsx";
 import TasksPage from "./pages/TasksPage/TasksPage.jsx";

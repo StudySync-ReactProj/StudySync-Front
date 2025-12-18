@@ -2,7 +2,7 @@
 
 // ========== IMPORTS ==========
 import { useState } from "react";
-
+import { useUser } from "../../Contex/UserContex";
 import FormContainer from "../../components/FormContainer/FormContainer.jsx";
 import TextFieldComp from "../../components/TextFieldComp/TextFieldComp.jsx";
 import ButtonCont from "../../components/ButtonCont/ButtonCont.jsx";
@@ -11,6 +11,9 @@ import { LoginFormStack, FooterText, FooterLink } from "./Login.style.js";
 
 // ========== MAIN LOGIN COMPONENT ==========
 export default function Login({ onLoginSuccess }) {
+
+  // ========== USER CONTEXT ==========
+  const { login } = useUser();
 
   // ========== FORM & ERROR STATE ==========
   const [form, setForm] = useState({
@@ -68,6 +71,13 @@ export default function Login({ onLoginSuccess }) {
 
     // If validation passed:
     console.log("Login data:", form);
+    
+    // Save user data to context
+    login({
+      username: form.username,
+      email: form.email,
+    });
+    
     console.log("Login successful! Navigating to HomePage...");
     onLoginSuccess();
   };

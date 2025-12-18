@@ -1,5 +1,6 @@
 // src/components/Header/Header.jsx
 import * as React from "react";
+import { useUser } from "../../Contex/UserContex";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
@@ -24,6 +25,7 @@ const pages = ["Tasks"];
 const settings = ["Logout"];
 
 function Header({ onLogout, onGoToTasks, onGoToHome }) {
+  const { user, logout } = useUser();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -40,7 +42,10 @@ function Header({ onLogout, onGoToTasks, onGoToHome }) {
 
   const handleCloseUserMenu = (setting) => {
     setAnchorElUser(null);
-    if (setting === "Logout" && onLogout) onLogout();
+    if (setting === "Logout") {
+      logout(); // Clear user from context
+      if (onLogout) onLogout(); // Call parent logout handler
+    }
   };
 
   return (
@@ -103,7 +108,9 @@ function Header({ onLogout, onGoToTasks, onGoToHome }) {
           <UserBox>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu}>
-                <Avatar alt="User Avatar" />
+                <Avatar alt={user?.username || "User Avatar"}>
+                  {user?.username?.[0]?.toUpperCase()}
+                </Avatar>
               </IconButton>
             </Tooltip>
 
