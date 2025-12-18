@@ -10,6 +10,7 @@ import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
+import { useNavigate } from "react-router-dom";
 
 import {
   NavAppBar,
@@ -24,8 +25,9 @@ import {
 const pages = ["Tasks"];
 const settings = ["Logout"];
 
-function Header({ onLogout, onGoToTasks, onGoToHome }) {
-  const { user, logout } = useUser();
+function Header() {
+  const navigate = useNavigate();
+  const { user } = useUser();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -43,9 +45,8 @@ function Header({ onLogout, onGoToTasks, onGoToHome }) {
   const handleCloseUserMenu = (setting) => {
     setAnchorElUser(null);
     if (setting === "Logout") {
-      logout(); // Clear user from context
-      if (onLogout) onLogout(); // Call parent logout handler
-    }
+      navigate("/Login");
+    };
   };
 
   return (
@@ -58,7 +59,7 @@ function Header({ onLogout, onGoToTasks, onGoToHome }) {
             noWrap
             variant="h6"
             sx={{ mr: 2, cursor: "pointer" }}
-            onClick={onGoToHome}
+            onClick={() => navigate("/")}
           >
             StudySync
           </BrandDesktop>
@@ -79,7 +80,7 @@ function Header({ onLogout, onGoToTasks, onGoToHome }) {
                   onClick={() => {
                     handleCloseNavMenu();
                     // if (page === "Home" && onGoToHome) onGoToHome();
-                    if (page === "Tasks" && onGoToTasks) onGoToTasks();
+                    if (page === "Tasks") navigate("/TasksPage");
                   }}
                 >
                   <BrandMobile component="span">{page}</BrandMobile>
@@ -95,8 +96,8 @@ function Header({ onLogout, onGoToTasks, onGoToHome }) {
                 key={page}
                 onClick={() => {
                   handleCloseNavMenu();
-                  if (page === "Home" && onGoToHome) onGoToHome();
-                  if (page === "Tasks" && onGoToTasks) onGoToTasks();
+                  if (page === "Home") navigate("/");
+                  if (page === "Tasks") navigate("/TasksPage");
                 }}
               >
                 {page}

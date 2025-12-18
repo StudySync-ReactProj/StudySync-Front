@@ -6,11 +6,16 @@ import { useUser } from "../../Contex/UserContex";
 import FormContainer from "../../components/FormContainer/FormContainer.jsx";
 import TextFieldComp from "../../components/TextFieldComp/TextFieldComp.jsx";
 import ButtonCont from "../../components/ButtonCont/ButtonCont.jsx";
+import { useNavigate } from "react-router-dom";
+
 
 import { LoginFormStack, FooterText, FooterLink } from "./Login.style.js";
 
 // ========== MAIN LOGIN COMPONENT ==========
-export default function Login({ onLoginSuccess }) {
+export default function Login() {
+  // ========== Route ==========
+  const navigate = useNavigate();
+
 
   // ========== USER CONTEXT ==========
   const { login } = useUser();
@@ -71,15 +76,15 @@ export default function Login({ onLoginSuccess }) {
 
     // If validation passed:
     console.log("Login data:", form);
-    
+
     // Save user data to context
     login({
       username: form.username,
       email: form.email,
     });
-    
+
     console.log("Login successful! Navigating to HomePage...");
-    onLoginSuccess();
+    navigate("/"); // 
   };
 
   // ========== RENDER ==========
