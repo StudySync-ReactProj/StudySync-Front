@@ -11,6 +11,7 @@ import {
     CardList,
 } from "./CardContainer.style";
 import Card from "../Card/Card";
+import Timer from "../Timer/Timer";
 
 
 const CardContainerComp = ({ data }) => {
@@ -46,7 +47,10 @@ const CardContainerComp = ({ data }) => {
     return (
         <CardContainer>
             <TimeBox>
-                <Card>10:40</Card>
+                <Card>
+                    <CardHeading>Timer</CardHeading>
+                    <Timer />
+                </Card>
             </TimeBox>
 
             <DailyBox>
