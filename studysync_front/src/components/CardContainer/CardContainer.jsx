@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
     CardContainer,
     TimeBox,
@@ -9,7 +10,35 @@ import {
 } from "./CardContainer.style";
 import Card from "../Card/Card";
 
+
 const CardContainerComp = () => {
+    const [tasks, setTasks] = useState([]);
+    const [loadingTasks, setLoadingTasks] = useState(true);
+    const [tasksError, setTasksError] = useState("");
+
+    useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        setLoadingTasks(true);
+        setTasksError("");
+
+        const res = await fetch(
+          "https://jsonplaceholder.typicode.com/todos?_limit=8"
+        );
+        if (!res.ok) throw new Error("Failed to fetch tasks");
+
+        const data = await res.json();
+        setTasks(data);
+      } catch (err) {
+        setTasksError(err.message || "Unknown error");
+      } finally {
+        setLoadingTasks(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
+
     return (
         <CardContainer>
             <TimeBox>
@@ -21,7 +50,25 @@ const CardContainerComp = () => {
             </DailyBox>
 
             <TasksBox>
-                <Card>Today's tasks</Card>
+                <Card>
+                <h3 style={{marginBottom:"20px" }}>Today's tasks</h3>
+
+                {loadingTasks && <p>Loading...</p>}
+
+                {tasksError && (
+                    <p style={{color: "red" }}>{tasksError}</p>
+                )}
+
+                {!loadingTasks && !tasksError && (
+                    <ul style={{paddingLeft: "18px" }}>
+                    {tasks.map((t) => (
+                        <li key={t.id} style={{ marginBottom: "10px" }}>
+                        {t.title} {t.completed ? "✅" : "❌"}
+                        </li>
+                    ))}
+                    </ul>
+                )}
+                </Card>
             </TasksBox>
 
             <WeeklyBox>
