@@ -7,37 +7,40 @@ import {
     WeeklyBox,
     SessionsBox,
     DeadlinesBox,
+    CardHeading,
+    CardList,
 } from "./CardContainer.style";
 import Card from "../Card/Card";
 
 
-const CardContainerComp = () => {
+const CardContainerComp = ({ data }) => {
     const [tasks, setTasks] = useState([]);
     const [loadingTasks, setLoadingTasks] = useState(true);
     const [tasksError, setTasksError] = useState("");
+    const upcomingSessions = data?.upcomingSessions ?? [];
 
     useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        setLoadingTasks(true);
-        setTasksError("");
+        const fetchTasks = async () => {
+            try {
+                setLoadingTasks(true);
+                setTasksError("");
 
-        const res = await fetch(
-          "https://jsonplaceholder.typicode.com/todos?_limit=8"
-        );
-        if (!res.ok) throw new Error("Failed to fetch tasks");
+                const res = await fetch(
+                    "https://jsonplaceholder.typicode.com/todos?_limit=8"
+                );
+                if (!res.ok) throw new Error("Failed to fetch tasks");
 
-        const data = await res.json();
-        setTasks(data);
-      } catch (err) {
-        setTasksError(err.message || "Unknown error");
-      } finally {
-        setLoadingTasks(false);
-      }
-    };
+                const data = await res.json();
+                setTasks(data);
+            } catch (err) {
+                setTasksError(err.message || "Unknown error");
+            } finally {
+                setLoadingTasks(false);
+            }
+        };
+        fetchTasks();
 
-    fetchTasks();
-  }, []);
+    }, []);
 
     return (
         <CardContainer>
@@ -51,23 +54,23 @@ const CardContainerComp = () => {
 
             <TasksBox>
                 <Card>
-                <h3 style={{marginBottom:"20px" }}>Today's tasks</h3>
+                    <CardHeading>Today's tasks</CardHeading>
 
-                {loadingTasks && <p>Loading...</p>}
+                    {loadingTasks && <p>Loading...</p>}
 
-                {tasksError && (
-                    <p style={{color: "red" }}>{tasksError}</p>
-                )}
+                    {tasksError && (
+                        <p style={{ color: "red" }}>{tasksError}</p>
+                    )}
 
-                {!loadingTasks && !tasksError && (
-                    <ul style={{paddingLeft: "18px" }}>
-                    {tasks.map((t) => (
-                        <li key={t.id} style={{ marginBottom: "10px" }}>
-                        {t.title} {t.completed ? "✅" : "❌"}
-                        </li>
-                    ))}
-                    </ul>
-                )}
+                    {!loadingTasks && !tasksError && (
+                        <CardList>
+                            {tasks.map((t) => (
+                                <li key={t.id}>
+                                    {t.title} {t.completed ? "✅" : "❌"}
+                                </li>
+                            ))}
+                        </CardList>
+                    )}
                 </Card>
             </TasksBox>
 
@@ -76,7 +79,16 @@ const CardContainerComp = () => {
             </WeeklyBox>
 
             <SessionsBox>
-                <Card>Upcoming sessions</Card>
+                <Card>
+                    <CardHeading>Upcoming sessions</CardHeading>
+                    <CardList>
+                        {upcomingSessions.slice(0, 3).map((s) => (
+                            <li key={s.id}>
+                                {s.title} — {s.date} at {s.time}
+                            </li>
+                        ))}
+                    </CardList>
+                </Card>
             </SessionsBox>
 
             <DeadlinesBox>

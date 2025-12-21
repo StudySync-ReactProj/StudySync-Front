@@ -50,3 +50,23 @@ export const DeadlinesBox = styled("div")({
     paddingBottom: "180px",
 });
 
+export const CardHeading = styled("h3")(({ theme }) => ({
+    marginBottom: "20px",
+    color: theme?.colors?.text || '#0D3682',
+    fontFamily: theme?.fonts?.primary || 'inherit',
+    fontSize: "1.2rem",
+    fontWeight: 600,
+}));
+
+export const CardList = styled("ul")(({ theme }) => ({
+    paddingLeft: "18px",
+    listStyleType: "disc",
+    
+    "& li": {
+        marginBottom: "10px",
+        color: theme?.colors?.text || '#333333',
+        fontFamily: theme?.fonts?.primary || 'inherit',
+        lineHeight: 1.5,
+    },
+}));
+
