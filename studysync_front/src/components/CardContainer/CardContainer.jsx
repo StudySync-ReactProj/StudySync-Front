@@ -18,6 +18,7 @@ const CardContainerComp = ({ data }) => {
     const [loadingTasks, setLoadingTasks] = useState(true);
     const [tasksError, setTasksError] = useState("");
     const upcomingSessions = data?.upcomingSessions ?? [];
+    const upcomingDeadlines = data?.upcomingDeadlines ?? [];
 
     useEffect(() => {
         const fetchTasks = async () => {
@@ -64,9 +65,9 @@ const CardContainerComp = ({ data }) => {
 
                     {!loadingTasks && !tasksError && (
                         <CardList>
-                            {tasks.map((t) => (
+                            {tasks.filter((t) => !t.completed).map((t) => (
                                 <li key={t.id}>
-                                    {t.title} {t.completed ? "✅" : "❌"}
+                                    {t.title}
                                 </li>
                             ))}
                         </CardList>
@@ -92,7 +93,16 @@ const CardContainerComp = ({ data }) => {
             </SessionsBox>
 
             <DeadlinesBox>
-                <Card>Upcoming deadlines</Card>
+                <Card>
+                    <CardHeading>Upcoming deadlines</CardHeading>
+                    <CardList>
+                        {upcomingDeadlines.slice(0, 6).map((d) => (
+                            <li key={d.id}>
+                                {d.title} — {d.due}
+                            </li>
+                        ))}
+                    </CardList>
+                </Card>
             </DeadlinesBox>
         </CardContainer>
     );
