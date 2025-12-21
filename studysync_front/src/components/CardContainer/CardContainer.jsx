@@ -54,7 +54,9 @@ const CardContainerComp = ({ data }) => {
             </TimeBox>
 
             <DailyBox>
-                <Card>Daily progress</Card>
+                <Card>
+                    <CardHeading>Daily progress</CardHeading>
+                </Card>
             </DailyBox>
 
             <TasksBox>
@@ -80,7 +82,9 @@ const CardContainerComp = ({ data }) => {
             </TasksBox>
 
             <WeeklyBox>
-                <Card>Weekly progress</Card>
+                <Card>
+                    <CardHeading>Weekly progress</CardHeading>
+                </Card>
             </WeeklyBox>
 
             <SessionsBox>
