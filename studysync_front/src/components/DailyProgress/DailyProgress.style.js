@@ -27,32 +27,29 @@ export const ProgressBar= styled("div")({
 });
 //soft purple line
 export const ProgressFill= styled("div")(({ percent})=> ({
-    height:"100%",
-    width: `${percent}%`,
-    background: "rgba(233, 229, 255, 0.80)",
-    borderRadius:"60px",
-    transition:"width 300ms ease",
-    zindex: 1,
+   position: "relative",        
+  height: "100%",
+  width: `${percent}%`,
+  background: "rgba(233, 229, 255, 0.80)",
+  borderRadius: "60px",
+  transition: "width 800ms ease",
+  overflow: "visible",  
+  minWidth: percent === 0 ? "0px" : "44px", 
 }));
 //the percents on the soft purple line
-export const ProgressLabel= styled("div")(({ percent})=> ({
-    position:"absolute",
+export const ProgressLabel= styled("span") ({
+    position: "absolute",
+    right: "10px",               
     top: "50%",
-    left: `${percent-1}%`,
-    transform: "translate(-100%,-50%)",
-    justifyContent: "center",
+    transform: "translateY(-50%)",
     color: "#7A6FF0",
-    alignItems: "center",
     fontFamily: "Prompt",
-    fontSize: "15px",
-    fontStyle: "normal",
-    fontWeight: "500",
-    lineHeight: "normal",
+    fontSize: "14px",
+    fontWeight: "600",
+    whiteSpace: "nowrap",
     pointerEvents: "none",
-    display:"flex",
-    zindex:2,
-}));
-//strak
+});
+//streak
 export const FooterText= styled("div")({
     color: "#0D3682",
     fontFamily: "Prompt",
