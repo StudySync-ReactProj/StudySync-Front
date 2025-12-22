@@ -12,6 +12,7 @@ import {
 } from "./CardContainer.style";
 import Card from "../Card/Card";
 import Timer from "../Timer/Timer";
+import DailyProgress from "../DailyProgress/DailyProgress"
 
 
 const CardContainerComp = ({ data }) => {
@@ -56,6 +57,7 @@ const CardContainerComp = ({ data }) => {
             <DailyBox>
                 <Card>
                     <CardHeading>Daily progress</CardHeading>
+                    <DailyProgress tasks={tasks} loading={loadingTasks} error={tasksError} />
                 </Card>
             </DailyBox>
 
