@@ -13,7 +13,7 @@ import {
 import Card from "../Card/Card";
 import Timer from "../Timer/Timer";
 import DailyProgress from "../DailyProgress/DailyProgress"
-
+import WeeklyProgress from "../WeeklyProgress/WeeklyProgress";
 
 const CardContainerComp = ({ data }) => {
     const [tasks, setTasks] = useState([]);
@@ -86,6 +86,7 @@ const CardContainerComp = ({ data }) => {
             <WeeklyBox>
                 <Card>
                     <CardHeading>Weekly progress</CardHeading>
+                    <WeeklyProgress tasks={tasks} loading={loadingTasks} error={tasksError} />
                 </Card>
             </WeeklyBox>
 
