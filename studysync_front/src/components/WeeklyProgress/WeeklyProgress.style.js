@@ -70,11 +70,11 @@ export const DayCol = styled("div")(() => ({
 /* ===== Bars ===== */
 export const BarStack = styled("div")(() => ({
     position: "relative",
-    width: "24px",          // דק אבל עדיין עבה מספיק כמו בפיגמה
-    height: "170px",        // גובה דומה לפיגמה
+    width: "24px",
+    height: "170px",
     borderRadius: "999px",
     overflow: "hidden",
-    background: "transparent", // אין גריד ליינס
+    background: "transparent",
 }));
 
 export const StudiedBar = styled("div", {

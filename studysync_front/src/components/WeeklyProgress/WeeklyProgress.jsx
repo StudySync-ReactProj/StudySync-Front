@@ -19,7 +19,7 @@ const DAYS = ["SUN", "MON", "TUE", "WED", "THR", "FRI", "SAT"];
 function startOfWeekSunday(date = new Date()) {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
-    const day = d.getDay(); // 0=Sun
+    const day = d.getDay();
     d.setDate(d.getDate() - day);
     return d;
 }
@@ -29,7 +29,6 @@ function toPercent(value, max) {
     return Math.round((value / max) * 100);
 }
 
-// API של todos: אין תאריך -> מפזרים לפי id%7
 function mapTasksToWeek(tasks, { goalMinutesPerDay = 120 } = {}) {
     const weekStart = startOfWeekSunday(new Date());
 
@@ -41,7 +40,7 @@ function mapTasksToWeek(tasks, { goalMinutesPerDay = 120 } = {}) {
 
     tasks.forEach((t) => {
         const idx = (t.id ?? 0) % 7;
-        if (t.completed) week[idx].studiedMinutes += 30; // דמו: 30 דק לכל todo שהושלם
+        if (t.completed) week[idx].studiedMinutes += 30;
     });
 
     return week;
@@ -58,15 +57,11 @@ export default function WeeklyProgress({
         [tasks, goalMinutesPerDay]
     );
 
-    // סקאלה (כרגע היעד אחיד, אבל נשאר כללי)
     const maxGoal = useMemo(
         () => Math.max(1, ...weekData.map((d) => d.goalMinutes)),
         [weekData]
     );
 
-    // ✅ כמו בפיגמה:
-    // Goal = עמודה כהה מלאה תמיד
-    // Time Studied = שכבה בהירה מעל הכהה (overlay)
     const chart = useMemo(() => {
         return weekData.map((d) => {
             const studiedCapped = Math.min(d.studiedMinutes, d.goalMinutes);
@@ -75,7 +70,6 @@ export default function WeeklyProgress({
         });
     }, [weekData, maxGoal]);
 
-    // אנימציה
     const [animate, setAnimate] = useState(false);
     useEffect(() => {
         const id = setTimeout(() => setAnimate(true), 60);
@@ -85,7 +79,6 @@ export default function WeeklyProgress({
     if (loading) return <p>Loading weekly progress...</p>;
     if (error) return <p style={{ color: "red" }}>{error}</p>;
 
-    // remount לגרף כשהנתונים משתנים (שומר על אנימציה “מתחילה מחדש” בלי setState בתוך effect)
     const chartKey = `${tasks.length}-${goalMinutesPerDay}`;
 
     return (
@@ -107,10 +100,9 @@ export default function WeeklyProgress({
                         {chart.map((d) => (
                             <DayCol key={d.day}>
                                 <BarStack>
-                                    {/* ✅ Goal: עמודה כהה מלאה */}
+
                                     <GoalBar value={animate ? 100 : 0} />
 
-                                    {/* ✅ Time Studied: בהיר מעל הכהה */}
                                     <StudiedBar value={animate ? d.studiedPct : 0} />
                                 </BarStack>
 
