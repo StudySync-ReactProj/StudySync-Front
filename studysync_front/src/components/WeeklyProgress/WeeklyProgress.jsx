@@ -70,6 +70,7 @@ export default function WeeklyProgress({
         });
     }, [weekData, maxGoal]);
 
+    // Animation
     const [animate, setAnimate] = useState(false);
     useEffect(() => {
         const id = setTimeout(() => setAnimate(true), 60);
@@ -100,9 +101,7 @@ export default function WeeklyProgress({
                         {chart.map((d) => (
                             <DayCol key={d.day}>
                                 <BarStack>
-
                                     <GoalBar value={animate ? 100 : 0} />
-
                                     <StudiedBar value={animate ? d.studiedPct : 0} />
                                 </BarStack>
 

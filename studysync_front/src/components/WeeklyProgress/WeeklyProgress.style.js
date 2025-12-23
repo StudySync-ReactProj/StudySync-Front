@@ -1,6 +1,6 @@
 import { styled } from "@mui/material/styles";
 
-/* ===== Outer card (whole component) ===== */
+// outer card (whole component)
 export const WeeklyWrapper = styled("div")(() => ({
     borderRadius: "20px",
 }));
@@ -10,15 +10,14 @@ export const WeeklyTopRow = styled("div")(() => ({
     alignItems: "center",
     justifyContent: "space-between",
 }));
-
-/* ===== Big inner card ===== */
+// Big inner card
 export const ChartWrapper = styled("div")(() => ({
     background: "#F6F7FB",
     border: "1px solid rgba(27,43,97,0.08)",
     borderRadius: "22px",
 }));
 
-/* ===== Legend row inside the chart wrapper ===== */
+// Legend row inside the chart wrapper
 export const LegendRow = styled("div")(() => ({
     display: "flex",
     alignItems: "center",
@@ -44,7 +43,7 @@ export const LegendSwatch = styled("span")(({ variant }) => ({
     backgroundColor: variant === "goal" ? "#6D63FF" : "#CFCBFF",
 }));
 
-/* ===== Inner chart area (the rounded box with bars) ===== */
+// Inner chart area (the rounded box with bars)
 export const InnerChart = styled("div")(() => ({
     marginTop: "16px",
     border: "1px solid rgba(27,43,97,0.06)",

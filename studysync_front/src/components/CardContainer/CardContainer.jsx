@@ -87,7 +87,7 @@ const CardContainerComp = ({ data }) => {
             <WeeklyBox>
                 <Card>
                     <CardHeading>Weekly progress</CardHeading>
-                    <WeeklyProgress />
+                    <WeeklyProgress tasks={tasks} loading={loadingTasks} error={tasksError} />
                 </Card>
             </WeeklyBox>
 
