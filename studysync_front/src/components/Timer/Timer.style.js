@@ -5,7 +5,7 @@ export const TimeDisplay = styled("div")({
   fontWeight: 600,
   letterSpacing: "2px",
   textAlign: "center",
-  color: "#0D3682",
+  color: "#061738",
   marginTop: "-35px",
 });
 

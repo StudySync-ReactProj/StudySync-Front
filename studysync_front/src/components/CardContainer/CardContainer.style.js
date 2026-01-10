@@ -52,7 +52,7 @@ export const DeadlinesBox = styled("div")({
 
 export const CardHeading = styled("h3")(({ theme }) => ({
     marginBottom: "20px",
-    color: theme?.colors?.text || '#0D3682',
+    color: theme?.colors?.text || '#061738',
     fontFamily: theme?.fonts?.primary || 'inherit',
     fontSize: "1.2rem",
     fontWeight: 600,
@@ -64,7 +64,7 @@ export const CardList = styled("ul")(({ theme }) => ({
     
     "& li": {
         marginBottom: "10px",
-        color: theme?.colors?.text || '#333333',
+        color: theme?.colors?.text || '#061738',
         fontFamily: theme?.fonts?.primary || 'inherit',
         lineHeight: 1.5,
     },

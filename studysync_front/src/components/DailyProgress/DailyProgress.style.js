@@ -14,7 +14,7 @@ export const Subtitle= styled("div")({
     fontWeight: "400",
     lineHeight: "normal",
     justifyContent: "center",
-    color:"#0D3682",
+    color:"#061738",
 });
 //strong purple line
 export const ProgressBar= styled("div")({
@@ -51,7 +51,7 @@ export const ProgressLabel= styled("span") ({
 });
 //streak
 export const FooterText= styled("div")({
-    color: "#0D3682",
+    color: "#061738",
     fontFamily: "Prompt",
     fontSize: "23px",
     fontStyle: "normal",

@@ -1,112 +1,73 @@
-
-// MUI components for building the table UI
 import * as React from 'react';
-import PropTypes from 'prop-types';
-import Box from '@mui/material/Box';
-import Collapse from '@mui/material/Collapse';
-import IconButton from '@mui/material/IconButton';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { StyledTableContainer } from './TasksList.style.js';
+import { Box, Typography, IconButton, Stack } from '@mui/material';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import { TasksWrapper, StyledTaskCard, PriorityBadge } from './TasksList.style.js';
 import tasksData from '../../data/tasksData.json';
 
-// Row component - renders each individual task row with expandable description
-function Row(props) {
-  const { row } = props;
-  // State to track if the row is expanded or collapsed
-  const [open, setOpen] = React.useState(false);
-
+function TaskItem({ task, onToggleComplete }) {
   return (
-    <React.Fragment>
-      {/* Main row displaying task information */}
-      <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
-        {/* Expand/collapse button */}
-        <TableCell> 
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
-        </TableCell>
-        {/* Task details cells */}
-        <TableCell component="th" scope="row">
-          {row.taskName}
-        </TableCell>
-        <TableCell align="right">{row.priority}</TableCell>
-        <TableCell align="right">{row.dueDate}</TableCell>
-        <TableCell align="right">{row.status}</TableCell>
-      </TableRow>
-      {/* Collapsible row that shows the task description */}
-      <TableRow sx={{ display: open ? 'table-row' : 'none' }}>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
-          <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ margin: 1 }}>
-              <Typography variant="h6" gutterBottom component="div">
-                Description
-              </Typography>
-              <Typography variant="body2">
-                {row.description}
-              </Typography>
-            </Box>
-          </Collapse>
-        </TableCell>
-      </TableRow>
-    </React.Fragment>
+    <StyledTaskCard elevation={0}>
+      <Stack direction="row" spacing={2} alignItems="center">
+        {/* כפתור העיגול בצד (כמו בתמונה) */}
+        <IconButton 
+          size="small" 
+          color="primary"
+          onClick={() => onToggleComplete(task.id)}
+        >
+          {task.completed ? <CheckCircleIcon /> : <RadioButtonUncheckedIcon />}
+        </IconButton>
+
+        <Box>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#1E293B" }}>
+              {task.taskName}
+            </Typography>
+            <PriorityBadge priority={task.priority}>
+              {task.priority}
+            </PriorityBadge>
+          </Stack>
+          
+          <Stack direction="row" spacing={2} sx={{ mt: 0.5, color: "#64748B" }}>
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <CalendarTodayIcon sx={{ fontSize: 14 }} />
+              <Typography variant="caption">{task.dueDate}</Typography>
+            </Stack>
+            <Typography variant="caption">• {task.status}</Typography>
+          </Stack>
+        </Box>
+      </Stack>
+    </StyledTaskCard>
   );
 }
 
-// PropTypes validation for Row component
-Row.propTypes = {
-  row: PropTypes.shape({
-    taskName: PropTypes.string.isRequired,
-    priority: PropTypes.string.isRequired,
-    dueDate: PropTypes.string.isRequired,
-    status: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-  }).isRequired,
-};
+export default function MobileStyleTaskList() {
+  const [completedTasks, setCompletedTasks] = React.useState({});
 
-// Main component - renders the complete tasks table
-export default function CollapsibleTable() {
-  // Transform JSON data into the format needed for the table
   const rows = tasksData.tasks.map(task => ({
     id: task.id,
     taskName: task.task,
     priority: task.priority,
     dueDate: task.dueDate,
     status: task.status,
-    description: task.description,
+    completed: completedTasks[task.id] || false,
   }));
 
+  const handleToggleComplete = (taskId) => {
+    setCompletedTasks(prev => ({
+      ...prev,
+      [taskId]: !prev[taskId]
+    }));
+  };
+
   return (
-    <StyledTableContainer sx={{ width: '70%' }} component={Paper} >
-      <Table aria-label="collapsible table">
-        {/* Table header with column labels */}
-        <TableHead>
-          <TableRow>
-            <TableCell sx={{ width: '30px' }} /> {/* Column for expand button */}
-            <TableCell sx={{ width: '40%' }}>Task</TableCell>
-            <TableCell align="right" sx={{ width: '15%' }}>Priority</TableCell>
-            <TableCell align="right" sx={{ width: '20%' }}>Due Date</TableCell>
-            <TableCell align="right" sx={{ width: '20%' }}>Status</TableCell>
-          </TableRow>
-        </TableHead>
-        {/* Table body - render all task rows */}
-        <TableBody>
-          {rows.map((row) => (
-            <Row key={row.id} row={row} />
-          ))}
-        </TableBody>
-      </Table>
-    </StyledTableContainer>
+    <Box>
+      <TasksWrapper>
+        {rows.map((row) => (
+          <TaskItem key={row.id} task={row} onToggleComplete={handleToggleComplete} />
+        ))}
+      </TasksWrapper>
+    </Box>
   );
 }

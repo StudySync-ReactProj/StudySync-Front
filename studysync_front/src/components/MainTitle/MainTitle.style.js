@@ -1,7 +1,7 @@
 import { styled } from "@mui/material/styles";
 
 export const Title = styled("h2")({
-    color: "#0D3682",
+    color: "#061738",
     textAlign: "left",
     fontFamily: "Prompt",
     fontSize: "35px",
