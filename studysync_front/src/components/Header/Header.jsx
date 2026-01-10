@@ -11,6 +11,7 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { useNavigate } from "react-router-dom";
+import Logo from "../../assets/Logo_StudySync.svg";
 
 import {
   NavAppBar,
@@ -55,14 +56,12 @@ function Header() {
         <Toolbar disableGutters>
 
           {/* Desktop Logo */}
-          <BrandDesktop
-            noWrap
-            variant="h6"
-            sx={{ mr: 2, cursor: "pointer" }}
+          <img
+            src={Logo}
+            alt="StudySync Logo"
+            style={{ height: "85px", marginRight: "16px", cursor: "pointer" }}
             onClick={() => navigate("/")}
-          >
-            StudySync
-          </BrandDesktop>
+          />
 
           {/* Mobile menu icon */}
           <MobileNavBox>
