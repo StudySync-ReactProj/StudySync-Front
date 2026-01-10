@@ -10,7 +10,6 @@ function TaskItem({ task, onToggleComplete }) {
   return (
     <StyledTaskCard elevation={0}>
       <Stack direction="row" spacing={2} alignItems="center">
-        {/* כפתור העיגול בצד (כמו בתמונה) */}
         <IconButton 
           size="small" 
           color="primary"
