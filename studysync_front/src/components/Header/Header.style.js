@@ -63,10 +63,11 @@ export const DesktopNavBox = styled(Box)(({ theme }) => ({
 
 // Navigation tabs (desktop links)
 export const NavButton = styled(Button)(({ theme }) => ({
-    margin: theme.spacing(2, 2, 2, 0),
+    margin: theme.spacing(2, 2, 0.5, 0),
     color: theme.palette.primary.main,
     display: "block",
     textTransform: "none",
+    fontSize: "20px",
 }));
 
 // Box that contains the avatar / user menu

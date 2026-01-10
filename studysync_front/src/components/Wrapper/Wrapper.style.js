@@ -1,5 +1,5 @@
 const WrapperStyle = {
-    marginLeft: '24px',
+    marginLeft: '40px',
     marginRight: '30px',
     marginBottom: '24px',
 };

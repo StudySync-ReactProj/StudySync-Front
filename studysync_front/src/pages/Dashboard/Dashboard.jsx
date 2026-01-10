@@ -4,6 +4,7 @@ import NavBar from "../../components/Header/Header.jsx";
 import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import CardContainerComp from "../../components/CardContainer/CardContainer.jsx";
 import dashboardData from "../../data/dashboardData.json";
+import Wrapper from "../../components/Wrapper/Wrapper.jsx";
 
 const Dashboard = ({ onLogout, onGoToTasks }) => {
     const { user } = useUser();
@@ -29,10 +30,12 @@ const Dashboard = ({ onLogout, onGoToTasks }) => {
     return (
         <div>
             <NavBar onLogout={onLogout} onGoToTasks={onGoToTasks} />
-            <MainTitle title={`${getGreeting()}, ${user?.username || 'User'}!`} />
-            <div>
-                <CardContainerComp data={data} />
-            </div>
+            <Wrapper >
+                <MainTitle title={`${getGreeting()}, ${user?.username || 'User'}!`} />
+                <div>
+                    <CardContainerComp data={data} />
+                </div>
+            </Wrapper>
         </div>
     );
 }

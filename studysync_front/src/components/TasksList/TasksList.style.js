@@ -7,6 +7,7 @@ export const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   overflow: "hidden",
   width: "80%",
   boxShadow: "0px 10px 30px rgba(15, 23, 42, 0.12)",
+  backgroundColor: "#F5F7FA",
   '& .MuiTableCell-root': {
     padding: '8px 16px',
   },

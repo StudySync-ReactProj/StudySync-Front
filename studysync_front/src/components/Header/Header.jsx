@@ -9,13 +9,11 @@ import Container from "@mui/material/Container";
 import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
-import AdbIcon from "@mui/icons-material/Adb";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/Logo_StudySync.svg";
 
 import {
   NavAppBar,
-  BrandDesktop,
   BrandMobile,
   MobileNavBox,
   DesktopNavBox,
@@ -59,7 +57,7 @@ function Header() {
           <img
             src={Logo}
             alt="StudySync Logo"
-            style={{ height: "85px", marginRight: "16px", cursor: "pointer" }}
+            style={{ height: "87px", marginRight: "16px", cursor: "pointer" }}
             onClick={() => navigate("/")}
           />
 
