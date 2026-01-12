@@ -21,7 +21,7 @@ import {
   UserBox,
 } from "./Header.style";
 
-const pages = ["Tasks"];
+const pages = ["CalendarSync","Tasks"];
 const settings = ["Logout"];
 
 function Header() {
@@ -78,6 +78,7 @@ function Header() {
                     handleCloseNavMenu();
                     // if (page === "Home" && onGoToHome) onGoToHome();
                     if (page === "Tasks") navigate("/TasksPage");
+                    if (page === "CalendarSync") navigate("/CalendarSync");
                   }}
                 >
                   <BrandMobile component="span">{page}</BrandMobile>
@@ -95,6 +96,7 @@ function Header() {
                   handleCloseNavMenu();
                   if (page === "Home") navigate("/");
                   if (page === "Tasks") navigate("/TasksPage");
+                  if (page === "CalendarSync") navigate("/CalendarSync");
                 }}
               >
                 {page}

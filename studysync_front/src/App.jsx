@@ -8,6 +8,7 @@ import "./App.css";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import Login from "./pages/Login/Login.jsx";
 import TasksPage from "./pages/TasksPage/TasksPage.jsx";
+import CalendarSync from "./pages/CalendarSync/CalendarSync.jsx";
 import PageNotFound from "./pages/PageNotFound/PageNotFound.jsx";
 
 function ProtectedRoute({ children }) {
@@ -57,6 +58,15 @@ function App() {
           path="/TasksPage"
           element={<ProtectedRoute>
             <TasksPage />
+          </ProtectedRoute>
+          }
+        />
+
+        {/* Calendar Sync route */}
+        <Route
+          path="/CalendarSync"
+          element={<ProtectedRoute>
+            <CalendarSync />
           </ProtectedRoute>
           }
         />
