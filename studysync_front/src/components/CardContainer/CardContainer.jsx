@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
     CardContainer,
     TimeBox,
@@ -14,37 +14,15 @@ import Card from "../Card/Card";
 import Timer from "../Timer/Timer";
 import DailyProgress from "../DailyProgress/DailyProgress"
 import WeeklyProgress from "../WeeklyProgress/WeeklyProgress";
+import { useApi } from "../../hooks/useApi";
 
 
 const CardContainerComp = ({ data }) => {
-    const [tasks, setTasks] = useState([]);
-    const [loadingTasks, setLoadingTasks] = useState(true);
-    const [tasksError, setTasksError] = useState("");
+    const { data: tasks, loading: loadingTasks, error: tasksError } = useApi(
+        "https://jsonplaceholder.typicode.com/todos?_limit=8"
+    );
     const upcomingSessions = data?.upcomingSessions ?? [];
     const upcomingDeadlines = data?.upcomingDeadlines ?? [];
-
-    useEffect(() => {
-        const fetchTasks = async () => {
-            try {
-                setLoadingTasks(true);
-                setTasksError("");
-
-                const res = await fetch(
-                    "https://jsonplaceholder.typicode.com/todos?_limit=8"
-                );
-                if (!res.ok) throw new Error("Failed to fetch tasks");
-
-                const data = await res.json();
-                setTasks(data);
-            } catch (err) {
-                setTasksError(err.message || "Unknown error");
-            } finally {
-                setLoadingTasks(false);
-            }
-        };
-        fetchTasks();
-
-    }, []);
 
     return (
         <CardContainer>
