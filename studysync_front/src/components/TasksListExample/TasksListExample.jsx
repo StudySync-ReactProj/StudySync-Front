@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { useFetchData } from "../../hooks/useFetchData";
+import React, { useState, useMemo } from "react";
+import { useApi } from "../../hooks/useApi";
 
 /**
- * Example component using useFetchData hook
+ * Example component using useApi hook
  * Displays a list of tasks with pagination and filtering
  * No fetch/useEffect logic - all delegated to the hook
  */
@@ -11,17 +11,20 @@ const TasksListExample = () => {
   const [status, setStatus] = useState("all");
   const LIMIT = 5;
 
-  // Build params dynamically
-  const params =
-    status === "all"
-      ? { _page: page, _limit: LIMIT }
-      : { _page: page, _limit: LIMIT, completed: status === "completed" };
+  // Memoize params so they're only recreated when page/status actually change
+  const params = useMemo(
+    () =>
+      status === "all"
+        ? { _page: page, _limit: LIMIT }
+        : { _page: page, _limit: LIMIT, completed: status === "completed" },
+    [page, status]
+  );
 
-  // Single hook call - handles all data fetching
-  const { data: tasks, loading, error, refetch } = useFetchData({
-    url: "https://jsonplaceholder.typicode.com/todos",
-    params: params,
-  });
+  // Single hook call - handles all data fetching with dynamic params
+  const { data: tasks, loading, error, refetch } = useApi(
+    "https://jsonplaceholder.typicode.com/todos",
+    params
+  );
 
   const handleRefresh = () => {
     refetch();

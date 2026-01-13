@@ -1,14 +1,14 @@
 import React from "react";
-import { useFetchData } from "../../hooks/useFetchData";
+import { useApi } from "../../hooks/useApi";
 
 /**
- * Example component using useFetchData hook
+ * Example component using useApi hook
  * Shows summary statistics of tasks with a refresh button
  * No fetch/useEffect logic - all delegated to the hook
  */
 const TasksSummaryExample = () => {
-  // Simple hook call without params
-  const { data: tasks, loading, error, refetch } = useFetchData(
+  // Simple hook call with just a URL string
+  const { data: tasks, loading, error, refetch } = useApi(
     "https://jsonplaceholder.typicode.com/todos?_limit=20"
   );
 
