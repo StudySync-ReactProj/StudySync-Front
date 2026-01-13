@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useUser } from "../../Contex/UserContex";
+import { useSelector } from "react-redux";
 import NavBar from "../../components/Header/Header.jsx";
 import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import CardContainerComp from "../../components/CardContainer/CardContainer.jsx";
@@ -7,7 +7,7 @@ import dashboardData from "../../data/dashboardData.json";
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
 
 const Dashboard = ({ onLogout, onGoToTasks }) => {
-    const { user } = useUser();
+    const user = useSelector((state) => state.user.user);
     const [data, setData] = useState(null);
 
     const getGreeting = () => {

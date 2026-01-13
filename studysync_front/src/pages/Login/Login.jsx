@@ -2,7 +2,8 @@
 
 // ========== IMPORTS ==========
 import { useState } from "react";
-import { useUser } from "../../Contex/UserContex";
+import { useDispatch } from "react-redux";
+import { loginUser } from "../../store/userSlice";
 import FormContainer from "../../components/FormContainer/FormContainer.jsx";
 import TextFieldComp from "../../components/TextFieldComp/TextFieldComp.jsx";
 import ButtonCont from "../../components/ButtonCont/ButtonCont.jsx";
@@ -17,8 +18,8 @@ export default function Login() {
   const navigate = useNavigate();
 
 
-  // ========== USER CONTEXT ==========
-  const { login } = useUser();
+  // ========== REDUX ==========
+  const dispatch = useDispatch();
 
   // ========== FORM & ERROR STATE ==========
   const [form, setForm] = useState({
@@ -77,11 +78,11 @@ export default function Login() {
     // If validation passed:
     console.log("Login data:", form);
 
-    // Save user data to context
-    login({
+    // Save user data to Redux store
+    dispatch(loginUser({
       username: form.username,
       email: form.email,
-    });
+    }));
 
     console.log("Login successful! Navigating to HomePage...");
     navigate("/"); // 

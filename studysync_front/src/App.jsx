@@ -1,8 +1,7 @@
 import Theme from "./MuiTheme.style.js";
 import { ThemeProvider } from "@mui/material/styles";
 import { Routes, Route, Navigate } from "react-router-dom";
-
-import { useUser } from "./Contex/UserContex";
+import { useSelector } from "react-redux";
 
 import "./App.css";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
@@ -12,10 +11,10 @@ import CalendarSync from "./pages/CalendarSync/CalendarSync.jsx";
 import PageNotFound from "./pages/PageNotFound/PageNotFound.jsx";
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useUser();
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
 
   // if not logined in redirect to login
-  if (!isAuthenticated) {
+  if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
   // if logged in redirect to dashboard
@@ -24,7 +23,7 @@ function ProtectedRoute({ children }) {
 
 
 function App() {
-  const { isAuthenticated } = useUser();
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
 
   return (
     <ThemeProvider theme={Theme}>
@@ -34,7 +33,7 @@ function App() {
         <Route
           path="/"
           element={
-            isAuthenticated
+            isLoggedIn
               ? <Navigate to="/dashboard" replace />
               : <Navigate to="/login" replace />
           }

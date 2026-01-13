@@ -1,6 +1,7 @@
 // src/components/Header/Header.jsx
 import * as React from "react";
-import { useUser } from "../../Contex/UserContex";
+import { useSelector, useDispatch } from "react-redux";
+import { logoutUser } from "../../store/userSlice";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
@@ -26,7 +27,8 @@ const settings = ["Logout"];
 
 function Header() {
   const navigate = useNavigate();
-  const { user } = useUser();
+  const user = useSelector((state) => state.user.user);
+  const dispatch = useDispatch();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -44,6 +46,7 @@ function Header() {
   const handleCloseUserMenu = (setting) => {
     setAnchorElUser(null);
     if (setting === "Logout") {
+      dispatch(logoutUser());
       navigate("/Login");
     };
   };
