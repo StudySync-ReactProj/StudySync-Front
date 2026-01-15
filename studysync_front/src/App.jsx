@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import "./App.css";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import Login from "./pages/Login/Login.jsx";
+import Signup from "./pages/Signup/Signup.jsx";
 import TasksPage from "./pages/TasksPage/TasksPage.jsx";
 import CalendarSync from "./pages/CalendarSync/CalendarSync.jsx";
 import PageNotFound from "./pages/PageNotFound/PageNotFound.jsx";
@@ -41,6 +42,9 @@ function App() {
 
         {/* Login route */}
         <Route path="/login" element={<Login />} />
+
+        {/* Signup route */}
+        <Route path="/signup" element={<Signup />} />
 
         {/* Protected routes */}
         <Route

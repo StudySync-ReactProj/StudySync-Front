@@ -85,7 +85,7 @@ export default function Login() {
     }));
 
     console.log("Login successful! Navigating to HomePage...");
-    navigate("/"); // 
+    navigate("/dashboard"); // 
   };
 
   // ========== RENDER ==========
@@ -133,7 +133,7 @@ export default function Login() {
         Don't have an account?
         <FooterLink
           component="span"
-          onClick={() => alert("Signup functionality coming soon!")}
+          onClick={() => navigate("/signup")}
         >
           Signup Here
         </FooterLink>

@@ -60,7 +60,7 @@ function Header() {
           <img
             src={Logo}
             alt="StudySync Logo"
-            style={{ height: "87px", marginRight: "16px", cursor: "pointer" }}
+            style={{ height: "87px", cursor: "pointer" }}
             onClick={() => navigate("/")}
           />
 
