@@ -74,3 +74,4 @@ export const NavButton = styled(Button)(({ theme }) => ({
 export const UserBox = styled(Box)(() => ({
     flexGrow: 0,
 }));
+

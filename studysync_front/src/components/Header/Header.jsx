@@ -6,13 +6,13 @@ import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
-import Container from "@mui/material/Container";
 import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/Logo_StudySync.svg";
-import ThemeToggleButton from "../ThemeToggleButton/ThemeToggleButton"
+import ThemeToggleButton from "../ThemeToggleButton/ThemeToggleButton";
+import Wrapper from "../Wrapper/Wrapper.jsx";
 
 import {
   NavAppBar,
@@ -33,111 +33,97 @@ function Header({ theme, setTheme }) {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
-
   const handleCloseUserMenu = (setting) => {
     setAnchorElUser(null);
     if (setting === "Logout") {
       dispatch(logoutUser());
-      navigate("/Login");
-    };
+      navigate("/login");
+    }
   };
-
 
   return (
     <NavAppBar position="static">
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
+      <Wrapper>
+        <Toolbar disableGutters sx={{ justifyContent: "space-between" }}>
+          {/* LEFT SIDE */}
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <img
+              src={Logo}
+              alt="StudySync Logo"
+              style={{ height: "80px", cursor: "pointer", marginLeft: "-20px" }}
+              onClick={() => navigate("/dashboard")}
+            />
 
-          {/* Desktop Logo */}
-          <img
-            src={Logo}
-            alt="StudySync Logo"
-            style={{ height: "87px", cursor: "pointer" }}
-            onClick={() => navigate("/")}
-          />
+            {/* Mobile menu */}
+            <MobileNavBox>
+              <IconButton onClick={(e) => setAnchorElNav(e.currentTarget)}>
+                <MenuIcon />
+              </IconButton>
+              <Menu
+                anchorEl={anchorElNav}
+                open={Boolean(anchorElNav)}
+                onClose={() => setAnchorElNav(null)}
+              >
+                {pages.map((page) => (
+                  <MenuItem
+                    key={page}
+                    onClick={() => {
+                      setAnchorElNav(null);
+                      if (page === "Tasks") navigate("/TasksPage");
+                      if (page === "CalendarSync") navigate("/CalendarSync");
+                    }}
+                  >
+                    <BrandMobile component="span">{page}</BrandMobile>
+                  </MenuItem>
+                ))}
+              </Menu>
+            </MobileNavBox>
 
-          {/* Mobile menu icon */}
-          <MobileNavBox>
-            <IconButton onClick={handleOpenNavMenu}>
-              <MenuIcon sx={{ color: "#fff" }} />
-            </IconButton>
-            <Menu
-              anchorEl={anchorElNav}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-            >
+            {/* Desktop nav */}
+            <DesktopNavBox>
               {pages.map((page) => (
-                <MenuItem
+                <NavButton
                   key={page}
                   onClick={() => {
-                    handleCloseNavMenu();
-                    // if (page === "Home" && onGoToHome) onGoToHome();
                     if (page === "Tasks") navigate("/TasksPage");
                     if (page === "CalendarSync") navigate("/CalendarSync");
                   }}
                 >
-                  <BrandMobile component="span">{page}</BrandMobile>
-                </MenuItem>
+                  {page}
+                </NavButton>
               ))}
-            </Menu>
-          </MobileNavBox>
+            </DesktopNavBox>
+          </div>
 
-          {/* Desktop Nav */}
-          <DesktopNavBox>
-            {pages.map((page) => (
-              <NavButton
-                key={page}
-                onClick={() => {
-                  handleCloseNavMenu();
-                  if (page === "Home") navigate("/");
-                  if (page === "Tasks") navigate("/TasksPage");
-                  if (page === "CalendarSync") navigate("/CalendarSync");
-                }}
+          {/* RIGHT SIDE */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <ThemeToggleButton theme={theme} setTheme={setTheme} />
+            <UserBox>
+              <Tooltip title="Open settings">
+                <IconButton onClick={(e) => setAnchorElUser(e.currentTarget)}>
+                  <Avatar>
+                    {user?.username?.[0]?.toUpperCase()}
+                  </Avatar>
+                </IconButton>
+              </Tooltip>
+              <Menu
+                anchorEl={anchorElUser}
+                open={Boolean(anchorElUser)}
+                onClose={() => handleCloseUserMenu()}
               >
-                {page}
-              </NavButton>
-            ))}
-          </DesktopNavBox>
-
-          {/* User Avatar */}
-          <ThemeToggleButton theme={theme} setTheme={setTheme} />
-          <UserBox>
-            <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu}>
-                <Avatar alt={user?.username || "User Avatar"}>
-                  {user?.username?.[0]?.toUpperCase()}
-                </Avatar>
-              </IconButton>
-            </Tooltip>
-
-            <Menu
-              anchorEl={anchorElUser}
-              open={Boolean(anchorElUser)}
-              onClose={() => handleCloseUserMenu()}
-            >
-              {settings.map((setting) => (
-                <MenuItem
-                  key={setting}
-                  onClick={() => handleCloseUserMenu(setting)}
-                >
-                  {setting}
-                </MenuItem>
-              ))}
-            </Menu>
-          </UserBox>
-
+                {settings.map((setting) => (
+                  <MenuItem
+                    key={setting}
+                    onClick={() => handleCloseUserMenu(setting)}
+                  >
+                    {setting}
+                  </MenuItem>
+                ))}
+              </Menu>
+            </UserBox>
+          </div>
         </Toolbar>
-      </Container>
+      </Wrapper>
     </NavAppBar>
   );
 }
