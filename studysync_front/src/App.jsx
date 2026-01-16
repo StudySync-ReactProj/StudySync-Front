@@ -10,6 +10,10 @@ import Signup from "./pages/Signup/Signup.jsx";
 import TasksPage from "./pages/TasksPage/TasksPage.jsx";
 import CalendarSync from "./pages/CalendarSync/CalendarSync.jsx";
 import PageNotFound from "./pages/PageNotFound/PageNotFound.jsx";
+import { useLocalStorage } from "./hooks/useLocalStorage.js";
+import ThemeToggleButton from "./components/ThemeToggleButton/ThemeToggleButton.jsx"
+import { useEffect } from "react";
+import Header from "./components/Header/Header.jsx";
 
 function ProtectedRoute({ children }) {
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
@@ -25,6 +29,13 @@ function ProtectedRoute({ children }) {
 
 function App() {
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+  const [theme, setTheme] = useLocalStorage("theme", "light");
+
+
+  useEffect(() => {
+    document.body.classList.remove("light", "dark");
+    document.body.classList.add(theme);
+  }, [theme]);
 
   return (
     <ThemeProvider theme={Theme}>
@@ -51,7 +62,10 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <>
+                <Header theme={theme} setTheme={setTheme} />
+                <Dashboard />
+              </>
             </ProtectedRoute>
           }
         />
@@ -60,7 +74,10 @@ function App() {
         <Route
           path="/TasksPage"
           element={<ProtectedRoute>
-            <TasksPage />
+            <>
+              <Header theme={theme} setTheme={setTheme} />
+              <TasksPage />
+            </>
           </ProtectedRoute>
           }
         />
@@ -69,7 +86,10 @@ function App() {
         <Route
           path="/CalendarSync"
           element={<ProtectedRoute>
-            <CalendarSync />
+            <>
+              <Header theme={theme} setTheme={setTheme} />
+              <CalendarSync />
+            </>
           </ProtectedRoute>
           }
         />

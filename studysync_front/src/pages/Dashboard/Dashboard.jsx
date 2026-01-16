@@ -1,14 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
-import NavBar from "../../components/Header/Header.jsx";
 import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import CardContainerComp from "../../components/CardContainer/CardContainer.jsx";
 import dashboardData from "../../data/dashboardData.json";
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
 
-const Dashboard = ({ onLogout, onGoToTasks }) => {
+const Dashboard = () => {
     const user = useSelector((state) => state.user.user);
-    const [data, setData] = useState(null);
+    const [data] = useState(dashboardData);
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -24,12 +23,8 @@ const Dashboard = ({ onLogout, onGoToTasks }) => {
         }
     };
 
-    useEffect(() => {
-        setData(dashboardData);
-    }, []);
     return (
         <div>
-            <NavBar onLogout={onLogout} onGoToTasks={onGoToTasks} />
             <Wrapper >
                 <MainTitle title={`${getGreeting()}, ${user?.username || 'User'}!`} />
                 <div>

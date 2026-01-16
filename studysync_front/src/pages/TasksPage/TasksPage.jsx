@@ -4,15 +4,14 @@ import { useSelector, useDispatch } from "react-redux";
 import { addTask, toggleTask, deleteTask, updateTaskStatus } from "../../store/tasksSlice";
 import TasksList from "../../components/TasksList/TasksList.jsx";
 import MainTitle from "../../components/MainTitle/MainTitle.jsx";
-import Header from "../../components/Header/Header.jsx";
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
 import { Box, Button, TextField, Stack, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
-const TasksPage = ({ onLogout, onGoToTasks, onGoToHome }) => {
+const TasksPage = () => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.tasks.tasks);
-  
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState("medium");
@@ -47,11 +46,6 @@ const TasksPage = ({ onLogout, onGoToTasks, onGoToHome }) => {
 
   return (
     <>
-      <Header
-        onLogout={onLogout}
-        onGoToTasks={onGoToTasks}
-        onGoToHome={onGoToHome}
-      />
       <Wrapper>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <MainTitle title="My Tasks" />
@@ -112,8 +106,8 @@ const TasksPage = ({ onLogout, onGoToTasks, onGoToHome }) => {
         )}
 
         <div id="tasks--list">
-          <TasksList 
-            tasks={tasks} 
+          <TasksList
+            tasks={tasks}
             onToggleTask={handleToggleTask}
             onStatusChange={handleStatusChange}
             onDeleteTask={handleDeleteTask}

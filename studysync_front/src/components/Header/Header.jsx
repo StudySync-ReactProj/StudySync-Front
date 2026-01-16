@@ -12,6 +12,7 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/Logo_StudySync.svg";
+import ThemeToggleButton from "../ThemeToggleButton/ThemeToggleButton"
 
 import {
   NavAppBar,
@@ -22,10 +23,10 @@ import {
   UserBox,
 } from "./Header.style";
 
-const pages = ["CalendarSync","Tasks"];
+const pages = ["CalendarSync", "Tasks"];
 const settings = ["Logout"];
 
-function Header() {
+function Header({ theme, setTheme }) {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
@@ -50,6 +51,7 @@ function Header() {
       navigate("/Login");
     };
   };
+
 
   return (
     <NavAppBar position="static">
@@ -108,6 +110,7 @@ function Header() {
           </DesktopNavBox>
 
           {/* User Avatar */}
+          <ThemeToggleButton theme={theme} setTheme={setTheme} />
           <UserBox>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu}>
