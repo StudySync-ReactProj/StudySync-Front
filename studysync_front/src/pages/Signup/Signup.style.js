@@ -7,14 +7,14 @@ import { Stack, Typography, Box } from "@mui/material";
 export const LoginFormStack = styled(Stack)`
     margin-top: 20px;
     width: 100%;
-    background-color: #E0EAFC;
+    background-color: ${({ theme }) => theme.palette.background.default};
 `;
 
 // Footer text at the bottom - "Don't have an account?"
 export const FooterText = styled(Typography)`
     margin-top: 24px;
     font-size: 0.9rem;
-    color: #4b5563
+    color: ${({ theme }) => theme.palette.text.secondary}
 `;
 
 // Footer link styled as a clickable text

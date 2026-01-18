@@ -25,7 +25,7 @@ function TaskItem({ task, onToggleComplete, onStatusChange, onDeleteTask }) {
                 variant="subtitle1" 
                 sx={{ 
                   fontWeight: 600, 
-                  color: "#1E293B",
+                  color: 'text.primary',
                   textDecoration: task.completed ? 'line-through' : 'none',
                   opacity: task.completed ? 0.6 : 1
                 }}
@@ -37,7 +37,7 @@ function TaskItem({ task, onToggleComplete, onStatusChange, onDeleteTask }) {
               </PriorityBadge>
             </Stack>
             
-            <Stack direction="row" spacing={2} sx={{ mt: 0.5, color: "#64748B" }} alignItems="center">
+            <Stack direction="row" spacing={2} sx={{ mt: 0.5, color: 'text.secondary' }} alignItems="center">
               <Stack direction="row" spacing={0.5} alignItems="center">
                 <CalendarTodayIcon sx={{ fontSize: 14 }} />
                 <Typography variant="caption">{task.dueDate}</Typography>

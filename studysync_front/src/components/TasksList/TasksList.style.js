@@ -17,12 +17,17 @@ export const StyledTaskCard = styled(Paper)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.05)",
-  border: "1px solid #E2E8F0",
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: theme.palette.mode === 'dark' 
+    ? "0px 4px 12px rgba(0, 0, 0, 0.3)" 
+    : "0px 4px 12px rgba(0, 0, 0, 0.05)",
+  border: `1px solid ${theme.palette.mode === 'dark' ? '#333' : '#E2E8F0'}`,
   transition: "transform 0.2s",
   "&:hover": {
     transform: "translateY(-2px)",
-    boxShadow: "0px 6px 20px rgba(0, 0, 0, 0.08)",
+    boxShadow: theme.palette.mode === 'dark'
+      ? "0px 6px 20px rgba(0, 0, 0, 0.5)"
+      : "0px 6px 20px rgba(0, 0, 0, 0.08)",
   },
 }));
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
 import {
     WeeklyWrapper,
     ChartWrapper,
@@ -52,6 +53,8 @@ export default function WeeklyProgress({
     error = null,
     goalMinutesPerDay = 120,
 }) {
+    const [theme] = useLocalStorage("theme", "light");
+    
     const weekData = useMemo(
         () => mapTasksToWeek(tasks, { goalMinutesPerDay }),
         [tasks, goalMinutesPerDay]
@@ -84,28 +87,28 @@ export default function WeeklyProgress({
 
     return (
         <WeeklyWrapper>
-            <ChartWrapper>
-                <LegendRow>
-                    <LegendItem>
-                        <LegendSwatch variant="goal" />
+            <ChartWrapper themeMode={theme}>
+                <LegendRow themeMode={theme}>
+                    <LegendItem themeMode={theme}>
+                        <LegendSwatch variant="goal" themeMode={theme} />
                         <span>Goal</span>
                     </LegendItem>
-                    <LegendItem>
-                        <LegendSwatch variant="studied" />
+                    <LegendItem themeMode={theme}>
+                        <LegendSwatch variant="studied" themeMode={theme} />
                         <span>Time Studied</span>
                     </LegendItem>
                 </LegendRow>
 
-                <InnerChart key={chartKey}>
+                <InnerChart key={chartKey} themeMode={theme}>
                     <BarsRow>
                         {chart.map((d) => (
                             <DayCol key={d.day}>
                                 <BarStack>
-                                    <GoalBar value={animate ? 100 : 0} />
-                                    <StudiedBar value={animate ? d.studiedPct : 0} />
+                                    <GoalBar value={animate ? 100 : 0} themeMode={theme} />
+                                    <StudiedBar value={animate ? d.studiedPct : 0} themeMode={theme} />
                                 </BarStack>
 
-                                <DayLabel>{d.day}</DayLabel>
+                                <DayLabel themeMode={theme}>{d.day}</DayLabel>
                             </DayCol>
                         ))}
                     </BarsRow>

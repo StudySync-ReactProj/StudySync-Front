@@ -1,5 +1,5 @@
-import Theme from "./MuiTheme.style.js";
-import { ThemeProvider } from "@mui/material/styles";
+import { getTheme } from "./MuiTheme.style.js";
+import { ThemeProvider, CssBaseline } from "@mui/material";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
@@ -12,7 +12,7 @@ import CalendarSync from "./pages/CalendarSync/CalendarSync.jsx";
 import PageNotFound from "./pages/PageNotFound/PageNotFound.jsx";
 import { useLocalStorage } from "./hooks/useLocalStorage.js";
 import ThemeToggleButton from "./components/ThemeToggleButton/ThemeToggleButton.jsx"
-import { useEffect } from "react";
+import { useMemo } from "react";
 import Header from "./components/Header/Header.jsx";
 
 function ProtectedRoute({ children }) {
@@ -31,14 +31,11 @@ function App() {
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const [theme, setTheme] = useLocalStorage("theme", "light");
 
-
-  useEffect(() => {
-    document.body.classList.remove("light", "dark");
-    document.body.classList.add(theme);
-  }, [theme]);
+  const muiTheme = useMemo(() => getTheme(theme), [theme]);
 
   return (
-    <ThemeProvider theme={Theme}>
+    <ThemeProvider theme={muiTheme}>
+      <CssBaseline />
       <Routes>
 
         {/* Redirect based on authentication status */}

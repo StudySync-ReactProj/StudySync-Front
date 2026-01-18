@@ -2,8 +2,11 @@
 import React from "react";
 import { Scheduler } from "@aldabil/react-scheduler";
 import { enUS } from "date-fns/locale";
+import { useTheme } from "@mui/material/styles";
 
 const MainScheduler = ({ selectedDate, events = [] }) => {
+  const theme = useTheme();
+  
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <Scheduler
@@ -19,6 +22,12 @@ const MainScheduler = ({ selectedDate, events = [] }) => {
             startHour: 8, 
             endHour: 20,
             step: 60,
+        }}
+        
+        // Apply theme colors to the scheduler
+        style={{
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
         }}
       />
     </div>
