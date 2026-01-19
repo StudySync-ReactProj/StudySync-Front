@@ -4,12 +4,9 @@ import { AppBar, Box, Typography, Button } from "@mui/material";
 
 // Top navigation bar container
 export const NavAppBar = styled(AppBar)(({ theme }) => ({
-    backgroundColor: theme.palette.mode === 'dark' 
-        ? 'rgba(30, 30, 30, 0.7)' 
-        : 'rgba(244, 247, 254, 0.7)',
-    color: theme.palette.text.primary,
-    boxShadow: 'none',
-    backdropFilter: 'blur(10px)',
+    backgroundColor: "#F4F7FEB2", // white background
+    color: theme.palette.primary.main, // primary color text
+    boxShadow: 'none', // Remove box shadow
 }));
 
 // Logo (desktop) 

@@ -12,7 +12,7 @@ const CalendarSync = () => {
         <>
             <Wrapper >
                 <MainTitle title="CalendarSync" />
-                <Box sx={{ display: "flex", height: "100vh", bgcolor: "background.default" }}>
+                <Box sx={{ display: "flex", height: "100vh", bgcolor: "#f5f7fa" }}>
                     <CalendarSidebar
                         currentDate={currentDate}
                         onDateChange={setCurrentDate}

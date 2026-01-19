@@ -19,8 +19,8 @@ const CalendarSidebar = ({ currentDate, onDateChange, events = [] }) => {
                 // height: "100%",
                 display: "flex",
                 flexDirection: "column",
-                bgcolor: "background.paper",
-                borderRight: (theme) => `1px solid ${theme.palette.divider}`
+                bgcolor: "white",
+                borderRight: "1px solid #e0e0e0"
             }}
         >
             {/* כותרת */}

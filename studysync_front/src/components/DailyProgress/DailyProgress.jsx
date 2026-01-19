@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useLocalStorage } from "../../hooks/useLocalStorage";
 import {
     ProgressWrapper,
     Subtitle,
@@ -10,7 +9,6 @@ import {
 } from "./DailyProgress.style"
 
 export default function DailyProgress({tasks = [], loading = false, error=null}){
-    const [theme] = useLocalStorage("theme", "light");
 
     const total = tasks.length;
     const completed= tasks.filter((t) => t.completed).length;
@@ -28,17 +26,17 @@ export default function DailyProgress({tasks = [], loading = false, error=null})
 
     return (
         <ProgressWrapper>
-            <Subtitle themeMode={theme}>You're getting closer!</Subtitle>
+            <Subtitle>You're getting closer!</Subtitle>
 
-            <ProgressBar themeMode={theme}>
-                <ProgressFill percent={animatedPercent} themeMode={theme}>
-                    <ProgressLabel themeMode={theme}>{percent}%</ProgressLabel>
+            <ProgressBar>
+                <ProgressFill percent={animatedPercent}>
+                    <ProgressLabel>{percent}%</ProgressLabel>
                 </ProgressFill>
             </ProgressBar>
 
 
             
-            <FooterText themeMode={theme}>You're on 7-day streak!</FooterText>
+            <FooterText>You're on 7-day streak!</FooterText>
         </ProgressWrapper>
 );
 }
