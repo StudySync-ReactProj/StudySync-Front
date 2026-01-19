@@ -1,4 +1,5 @@
-import Theme from "./MuiTheme.style.js";
+import getMuiTheme from "./MuiTheme.style.js";
+import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -30,6 +31,8 @@ function ProtectedRoute({ children }) {
 function App() {
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const [theme, setTheme] = useLocalStorage("theme", "light");
+  const muiTheme = getMuiTheme(theme);
+
 
 
   useEffect(() => {
@@ -38,7 +41,8 @@ function App() {
   }, [theme]);
 
   return (
-    <ThemeProvider theme={Theme}>
+    <ThemeProvider theme={muiTheme}>
+      <CssBaseline />
       <Routes>
 
         {/* Redirect based on authentication status */}

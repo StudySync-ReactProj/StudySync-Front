@@ -1,13 +1,14 @@
 import React from "react";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
+import { CardWrapper } from "./ThemedCard.style";
 
-export default function ThemedCards() {
+export default function ThemedCard() {
     const [theme] = useLocalStorage("theme", "light");
 
     return (
-        <div className={'card ${theme}'}>
+        <CardWrapper themeMode={theme}>
             <h3>Themed Card</h3>
             <p>curr theme: {theme}</p>
-        </div>
-    )
+        </CardWrapper>
+    );
 }

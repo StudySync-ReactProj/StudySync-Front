@@ -2,7 +2,7 @@ import { styled } from "@mui/material/styles";
 
 export const CardContainer = styled("div")({
     display: "grid",
-    gridTemplateColumns: "648px 658px",
+    gridTemplateColumns: "648px 648px",
     columnGap: "40px",
     rowGap: "40px",
     justifyContent: "center",
@@ -44,16 +44,15 @@ export const SessionsBox = styled("div")({
 
 // deadlines
 export const DeadlinesBox = styled("div")({
-    width: "1338px",
+    width: "1336px",
     height: "369px",
     gridColumn: "1 / span 2",
-    paddingBottom: "180px",
 });
 
 export const CardHeading = styled("h3")(({ theme }) => ({
     marginBottom: "20px",
-    color: theme?.colors?.text || '#061738',
-    fontFamily: theme?.fonts?.primary || 'inherit',
+    color: theme.palette.text.primary,
+    fontFamily: theme.typography.fontFamily,
     fontSize: "1.2rem",
     fontWeight: 600,
 }));
@@ -61,11 +60,11 @@ export const CardHeading = styled("h3")(({ theme }) => ({
 export const CardList = styled("ul")(({ theme }) => ({
     paddingLeft: "18px",
     listStyleType: "disc",
-    
+
     "& li": {
         marginBottom: "10px",
-        color: theme?.colors?.text || '#061738',
-        fontFamily: theme?.fonts?.primary || 'inherit',
+        color: theme.palette.text.primary,
+        fontFamily: theme.typography.fontFamily,
         lineHeight: 1.5,
     },
 }));

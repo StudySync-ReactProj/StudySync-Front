@@ -1,32 +1,45 @@
 import { styled } from "@mui/material/styles";
 
+/* contains all timer*/
+export const TimerLayout = styled("div")({
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  paddingBottom: "10px",
+});
+
+/* time itself*/
 export const TimeDisplay = styled("div")({
   fontSize: "90px",
   fontWeight: 600,
   letterSpacing: "2px",
+  lineHeight: 1,
   textAlign: "center",
   color: "#061738",
-  marginTop: "-35px",
 });
 
+/* buttons layout*/
 export const Controls = styled("div")({
-  marginTop: "12px",
   display: "flex",
   justifyContent: "center",
   gap: "12px",
-  marginTop:"-10px",
+  paddingBottom: "35px"
 });
 
+/* one button */
 export const ControlButton = styled("button")({
+  width: "44px",
+  height: "44px",
   fontSize: "20px",
-  padding: "8px 14px",
-  borderRadius: "10px",
+  borderRadius: "12px",
   border: "none",
   cursor: "pointer",
-
+  backgroundColor: "#F1F4FA",
 
   "&:hover": {
-    backgroundColor: "#0D3682",
+    backgroundColor: "#E3E9F6",
   },
 
   "&:active": {

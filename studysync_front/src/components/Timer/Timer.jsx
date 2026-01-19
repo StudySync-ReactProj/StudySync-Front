@@ -1,6 +1,7 @@
 import { useState } from "react";
 import useTimer from "../../hooks/useTimer";
 import {
+  TimerLayout,
   TimeDisplay,
   Controls,
   ControlButton,
@@ -26,29 +27,25 @@ export default function Timer() {
   const { h, m, s } = formatHMS(seconds);
 
   return (
-  <div>
-    <TimeDisplay>
-      {h}:{m}:{s}
-    </TimeDisplay>
+    <TimerLayout>
 
-    <Controls>
-      <ControlButton onClick={() => setIsRunning(true)}>
-        ▶️
-      </ControlButton>
+      <TimeDisplay>
+        {h}:{m}:{s}
+      </TimeDisplay>
 
-      <ControlButton onClick={() => setIsRunning(false)}>
-        ⏸️
-      </ControlButton>
+      <Controls>
+        <ControlButton onClick={() => setIsRunning(true)}>▶️</ControlButton>
+        <ControlButton onClick={() => setIsRunning(false)}>⏸️</ControlButton>
+        <ControlButton
+          onClick={() => {
+            setIsRunning(false);
+            reset();
+          }}
+        >
+          🔄
+        </ControlButton>
+      </Controls>
+    </TimerLayout>
+  );
 
-      <ControlButton
-        onClick={() => {
-          setIsRunning(false);
-          reset();
-        }}
-      >
-        🔄
-      </ControlButton>
-    </Controls>
-  </div>
-);
 }
