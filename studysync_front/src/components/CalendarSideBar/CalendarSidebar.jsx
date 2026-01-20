@@ -19,41 +19,41 @@ const CalendarSidebar = ({ currentDate, onDateChange, events = [] }) => {
                 // height: "100%",
                 display: "flex",
                 flexDirection: "column",
-                bgcolor: "white",
-                borderRight: "1px solid #e0e0e0"
+                bgcolor: "background.paper",
+                borderRight: 1,
+                borderColor: "divider"
             }}
         >
-            {/* כותרת */}
+            {/* Header */}
             <Box sx={{ p: 2 }}>
                 <Typography variant="h6" fontWeight="bold">Sync Up</Typography>
             </Box>
             <Divider />
 
-            {/* מיני לוח שנה */}
+            {/* Mini calendar */}
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enUS}>
                 <DateCalendar
-                    value={currentDate} // המהות: מציג את התאריך מהאבא
+                    value={currentDate} // Displays the date from parent
                     onChange={onDateChange}
                 />
             </LocalizationProvider>
 
             <Divider />
 
-            {/* רשימת אירועים (כרגע סטטית - רק לעיצוב) */}
-            {/* רשימת האירועים הדינמית */}
+            {/* Dynamic event list */}
             <Box sx={{ p: 2, overflowY: "auto", flex: 1 }}>
                 <Typography variant="caption" color="primary" fontWeight="bold">
-                    {format(currentDate, "dd MMMM yyyy", { locale: enUS })} {/* תאריך יפה בכותרת */}
+                    {format(currentDate, "dd MMMM yyyy", { locale: enUS })} {/* Formatted date in header */}
                 </Typography>
 
                 <List>
                     {todayEvents.length === 0 ? (
-                        // מה מציגים כשאין כלום?
+                        // What to display when there are no events?
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
                            No events for this day!
                         </Typography>
                     ) : (
-                        // מה מציגים כשיש אירועים?
+                        // What to display when there are events?
                         todayEvents.map((event) => (
                             <ListItem key={event.event_id} disablePadding sx={{ mb: 2 }}>
                                 <ListItemText
