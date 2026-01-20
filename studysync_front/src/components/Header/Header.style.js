@@ -7,6 +7,7 @@ export const NavAppBar = styled(AppBar)(({ theme }) => ({
     backgroundColor: theme.palette.background.paper, // במקום צבע קשיח
     color: theme.palette.text.primary,
     boxShadow: "none",
+    height: "90px",
 }));
 // Logo (desktop) 
 export const BrandDesktop = styled(Typography)(({ theme }) => ({

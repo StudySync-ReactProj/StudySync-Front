@@ -50,7 +50,7 @@ function Header({ theme, setTheme }) {
             <img
               src={Logo}
               alt="StudySync Logo"
-              style={{ height: "80px", cursor: "pointer", marginLeft: "-20px" }}
+              style={{ height: "80px", cursor: "pointer", marginLeft: "-20px", marginTop: "8px" }}
               onClick={() => navigate("/dashboard")}
             />
 
