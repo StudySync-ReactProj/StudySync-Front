@@ -1,12 +1,17 @@
 // src/components/AddTaskForm/AddTaskForm.style.js
-import { Box } from "@mui/material";
 
-export const AddTaskFormContainer = {
+export const AddTaskFormContainer = (theme) => ({
   mb: 3,
   p: 2,
-  bgcolor: "#f5f5f5",
+
+  bgcolor: theme.palette.background.paper,
+  color: theme.palette.text.primary,
+
   borderRadius: 2,
-};
+  border: `1px solid ${theme.palette.divider}`,
+
+  boxShadow: theme.palette.mode === "dark" ? "none" : "0 8px 24px rgba(0,0,0,0.06)",
+});
 
 export const PriorityFormControl = {
   minWidth: 150,

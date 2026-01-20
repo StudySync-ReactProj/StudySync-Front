@@ -12,7 +12,6 @@ import TasksPage from "./pages/TasksPage/TasksPage.jsx";
 import CalendarSync from "./pages/CalendarSync/CalendarSync.jsx";
 import PageNotFound from "./pages/PageNotFound/PageNotFound.jsx";
 import { useLocalStorage } from "./hooks/useLocalStorage.js";
-import ThemeToggleButton from "./components/ThemeToggleButton/ThemeToggleButton.jsx"
 import { useEffect } from "react";
 import Header from "./components/Header/Header.jsx";
 

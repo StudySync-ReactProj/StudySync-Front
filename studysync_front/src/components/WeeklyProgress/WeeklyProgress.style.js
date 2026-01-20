@@ -1,8 +1,11 @@
 import { styled } from "@mui/material/styles";
 
 // outer card (whole component)
-export const WeeklyWrapper = styled("div")(() => ({
-    borderRadius: "20px",
+export const WeeklyWrapper = styled("div")(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: "20px",
+  color: theme.palette.text.primary,
+  marginTop: "-10px"
 }));
 
 export const WeeklyTopRow = styled("div")(() => ({
@@ -11,19 +14,18 @@ export const WeeklyTopRow = styled("div")(() => ({
     justifyContent: "space-between",
 }));
 // Big inner card
-export const ChartWrapper = styled("div")(() => ({
-    background: "#F6F7FB",
-    border: "1px solid rgba(27,43,97,0.08)",
-    borderRadius: "22px",
+export const ChartWrapper = styled("div")(({ theme }) => ({
+  backgroundColor: theme.palette.background.default,
+  borderRadius: "16px",
+  padding: "16px",
 }));
 
 // Legend row inside the chart wrapper
-export const LegendRow = styled("div")(() => ({
-    display: "flex",
-    alignItems: "center",
-    gap: "22px",
-    paddingBottom: "14px",
-    borderBottom: "1px solid rgba(27,43,97,0.06)",
+export const LegendRow = styled("div")(({ theme }) => ({
+  display: "flex",
+  gap: "16px",
+  marginBottom: "12px",
+  color: theme.palette.text.secondary,
 }));
 
 export const LegendItem = styled("div")(() => ({
@@ -44,11 +46,10 @@ export const LegendSwatch = styled("span")(({ variant }) => ({
 }));
 
 // Inner chart area (the rounded box with bars)
-export const InnerChart = styled("div")(() => ({
-    marginTop: "16px",
-    border: "1px solid rgba(27,43,97,0.06)",
-    borderRadius: "24px",
-    padding: "26px 22px 20px",
+export const InnerChart = styled("div")(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: "14px",
+  padding: "16px",
 }));
 
 export const BarsRow = styled("div")(() => ({
@@ -105,11 +106,8 @@ export const GoalBar = styled("div", {
 }));
 
 
-export const DayLabel = styled("div")(() => ({
-    color: "#8B8A8A",
-    fontFamily: "Plus Jakarta Sans",
-    fontSize: "12px",
-    fontStyle: "normal",
-    fontWeight: "400",
-    lineHeight: "normal",
+export const DayLabel = styled("span")(({ theme }) => ({
+  marginTop: "8px",
+  fontSize: "12px",
+  color: theme.palette.text.secondary,
 }));
