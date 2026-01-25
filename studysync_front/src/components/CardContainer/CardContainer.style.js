@@ -50,10 +50,10 @@ export const DeadlinesBox = styled("div")({
 });
 
 export const CardHeading = styled("h3")(({ theme }) => ({
-    marginBottom: "20px",
+    marginBottom: "15px",
     color: theme.palette.text.primary,
     fontFamily: theme.typography.fontFamily,
-    fontSize: "1.2rem",
+    fontSize: "1.5rem",
     fontWeight: 600,
 }));
 

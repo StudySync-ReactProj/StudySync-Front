@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTheme } from "@mui/material/styles";
 import useTimer from "../../hooks/useTimer";
 import {
   TimerLayout,
@@ -6,6 +7,14 @@ import {
   Controls,
   ControlButton,
 } from "./Timer.style";
+
+// Import assets
+import playLight from "../../assets/play-button_light.svg";
+import playDark from "../../assets/play_dark.svg";
+import pauseLight from "../../assets/pause_light.svg";
+import pauseDark from "../../assets/pause-dark.svg";
+import replayLight from "../../assets/replay_light.svg";
+import replayDark from "../../assets/replay_dark.svg";
 
 
 function formatHMS(totalSeconds) {
@@ -22,9 +31,16 @@ function formatHMS(totalSeconds) {
 
 export default function Timer() {
   const [isRunning, setIsRunning] = useState(false);
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
 
   const { seconds, reset } = useTimer(isRunning ? 1000 : null);
   const { h, m, s } = formatHMS(seconds);
+
+  // Select appropriate icons based on theme
+  const playIcon = isDark ? playDark : playLight;
+  const pauseIcon = isDark ? pauseDark : pauseLight;
+  const replayIcon = isDark ? replayDark : replayLight;
 
   return (
     <TimerLayout>
@@ -34,15 +50,22 @@ export default function Timer() {
       </TimeDisplay>
 
       <Controls>
-        <ControlButton onClick={() => setIsRunning(true)}>▶️</ControlButton>
-        <ControlButton onClick={() => setIsRunning(false)}>⏸️</ControlButton>
+        {!isRunning ? (
+          <ControlButton onClick={() => setIsRunning(true)}>
+            <img src={playIcon} alt="Play" />
+          </ControlButton>
+        ) : (
+          <ControlButton onClick={() => setIsRunning(false)}>
+            <img src={pauseIcon} alt="Pause" />
+          </ControlButton>
+        )}
         <ControlButton
           onClick={() => {
             setIsRunning(false);
             reset();
           }}
         >
-          🔄
+          <img src={replayIcon} alt="Replay" />
         </ControlButton>
       </Controls>
     </TimerLayout>

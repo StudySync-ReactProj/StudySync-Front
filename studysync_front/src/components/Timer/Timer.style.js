@@ -9,7 +9,7 @@ export const TimerLayout = styled("div")(({ theme }) => ({
   alignItems: "center",
   paddingBottom: "10px",
 
-  // נותן לטקסט “לזרום” עם הצבעים של הדארק/לייט
+  // let text color adapt to dark/light mode
   color: theme.palette.text.primary,
 }));
 
@@ -20,8 +20,9 @@ export const TimeDisplay = styled("div")(({ theme }) => ({
   letterSpacing: "2px",
   lineHeight: 1,
   textAlign: "center",
+  marginBottom: "16px",
 
-  // במקום צבע קשיח:
+  // instead of hardcoded colors, adapt to dark/light mode:
   color: theme.palette.text.primary,
 }));
 
@@ -35,13 +36,18 @@ export const Controls = styled("div")(() => ({
 
 /* one button */
 export const ControlButton = styled("button")(({ theme }) => ({
-  width: "44px",
-  height: "44px",
+  width: "30px",
+  height: "30px",
   fontSize: "20px",
-  borderRadius: "12px",
+  borderRadius: "50px",
   cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: "15px",
+  padding: "0",
 
-  // darlk/light mode support
+  // dark/light mode support
   color: theme.palette.text.primary,
   backgroundColor:
     theme.palette.mode === "dark"
@@ -59,5 +65,11 @@ export const ControlButton = styled("button")(({ theme }) => ({
 
   "&:active": {
     transform: "scale(0.95)",
+  },
+
+  "& img": {
+    width: "30px",
+    height: "30px",
+    display: "block",
   },
 }));

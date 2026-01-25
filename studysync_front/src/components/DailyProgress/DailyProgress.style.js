@@ -7,15 +7,15 @@ export const ProgressWrapper= styled ("div")({
     gap:"8px",
 });
 //"You're getting closer!"
-export const Subtitle= styled("div")({
+export const Subtitle= styled("div")(({ theme })=>({
     fontFamily: "Prompt",
-    fontSize: "22px",
+    fontSize: "20px",
     fontStyle: "normal",
     fontWeight: "400",
     lineHeight: "normal",
     justifyContent: "center",
-    color:"#061738",
-});
+    color: theme.palette.text.primary,
+}));
 //strong purple line
 export const ProgressBar= styled("div")({
     position:"relative",
@@ -50,14 +50,16 @@ export const ProgressLabel= styled("span") ({
     pointerEvents: "none",
 });
 //streak
-export const FooterText= styled("div")({
-    color: "#061738",
+export const FooterText= styled("div")(({ theme })=>({
+    color: theme.palette.text.primary,
     fontFamily: "Prompt",
     fontSize: "23px",
     fontStyle: "normal",
     fontWeight: "400",
     lineHeight: "normal",
-});
+    marginButtom: "5px",
+    marginTop: "5px",
+}));
 
 
 

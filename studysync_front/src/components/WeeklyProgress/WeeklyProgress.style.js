@@ -15,7 +15,7 @@ export const WeeklyTopRow = styled("div")(() => ({
 }));
 // Big inner card
 export const ChartWrapper = styled("div")(({ theme }) => ({
-  backgroundColor: theme.palette.background.default,
+  backgroundColor: theme.palette.background.paper,
   borderRadius: "16px",
   padding: "16px",
 }));
