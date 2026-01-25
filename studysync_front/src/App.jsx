@@ -13,7 +13,7 @@ import CalendarSync from "./pages/CalendarSync/CalendarSync.jsx";
 import PageNotFound from "./pages/PageNotFound/PageNotFound.jsx";
 import { useLocalStorage } from "./hooks/useLocalStorage.js";
 import { useEffect } from "react";
-import Header from "./components/Header/Header.jsx";
+import Layout from "./components/Layout/Layout.jsx";
 
 function ProtectedRoute({ children }) {
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
@@ -37,6 +37,11 @@ function App() {
   useEffect(() => {
     document.body.classList.remove("light", "dark");
     document.body.classList.add(theme);
+    
+    // Cleanup function to remove theme class on unmount
+    return () => {
+      document.body.classList.remove("light", "dark");
+    };
   }, [theme]);
 
   return (
@@ -65,10 +70,9 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <>
-                <Header theme={theme} setTheme={setTheme} />
+              <Layout theme={theme} setTheme={setTheme}>
                 <Dashboard />
-              </>
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -76,24 +80,24 @@ function App() {
         {/* Tasks page route */}
         <Route
           path="/TasksPage"
-          element={<ProtectedRoute>
-            <>
-              <Header theme={theme} setTheme={setTheme} />
-              <TasksPage />
-            </>
-          </ProtectedRoute>
+          element={
+            <ProtectedRoute>
+              <Layout theme={theme} setTheme={setTheme}>
+                <TasksPage />
+              </Layout>
+            </ProtectedRoute>
           }
         />
 
         {/* Calendar Sync route */}
         <Route
           path="/CalendarSync"
-          element={<ProtectedRoute>
-            <>
-              <Header theme={theme} setTheme={setTheme} />
-              <CalendarSync />
-            </>
-          </ProtectedRoute>
+          element={
+            <ProtectedRoute>
+              <Layout theme={theme} setTheme={setTheme}>
+                <CalendarSync />
+              </Layout>
+            </ProtectedRoute>
           }
         />
 
