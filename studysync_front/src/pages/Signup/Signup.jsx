@@ -1,27 +1,22 @@
-// src/pages/Login/Login.jsx
+// src/pages/Signup/Signup.jsx
 
 // ========== IMPORTS ==========
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { loginUser } from "../../store/userSlice";
+import { loginUser } from "../../store/userSlice"; // אנחנו משתמשים באותו Reducer לעדכון המשתמש המחובר
 import FormContainer from "../../components/FormContainer/FormContainer.jsx";
 import TextFieldComp from "../../components/TextFieldComp/TextFieldComp.jsx";
 import ButtonCont from "../../components/ButtonCont/ButtonCont.jsx";
 import { useNavigate } from "react-router-dom";
-
+import API from "../../api/axiosConfig"; // הייבוא החשוב של ה-Axios
 
 import { LoginFormStack, FooterText, FooterLink } from "./Signup.style.js";
 
 // ========== MAIN SIGNUP COMPONENT ==========
 export default function Signup() {
-    // ========== Route ==========
     const navigate = useNavigate();
-
-
-    // ========== REDUX ==========
     const dispatch = useDispatch();
 
-    // ========== FORM & ERROR STATE ==========
     const [form, setForm] = useState({
         username: "",
         email: "",
@@ -29,43 +24,37 @@ export default function Signup() {
         confirmPassword: "",
     });
 
-    const [errors, setErrors] = useState({}); // Stores validation errors for each field
+    const [errors, setErrors] = useState({});
 
-    // ========== INPUT CHANGE HANDLER ==========
     const handleIChange = (e) => {
         const { name, value } = e.target;
         setForm((prev) => ({
             ...prev,
-            [name]: value, // Update only the changed field
+            [name]: value,
         }));
     };
 
-    // ========== VALIDATION FUNCTION ==========
     const validate = () => {
         const newErrors = {};
 
-        // Username validation
         if (!form.username.trim()) {
             newErrors.username = "Username is required";
         } else if (form.username.trim().length < 3) {
             newErrors.username = "Username must be at least 3 characters";
         }
 
-        // Email validation
         if (!form.email.trim()) {
             newErrors.email = "Email is required";
         } else if (!/\S+@\S+\.\S+/.test(form.email)) {
             newErrors.email = "Email must be a valid email address";
         }
 
-        // Password validation
         if (!form.password) {
             newErrors.password = "Password is required";
         } else if (form.password.length < 6) {
             newErrors.password = "Password must be at least 6 characters";
         }
 
-        // Confirm Password validation
         if (!form.confirmPassword) {
             newErrors.confirmPassword = "Please confirm your password";
         } else if (form.password !== form.confirmPassword) {
@@ -73,35 +62,49 @@ export default function Signup() {
         }
 
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0; // Return true if no errors
+        return Object.keys(newErrors).length === 0;
     };
 
-    // ========== SUBMIT HANDLER ==========
-    const handleSubmit = (e) => {
+    // ========== SUBMIT HANDLER המעודכן ==========
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const isValid = validate();
-        if (!isValid) return; // Stop if validation failed
+        if (!isValid) return;
 
-        // If validation passed:
-        console.log("Login data:", form);
+        try {
+            // 1. שליחת בקשה לרישום (Register)
+            const { data } = await API.post("/users/register", {
+                username: form.username,
+                email: form.email,
+                password: form.password,
+            });
 
-        // Save user data to Redux store
-        dispatch(loginUser({
-            username: form.username,
-            email: form.email,
-        }));
+            console.log("Signup successful!", data);
 
-        console.log("Login successful! Navigating to HomePage...");
-        navigate("/"); // 
+            // 2. שמירת המידע ב-LocalStorage (השרת מחזיר טוקן גם בהרשמה)
+            localStorage.setItem("userInfo", JSON.stringify(data));
+
+            // 3. עדכון Redux כדי שהמשתמש ייכנס ישר למערכת
+            dispatch(loginUser({
+                username: data.username,
+                email: data.email,
+                token: data.token,
+            }));
+
+            alert("Welcome to StudySync!");
+            navigate("/dashboard");
+
+        } catch (error) {
+            const message = error.response?.data?.message || "Registration failed";
+            alert(message);
+        }
     };
 
-    // ========== RENDER ==========
     return (
-        <FormContainer title="StudySync" subtitle="Sign-in">
+        <FormContainer title="StudySync" subtitle="Sign-up">
             <LoginFormStack spacing={3} component="form" onSubmit={handleSubmit}>
 
-                {/* Username Field */}
                 <TextFieldComp
                     inputLabel="Username"
                     inputName="username"
@@ -111,7 +114,6 @@ export default function Signup() {
                     helperText={errors.username}
                 />
 
-                {/* Email Field */}
                 <TextFieldComp
                     inputLabel="Email"
                     inputName="email"
@@ -121,7 +123,6 @@ export default function Signup() {
                     helperText={errors.email}
                 />
 
-                {/* Password Field */}
                 <TextFieldComp
                     inputLabel="Password"
                     inputName="password"
@@ -142,11 +143,9 @@ export default function Signup() {
                     helperText={errors.confirmPassword}
                 />
 
-                {/* Submit Button */}
-                <ButtonCont text="Login" type="submit" />
+                <ButtonCont text="Create Account" type="submit" />
             </LoginFormStack>
 
-            {/* Footer (Signup link) */}
             <FooterText>
                 Already have an account?
                 <FooterLink
