@@ -8,7 +8,7 @@ import FormContainer from "../../components/FormContainer/FormContainer.jsx";
 import TextFieldComp from "../../components/TextFieldComp/TextFieldComp.jsx";
 import ButtonCont from "../../components/ButtonCont/ButtonCont.jsx";
 import { useNavigate } from "react-router-dom";
-
+import API from "../../api/axiosConfig";
 
 import { LoginFormStack, FooterText, FooterLink } from "./Login.style.js";
 
@@ -17,38 +17,29 @@ export default function Login() {
   // ========== Route ==========
   const navigate = useNavigate();
 
-
   // ========== REDUX ==========
   const dispatch = useDispatch();
 
   // ========== FORM & ERROR STATE ==========
   const [form, setForm] = useState({
-    username: "",
     email: "",
     password: "",
   });
 
-  const [errors, setErrors] = useState({}); // Stores validation errors for each field
+  const [errors, setErrors] = useState({}); // Stores validation errors
 
   // ========== INPUT CHANGE HANDLER ==========
   const handleIChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: value, // Update only the changed field
+      [name]: value,
     }));
   };
 
   // ========== VALIDATION FUNCTION ==========
   const validate = () => {
     const newErrors = {};
-
-    // Username validation
-    if (!form.username.trim()) {
-      newErrors.username = "Username is required";
-    } else if (form.username.trim().length < 3) {
-      newErrors.username = "Username must be at least 3 characters";
-    }
 
     // Email validation
     if (!form.email.trim()) {
@@ -65,43 +56,49 @@ export default function Login() {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // Return true if no errors
+    return Object.keys(newErrors).length === 0;
   };
 
   // ========== SUBMIT HANDLER ==========
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const isValid = validate();
-    if (!isValid) return; // Stop if validation failed
+    if (!isValid) return;
 
-    // If validation passed:
-    console.log("Login data:", form);
+    try {
+      // 1. Send request to server (Email & Password only)
+      const { data } = await API.post("/users/login", {
+        email: form.email,
+        password: form.password,
+      });
 
-    // Save user data to Redux store
-    dispatch(loginUser({
-      username: form.username,
-      email: form.email,
-    }));
+      console.log("Login successful! Data from server:", data);
 
-    console.log("Login successful! Navigating to HomePage...");
-    navigate("/dashboard"); // 
+      // 2. Save user info and token in LocalStorage
+      localStorage.setItem("userInfo", JSON.stringify(data));
+
+      // 3. Update Redux with the data returned from server (including username and token)
+      dispatch(loginUser({
+        username: data.username,
+        email: data.email,
+        token: data.token 
+      }));
+
+      // 4. Navigation
+      navigate("/dashboard");
+
+    } catch (error) {
+      const message = error.response?.data?.message || "Something went wrong";
+      setErrors((prev) => ({ ...prev, general: message }));
+      alert(message);
+    }
   };
 
   // ========== RENDER ==========
   return (
     <FormContainer title="StudySync" subtitle="Sign-in">
       <LoginFormStack spacing={3} component="form" onSubmit={handleSubmit}>
-
-        {/* Username Field */}
-        <TextFieldComp
-          inputLabel="Username"
-          inputName="username"
-          inputValue={form.username}
-          handleIChange={handleIChange}
-          error={!!errors.username}
-          helperText={errors.username}
-        />
 
         {/* Email Field */}
         <TextFieldComp
