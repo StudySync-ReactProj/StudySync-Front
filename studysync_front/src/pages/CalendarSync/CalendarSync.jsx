@@ -34,19 +34,24 @@ const CalendarSync = () => {
      * Every event MUST have 'start' and 'end' as JS Date objects.
      */
 
+    // src/pages/CalendarSync/CalendarSync.jsx
+
     const formattedEvents = (events || []).map(event => {
-        // לוגיקה למציאת התאריכים - בודק כמה אפשרויות כדי שלא יחזור undefined
-        const startVal = event.start || event.selectedSlot?.startDateTime || event.createdAt;
-        const endVal = event.end || event.selectedSlot?.endDateTime;
+        const startDate = event.selectedSlot?.startDateTime || event.createdAt || new Date();
+
+        // יצירת מחרוזת טקסט של המשתתפים כדי להציג בתיאור
+        const participantsList = event.participants?.map(p => p.name).join(", ");
 
         return {
             event_id: event._id,
-            title: event.title || "No Title",
-            // חובה להפוך לאובייקט Date של JS כדי שהספרייה תציג אותם
-            start: new Date(startVal),
-            end: endVal ? new Date(endVal) : new Date(new Date(startVal).getTime() + 3600000),
-            description: event.description || "",
-            color: event.status === 'Draft' ? '#ffa726' : '#2196f3'
+            title: event.status === 'Draft' ? `🗳️ Poll: ${event.title}` : event.title,
+            start: new Date(startDate),
+            end: new Date(new Date(startDate).getTime() + 3600000),
+            // אנחנו מוסיפים את המשתתפים לתיאור (Description) כי רוב היומנים מציגים אותו אוטומטית
+            description: `Participants: ${participantsList || 'None'} \n\n ${event.description || ''}`,
+            // שדה מותאם אישית למקרה שהיומן תומך ברינדור מותאם
+            participants: event.participants,
+            color: event.status === 'Draft' ? "#ff9800" : "#2196f3",
         };
     });
 
@@ -74,7 +79,7 @@ const CalendarSync = () => {
                 </Box>
             </Box>
 
-            <Box sx={{ display: "flex", height: "calc(100vh - 150px)", bgcolor: "background.default" }}>
+            <Box sx={{ display: "flex", height: "100%", bgcolor: "background.default" }}>
                 <CalendarSidebar
                     currentDate={currentDate}
                     onDateChange={setCurrentDate}

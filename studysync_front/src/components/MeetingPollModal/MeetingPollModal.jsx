@@ -29,11 +29,29 @@ export default function MeetingPollModal({ open, onClose }) {
         selectedSlots: [],
     });
 
-    // Temporary slots - later you can fetch them from the server if you want
     const [availableSlots] = useState([
-        { id: 1, date: 'Thu, Jan 29', time: '2:00 PM–4:00 PM' },
-        { id: 2, date: 'Fri, Jan 30', time: '10:00 AM–12:00 PM' },
-        { id: 3, date: 'Sat, Jan 31', time: '3:00 PM–5:00 PM' },
+        {
+            id: 1,
+            date: 'Thu, Jan 29',
+            time: '2:00 PM–4:00 PM',
+            // שדות חדשים שהיומן צריך
+            startDateTime: '2026-01-29T14:00:00',
+            endDateTime: '2026-01-29T16:00:00'
+        },
+        {
+            id: 2,
+            date: 'Fri, Jan 30',
+            time: '10:00 AM–12:00 PM',
+            startDateTime: '2026-01-30T10:00:00',
+            endDateTime: '2026-01-30T12:00:00'
+        },
+        {
+            id: 3,
+            date: 'Sat, Jan 31',
+            time: '3:00 PM–5:00 PM',
+            startDateTime: '2026-01-31T15:00:00',
+            endDateTime: '2026-01-31T17:00:00'
+        },
     ]);
 
     const updateForm = (field, value) => {
@@ -75,8 +93,12 @@ export default function MeetingPollModal({ open, onClose }) {
         }));
     };
 
-    // הפונקציה המרכזית ששולחת לשרת
     const handleSendInvitations = async () => {
+        // מוצאים את האובייקטים המלאים של הסלוטים שנבחרו
+        const selectedSlotsData = formData.selectedSlots.map(slotId => {
+            return availableSlots.find(s => s.id === slotId);
+        });
+
         const meetingData = {
             title: formData.title,
             description: formData.description,
@@ -91,21 +113,27 @@ export default function MeetingPollModal({ open, onClose }) {
                 email: p.email,
                 status: 'Pending'
             })),
-            availableSlots: formData.selectedSlots.map(slotId => {
-                const slot = availableSlots.find(s => s.id === slotId);
-                return { date: slot.date, time: slot.time };
-            }),
+            // שומרים את כל המידע כולל התאריכים התקניים
+            availableSlots: selectedSlotsData.map(slot => ({
+                date: slot.date,
+                time: slot.time,
+                startDateTime: slot.startDateTime,
+                endDateTime: slot.endDateTime
+            })),
+            // כדי שהיומן יציג משהו, נשים את הסלוט הראשון כ"זמן מוצע"
+            selectedSlot: {
+                startDateTime: selectedSlotsData[0]?.startDateTime,
+                endDateTime: selectedSlotsData[0]?.endDateTime
+            },
             status: 'Draft'
         };
 
         try {
-            // Sending to server via Redux
             await dispatch(createEventAsync(meetingData)).unwrap();
-            onClose(); // Close only on success
-            setCurrentStep(1); // Reset steps for next time
+            onClose();
+            setCurrentStep(1);
         } catch (err) {
             console.error("Failed to save meeting:", err);
-            alert("Failed to create meeting. Please try again.");
         }
     };
 
@@ -148,10 +176,10 @@ export default function MeetingPollModal({ open, onClose }) {
                         />
                     )}
                     {currentStep === 4 && (
-                        <SuccessStep 
-                            formData={formData} 
-                            availableSlots={availableSlots} 
-                            onSendInvitations={handleSendInvitations} 
+                        <SuccessStep
+                            formData={formData}
+                            availableSlots={availableSlots}
+                            onSendInvitations={handleSendInvitations}
                         />
                     )}
                 </DialogContent>
