@@ -38,6 +38,11 @@ export const StyledTextField = styled(TextField)(({ theme }) => {
       "& input": {
         color: isDarkMode ? "#ffffff" : theme.palette.text.primary,
       },
+      
+      // Text color for multiline (textarea)
+      "& textarea": {
+        color: isDarkMode ? "#ffffff" : theme.palette.text.primary,
+      },
     },
 
     // Label styling (the text that describes the field)
