@@ -11,18 +11,32 @@ const TextFieldComp = ({
   type = "text",
   error = false,
   helperText = "",
+  placeholder = "",
+  multiline = false,
+  rows,
+  inputProps,
+  InputProps,
+  onKeyPress,
+  sx,
 }) => {
   return (
     <StyledTextField
-      variant="filled"
+      variant="outlined"
       fullWidth
       label={inputLabel}
       value={inputValue}
       onChange={handleIChange}
       name={inputName}
       type={type}
-      error={error}           // MUI error state
-      helperText={helperText} // Validation message below the field
+      error={error}
+      helperText={helperText}
+      placeholder={placeholder}
+      multiline={multiline}
+      rows={rows}
+      inputProps={inputProps}
+      InputProps={InputProps}
+      onKeyPress={onKeyPress}
+      sx={sx}
     />
   );
 };

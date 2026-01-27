@@ -18,7 +18,7 @@ const CalendarSync = () => {
                         onDateChange={setCurrentDate}
                         events={events}
                     />
-                    <Box sx={{ flex: 1, p: 3, overflow: "hidden" }}>
+                    <Box sx={{ flex: 1, marginLeft: 3, overflow: "hidden" }}>
                         <MainScheduler
                             selectedDate={currentDate}
                             events={events}

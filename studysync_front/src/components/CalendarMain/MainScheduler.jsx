@@ -1,20 +1,40 @@
 // src/components/Calendar/MainScheduler.jsx
-import React from "react";
+import React, { useState } from "react";
 import { Scheduler } from "@aldabil/react-scheduler";
-import { enUS } from "date-fns/locale";
+import MeetingPollModal from "../MeetingPollModal/MeetingPollModal";
 import { SchedulerWrapper } from "./MainScheduler.style";
 
-
 const MainScheduler = ({ selectedDate, events = [] }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCellData, setSelectedCellData] = useState(null);
+
+  const handleCellClick = (data) => {
+    setSelectedCellData(data);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleSubmitMeeting = (formData) => {
+    console.log("Meeting Data to send to Backend:", formData);
+    setIsModalOpen(false);
+  };
+
   return (
     <SchedulerWrapper>
       <Scheduler
         view="week"
-        events={events} // Receives events from the JS file through parent
-        selectedDate={selectedDate} // Synced with the mini calendar
-        agenda={null} // Hide the Agenda tab
+        events={events}
+        selectedDate={selectedDate}
+        onCellClick={handleCellClick}
 
-        // Display settings (optional)
+        customEditor={(props) => null}
+
+        onEventClick={(event) => {
+          console.log("Event clicked:", event);
+        }}
         week={{
           weekDays: [0, 1, 2, 3, 4, 5],
           weekStartOn: 0,
@@ -23,8 +43,12 @@ const MainScheduler = ({ selectedDate, events = [] }) => {
           step: 60,
         }}
       />
+      <MeetingPollModal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmitMeeting}
+      />
     </SchedulerWrapper>
   );
 };
-
 export default MainScheduler;
