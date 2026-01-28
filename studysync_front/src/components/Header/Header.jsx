@@ -70,7 +70,7 @@ function Header({ theme, setTheme }) {
                     onClick={() => {
                       setAnchorElNav(null);
                       if (page === "Tasks") navigate("/TasksPage");
-                      if (page === "CalendarSync") navigate("/CalendarSync");
+                      if (page === "CalendarSync") navigate("/calendarSync");
                     }}
                   >
                     <BrandMobile component="span">{page}</BrandMobile>

@@ -1,234 +1,149 @@
-// src/pages/CalendarSync/steps/ParticipantsStep.jsx
-
-import { useEffect, useState } from "react"; // Added useEffect & useState
-import API from "../../../api/axiosConfig"; // Import your API instance
-import {
-  Stack,
-  Typography,
-  ToggleButton,
-  ToggleButtonGroup,
-  Box,
-  IconButton,
-  Avatar,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Paper,
+import React, { useState } from 'react';
+import { 
+    Box, 
+    Typography, 
+    TextField, 
+    Button, 
+    List, 
+    ListItem, 
+    ListItemText, 
+    IconButton,
+    Paper,
+    InputAdornment,
+    Stack
 } from '@mui/material';
-import { Close as CloseIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
-import TextFieldComp from '../../TextFieldComp/TextFieldComp';
-import ButtonCont from '../../ButtonCont/ButtonCont';
+import { 
+    Delete as DeleteIcon, 
+    PersonAdd as AddIcon,
+    Email as EmailIcon 
+} from '@mui/icons-material';
 
-export default function ParticipantsStep({
-  formData,
-  updateForm,
-  onNext,
-  onBack,
-  onAddParticipant,
-  onRemoveParticipant,
-}) {
-  // ========== NEW: CONTACTS STATE & FETCHING ==========
-  const [savedContacts, setSavedContacts] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+const ParticipantsStep = ({ 
+    formData, 
+    onAddParticipant, 
+    onRemoveParticipant,
+    updateForm
+}) => {
+    const [emailInput, setEmailInput] = useState('');
+    const [error, setError] = useState('');
 
-  useEffect(() => {
-    const loadContacts = async () => {
-      try {
-        const { data } = await API.get('/users/contacts');
-        setSavedContacts(data);
-      } catch (err) {
-        console.error("Failed to load contacts", err);
-      }
+    const validateEmail = (email) => {
+        return String(email)
+            .toLowerCase()
+            .match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
     };
-    loadContacts();
-  }, []);
 
-  // Filter contacts based on what the user is typing
-  const filteredContacts = savedContacts.filter(contact =>
-    contact.email.toLowerCase().includes(formData.participantInput.toLowerCase()) ||
-    contact.name.toLowerCase().includes(formData.participantInput.toLowerCase())
-  );
+    const handleAdd = () => {
+        if (!emailInput) {
+            setError('Please enter an email address');
+            return;
+        }
+        if (!validateEmail(emailInput)) {
+            setError('Please enter a valid email address');
+            return;
+        }
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      onAddParticipant();
-      setShowSuggestions(false);
-    }
-  };
+        onAddParticipant({
+            id: Date.now().toString(),
+            email: emailInput,
+            name: emailInput.split('@')[0]
+        });
 
-  const selectContact = (contact) => {
-    updateForm('participantInput', contact.email);
-    setShowSuggestions(false);
-  };
+        setEmailInput('');
+        setError('');
+    };
 
-  return (
-    <Stack spacing={1}>
-      <Typography variant="h5" fontWeight={600} color="primary.main">
-        Duration & Participants
-      </Typography>
+    return (
+        <Box sx={{ mt: 1.5 }}>
+            <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
+                Participants
+            </Typography>
 
-      {/* Duration Section */}
-      <Box>
-        <Typography variant="subtitle1" fontWeight={500} mb={1.5}>
-          Duration
-        </Typography>
-        <Stack direction="row" spacing={2}>
-          <TextFieldComp
-            inputLabel="Hours"
-            inputName="hours"
-            inputValue={formData.hours}
-            handleIChange={(e) => updateForm('hours', e.target.value)}
-            type="number"
-            inputProps={{ min: 0, max: 12 }}
-            sx={{ width: '120px' }}
-          />
-          <TextFieldComp
-            inputLabel="Minutes"
-            inputName="minutes"
-            inputValue={formData.minutes}
-            handleIChange={(e) => updateForm('minutes', e.target.value)}
-            type="number"
-            inputProps={{ min: 0, max: 59 }}
-            sx={{ width: '120px' }}
-          />
-        </Stack>
-      </Box>
-
-      {/* Time Range Section */}
-      <Box>
-        <Typography variant="subtitle1" fontWeight={500} mb={1.5}>
-          Time Range
-        </Typography>
-        <ToggleButtonGroup
-          value={formData.timeRange}
-          exclusive
-          onChange={(e, value) => value && updateForm('timeRange', value)}
-          fullWidth
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: 1,
-            '& .MuiToggleButton-root': {
-              py: 1,
-              borderRadius: 2,
-              textTransform: 'none',
-            },
-          }}
-        >
-          <ToggleButton value="this-week">This Week</ToggleButton>
-          <ToggleButton value="next-week">Next Week</ToggleButton>
-          <ToggleButton value="this-month">This Month</ToggleButton>
-          <ToggleButton value="next-month">Next Month</ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
-
-      {/* Participants Section with Suggestions */}
-      <Box sx={{ position: 'relative' }}>
-        <Typography variant="subtitle1" fontWeight={500} mb={1.5}>
-          Participants
-        </Typography>
-        <Stack direction="column" spacing={1} mb={2}>
-          <Box sx={{ flex: 1 }}>
-            <TextFieldComp
-              inputName="participantInput"
-              inputValue={formData.participantInput}
-              handleIChange={(e) => {
-                updateForm('participantInput', e.target.value);
-                setShowSuggestions(true);
-              }}
-              placeholder="Enter an email or name"
-              onKeyPress={handleKeyPress}
-              onFocus={() => setShowSuggestions(true)}
-            />
-          </Box>
-          
-          {/* Suggestions Dropdown */}
-          {showSuggestions && formData.participantInput && filteredContacts.length > 0 && (
-            <Paper sx={{ 
-              position: 'absolute', 
-              top: '100%', 
-              left: 0, 
-              right: 0, 
-              zIndex: 10, 
-              maxHeight: 200, 
-              overflow: 'auto',
-              mt: -1.5
-            }}>
-              <List>
-                {filteredContacts.map((contact) => (
-                  <ListItem 
-                    button 
-                    key={contact.email} 
-                    onClick={() => selectContact(contact)}
-                  >
-                    <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: 'primary.light' }}>{contact.avatar || contact.name[0]}</Avatar>
-                    </ListItemAvatar>
-                    <ListItemText primary={contact.name} secondary={contact.email} />
-                    <PersonAddIcon color="action" />
-                  </ListItem>
-                ))}
-              </List>
-            </Paper>
-          )}
-
-          <ButtonCont
-            text="Assign"
-            onClick={() => {
-              onAddParticipant();
-              setShowSuggestions(false);
-            }}
-            sx={{ minWidth: '100px' }}
-          />
-        </Stack>
-
-        {/* Selected Participants List */}
-        {formData.participants.length > 0 && (
-          <Stack spacing={1}>
-            {formData.participants.map((participant) => (
-              <Box
-                key={participant.id}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  p: 1.5,
-                  borderRadius: 2,
-                  bgcolor: 'action.hover',
-                }}
-              >
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-                    {participant.avatar}
-                  </Avatar>
-                  <Typography>{participant.name}</Typography>
-                </Stack>
-                <IconButton
-                  size="small"
-                  onClick={() => onRemoveParticipant(participant.id)}
+            {/* Duration inputs in one row */}
+            <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+                <TextField
+                    label="Hours"
+                    type="number"
+                    size="small"
+                    value={formData.hours}
+                    onChange={(e) => updateForm('hours', e.target.value)}
+                    InputProps={{ inputProps: { min: 0, max: 23 } }}
+                    sx={{ width: '50%' }}
+                />
+                <TextField
+                    label="Minutes"
+                    type="number"
+                    size="small"
+                    value={formData.minutes}
+                    onChange={(e) => updateForm('minutes', e.target.value)}
+                    InputProps={{ inputProps: { min: 0, max: 59, step: 15 } }}
+                    sx={{ width: '50%' }}
+                />
+            </Stack>
+            
+            {/* Input Row: Email field and Assign button on same line */}
+            <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                <TextField
+                    fullWidth
+                    label="Email address"
+                    variant="outlined"
+                    size="small"
+                    value={emailInput}
+                    onChange={(e) => {
+                        setEmailInput(e.target.value);
+                        if (error) setError('');
+                    }}
+                    error={!!error}
+                    helperText={error}
+                    onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <EmailIcon fontSize="small" color="action" />
+                            </InputAdornment>
+                        ),
+                    }}
+                />
+                
+                <Button 
+                    variant="contained" 
+                    onClick={handleAdd}
+                    size="small"
+                    sx={{ minWidth: '90px', whiteSpace: 'nowrap' }}
                 >
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            ))}
-          </Stack>
-        )}
-      </Box>
+                    Assign
+                </Button>
+            </Stack>
 
-      <Stack direction="row" spacing={2} justifyContent="space-between" mt={2}>
-        <ButtonCont
-          text="Back"
-          variant="outlined"
-          onClick={onBack}
-        />
-        <ButtonCont
-          text="Find Available Times"
-          onClick={onNext}
-          disabled={formData.participants.length === 0}
-        />
-      </Stack>
-    </Stack>
-  );
-}
+            {/* Selected Participants List - Dense and compact */}
+            {formData.participants.length > 0 && (
+                <Paper variant="outlined" sx={{ mt: 1, maxHeight: 150, overflow: 'auto' }}>
+                    <List dense disablePadding>
+                        {formData.participants.map((participant) => (
+                            <ListItem
+                                key={participant.id}
+                                sx={{ py: 0.5 }}
+                                secondaryAction={
+                                    <IconButton 
+                                        edge="end" 
+                                        size="small"
+                                        onClick={() => onRemoveParticipant(participant.id)}
+                                    >
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                }
+                            >
+                                <ListItemText 
+                                    primary={participant.email} 
+                                    primaryTypographyProps={{ variant: 'body2' }}
+                                />
+                            </ListItem>
+                        ))}
+                    </List>
+                </Paper>
+            )}
+        </Box>
+    );
+};
+
+export default ParticipantsStep;

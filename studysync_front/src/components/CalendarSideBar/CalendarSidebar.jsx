@@ -1,12 +1,13 @@
 import React from "react";
-import { Paper, Typography, Box, List, ListItem, ListItemText, Divider } from "@mui/material";
+import { Paper, Typography, Box, List, ListItem, ListItemText, Divider, Button } from "@mui/material";
+import GoogleIcon from '@mui/icons-material/Google';
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { enUS } from "date-fns/locale";
 import { isSameDay, format } from "date-fns";
 
-const CalendarSidebar = ({ currentDate, onDateChange, events = [] }) => {
+const CalendarSidebar = ({ currentDate, onDateChange, events = [], onConnectGoogle }) => {
     const todayEvents = events.filter((event) =>
         isSameDay(event.start, currentDate)
     );
@@ -43,17 +44,15 @@ const CalendarSidebar = ({ currentDate, onDateChange, events = [] }) => {
             {/* Dynamic event list */}
             <Box sx={{ p: 2, overflowY: "auto", flex: 1 }}>
                 <Typography variant="caption" color="primary" fontWeight="bold">
-                    {format(currentDate, "dd MMMM yyyy", { locale: enUS })} {/* Formatted date in header */}
+                    {format(currentDate, "dd MMMM yyyy", { locale: enUS })}
                 </Typography>
 
                 <List>
                     {todayEvents.length === 0 ? (
-                        // What to display when there are no events?
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                           No events for this day!
+                            No events for this day!
                         </Typography>
                     ) : (
-                        // What to display when there are events?
                         todayEvents.map((event) => (
                             <ListItem key={event.event_id} disablePadding sx={{ mb: 2 }}>
                                 <ListItemText
@@ -70,6 +69,34 @@ const CalendarSidebar = ({ currentDate, onDateChange, events = [] }) => {
                         ))
                     )}
                 </List>
+            </Box>
+
+            <Divider />
+
+            {/* Google Calendar Connection */}
+            <Box sx={{ p: 2, textAlign: 'center' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                    Sync your events with Google
+                </Typography>
+                <Button
+                    variant="outlined"
+                    fullWidth
+                    startIcon={<GoogleIcon />}
+                    onClick={onConnectGoogle}
+                    sx={{
+                        textTransform: 'none',
+                        borderRadius: '8px',
+                        borderColor: '#4285F4',
+                        color: '#4285F4',
+                        '&:hover': {
+                            borderColor: '#357ae8',
+                            backgroundColor: 'rgba(66, 133, 244, 0.04)',
+                        },
+                        fontWeight: 'bold'
+                    }}
+                >
+                    Connect Google Calendar
+                </Button>
             </Box>
         </Paper>
     );

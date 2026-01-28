@@ -11,67 +11,218 @@ import ButtonCont from "../../components/ButtonCont/ButtonCont.jsx";
 import MeetingPollModal from "../../components/MeetingPollModal/MeetingPollModal.jsx";
 
 // Store Actions
-import { fetchEvents, createEventAsync } from "../../store/eventsSlice";
+import { fetchEvents, createEventAsync, fetchGoogleCalendarEvents } from "../../store/eventsSlice";
+
+// Styles
+import { styles } from "./CalendarSync.style";
 
 const CalendarSync = () => {
     const dispatch = useDispatch();
 
-    // UI State
+    // ============================================
+    // STATE MANAGEMENT
+    // ============================================
+
     const [currentDate, setCurrentDate] = useState(new Date());
     const [isPollModalOpen, setIsPollModalOpen] = useState(false);
 
-    // 1. Get events from Redux Store
+    // Get events and user data from Redux Store
     const { events } = useSelector((state) => state.events);
+    const { user } = useSelector((state) => state.auth || state.user);
 
-    // 2. Fetch events from Backend on mount
+    // ============================================
+    // EFFECTS - Data Fetching & OAuth Handling
+    // ============================================
+
+    // Fetch events from backend on component mount
     useEffect(() => {
         dispatch(fetchEvents());
+        dispatch(fetchGoogleCalendarEvents()).catch(() => {
+            // Silently ignore if Google Calendar not connected yet
+        });
     }, [dispatch]);
 
+    // Handle OAuth callback - refresh Google Calendar events after successful connection
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('googleConnected') === 'true') {
+            // Remove the query parameter from URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            // Refetch Google Calendar events with a small delay to ensure DB is updated
+            setTimeout(() => {
+                dispatch(fetchGoogleCalendarEvents());
+            }, 800);
+        }
+    }, [dispatch]);
+
+    // ============================================
+    // HELPER FUNCTIONS - Event Formatting
+    // ============================================
+
     /**
-     * Fix for "getTime" error: 
-     * We map the events from MongoDB to the format expected by the Scheduler.
-     * Every event MUST have 'start' and 'end' as JS Date objects.
+     * Format Google Calendar events for display in the scheduler
+     * @param {Array} events - Raw events from Google Calendar API
+     * @returns {Array} Formatted events with standardized structure
      */
+    const formatGoogleEvents = (events) => {
+        return events
+            .filter(event => event.source === 'google')
+            .map(event => {
+                const startSource = event.start?.dateTime || event.start?.date || event.start;
+                const endSource = event.end?.dateTime || event.end?.date || event.end;
 
-    // src/pages/CalendarSync/CalendarSync.jsx
+                const startDate = new Date(startSource);
+                const endDate = new Date(endSource);
 
-    const formattedEvents = (events || []).map(event => {
-        const startDate = event.selectedSlot?.startDateTime || event.createdAt || new Date();
+                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                    console.warn('Invalid Google event date:', event);
+                    return null;
+                }
 
-        // יצירת מחרוזת טקסט של המשתתפים כדי להציג בתיאור
-        const participantsList = event.participants?.map(p => p.name).join(", ");
+                return {
+                    event_id: `google-${event.id || event._id}`,
+                    title: `🗓️ ${event.summary || event.title}`,
+                    start: startDate,
+                    end: endDate,
+                    color: "#4285F4",
+                    source: 'google'
+                };
+            })
+            .filter(event => event !== null);
+    };
 
-        return {
-            event_id: event._id,
-            title: event.status === 'Draft' ? `🗳️ Poll: ${event.title}` : event.title,
-            start: new Date(startDate),
-            end: new Date(new Date(startDate).getTime() + 3600000),
-            // אנחנו מוסיפים את המשתתפים לתיאור (Description) כי רוב היומנים מציגים אותו אוטומטית
-            description: `Participants: ${participantsList || 'None'} \n\n ${event.description || ''}`,
-            // שדה מותאם אישית למקרה שהיומן תומך ברינדור מותאם
-            participants: event.participants,
-            color: event.status === 'Draft' ? "#ff9800" : "#2196f3",
-        };
-    });
+    /**
+     * Format database events (Meeting Polls) for display in the scheduler
+     * @param {Array} events - Raw events from database
+     * @returns {Array} Formatted events with standardized structure
+     */
+    const formatDBEvents = (events) => {
+        return events
+            .filter(event => event.source !== 'google')
+            .map(event => {
+                // Use startDateTime/endDateTime directly from event object (backend now saves these)
+                const startSource = event.startDateTime || event.selectedSlot?.startDateTime || event.createdAt;
+                const endSource = event.endDateTime || event.selectedSlot?.endDateTime;
+                
+                const startDate = new Date(startSource);
+                const endDate = endSource ? new Date(endSource) : new Date(startDate.getTime() + 3600000);
 
+                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                    console.warn('Invalid DB event date:', event);
+                    return null;
+                }
+
+                return {
+                    event_id: event._id || event.id,
+                    title: event.status === 'Draft' ? `🗳️ Poll: ${event.title}` : event.title,
+                    start: startDate, // Scheduler library uses local timezone automatically
+                    end: endDate,
+                    description: event.description || '',
+                    participants: event.participants || [],
+                    color: event.status === 'Draft' ? "#ff9800" : "#2196f3",
+                    source: 'local'
+                };
+            })
+            .filter(event => event !== null);
+    };
+
+    // Combine Google Calendar events and database events into a single array
+    const allEvents = [
+        ...formatGoogleEvents(events || []),
+        ...formatDBEvents(events || [])
+    ];
+
+    // ============================================
+    // EVENT HANDLERS
+    // ============================================
+
+    // Meeting Poll Modal handlers
     const handleOpenPollModal = () => setIsPollModalOpen(true);
     const handleClosePollModal = () => setIsPollModalOpen(false);
 
+    /**
+     * Cleanup test events - Remove all events with test titles
+     * This is a temporary utility to clear old draft events
+     */
+    const handleCleanupTestEvents = async () => {
+        const testKeywords = ['test', 'please work', 'hello', 'djshcbbdsjb', 'hellp'];
+        const eventsToDelete = events.filter(event => 
+            event.source !== 'google' && 
+            testKeywords.some(keyword => event.title?.toLowerCase().includes(keyword))
+        );
+        
+        if (eventsToDelete.length === 0) {
+            alert('No test events found to delete');
+            return;
+        }
+
+        if (window.confirm(`Delete ${eventsToDelete.length} test event(s)?`)) {
+            try {
+                // You'll need to implement deleteEventAsync in your eventsSlice
+                // For now, we'll log the IDs that should be deleted
+                console.log('Events to delete:', eventsToDelete.map(e => e._id));
+                alert(`Found ${eventsToDelete.length} test events. Backend delete endpoint needed.`);
+            } catch (error) {
+                console.error('Failed to delete events:', error);
+            }
+        }
+    };
+
+    /**
+     * Handle meeting poll submission
+     * Creates a new event with 'Draft' status and closes the modal
+     */
     const handleSubmitMeetingPoll = (meetingData) => {
         dispatch(createEventAsync({
             ...meetingData,
-            status: 'Draft' // Ensure polls start as Drafts
+            status: 'Draft'
         }));
         handleClosePollModal();
     };
-    console.log("Raw events from Redux:", events);
-    console.log("Formatted events for Scheduler:", formattedEvents);
+
+    /**
+     * Initiate Google Calendar OAuth connection flow
+     * Fetches the authorization URL from backend and redirects the user
+     */
+    const handleConnectGoogle = async () => {
+        try {
+            const userId = "6978fee797b46e0b7967d68a";
+            const url = `http://localhost:3000/api/google-calendar/auth-url?userId=${userId}`;
+
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                alert("Could not get Google Auth URL from server.");
+            }
+        } catch (error) {
+            console.error("Error connecting to Google:", error);
+            alert("Check your Server/Console for errors.");
+        }
+    };
+
+    // ============================================
+    // RENDER
+    // ============================================
+
     return (
         <Wrapper>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+            {/* Header Section - Title and Action Buttons */}
+            <Box sx={styles.headerContainer}>
                 <MainTitle title="CalendarSync" />
-                <Box sx={{ maxWidth: "200px" }}>
+
+                <Box>
                     <ButtonCont
                         text="Create Meeting Poll"
                         onClick={handleOpenPollModal}
@@ -79,21 +230,24 @@ const CalendarSync = () => {
                 </Box>
             </Box>
 
-            <Box sx={{ display: "flex", height: "100%", bgcolor: "background.default" }}>
+            {/* Main Calendar Section - Sidebar and Scheduler */}
+            <Box sx={styles.mainContainer}>
                 <CalendarSidebar
                     currentDate={currentDate}
                     onDateChange={setCurrentDate}
-                    events={formattedEvents}
+                    events={allEvents}
+                    onConnectGoogle={handleConnectGoogle}
                 />
 
-                <Box sx={{ flex: 1, marginLeft: 3, overflow: "hidden" }}>
+                <Box sx={styles.schedulerContainer}>
                     <MainScheduler
                         selectedDate={currentDate}
-                        events={formattedEvents}
+                        events={allEvents}
                     />
                 </Box>
             </Box>
 
+            {/* Meeting Poll Creation Modal */}
             <MeetingPollModal
                 open={isPollModalOpen}
                 onClose={handleClosePollModal}
