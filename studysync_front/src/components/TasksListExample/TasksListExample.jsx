@@ -22,7 +22,7 @@ const TasksListExample = () => {
 
   // Single hook call - handles all data fetching with dynamic params
   const { data: tasks, loading, error, refetch } = useApi(
-    "https://jsonplaceholder.typicode.com/todos",
+    "http://localhost:3000/api/stats",
     params
   );
 

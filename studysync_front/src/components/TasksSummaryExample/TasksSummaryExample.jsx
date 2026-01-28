@@ -9,7 +9,7 @@ import { useApi } from "../../hooks/useApi";
 const TasksSummaryExample = () => {
   // Simple hook call with just a URL string
   const { data: tasks, loading, error, refetch } = useApi(
-    "https://jsonplaceholder.typicode.com/todos?_limit=20"
+    "http://localhost:3000/api/stats"
   );
 
   // Calculate statistics

@@ -1,101 +1,134 @@
 import React from "react";
 import {
-    CardContainer,
-    TimeBox,
-    TasksBox,
-    DailyBox,
-    WeeklyBox,
-    SessionsBox,
-    DeadlinesBox,
-    CardHeading,
-    CardList,
+  CardContainer,
+  TimeBox,
+  TasksBox,
+  DailyBox,
+  WeeklyBox,
+  SessionsBox,
+  DeadlinesBox,
+  CardHeading,
+  CardList,
 } from "./CardContainer.style";
 import Card from "../Card/Card";
 import Timer from "../Timer/Timer";
-import DailyProgress from "../DailyProgress/DailyProgress"
+import DailyProgress from "../DailyProgress/DailyProgress";
 import WeeklyProgress from "../WeeklyProgress/WeeklyProgress";
 import { useApi } from "../../hooks/useApi";
 
+const CardContainerComp = () => {
+  const { data: stats, loading, error } = useApi("http://localhost:3000/api/stats");
 
-const CardContainerComp = ({ data }) => {
-    const { data: tasks, loading: loadingTasks, error: tasksError } = useApi(
-        "https://jsonplaceholder.typicode.com/todos?_limit=8"
-    );
-    const upcomingSessions = data?.upcomingSessions ?? [];
-    const upcomingDeadlines = data?.upcomingDeadlines ?? [];
+  // דיפולטים כדי שלא יקרוס אם stats עדיין null
+  const todayTasks = stats?.tasks ?? [];
+  const upcomingSessions = stats?.upcomingSessions ?? [];
+  const upcomingDeadlines = stats?.upcomingDeadlines ?? [];
+  const dailyProgress = stats?.dailyProgress ?? 0;
+  const weeklyProgress = stats?.weeklyProgress ?? [];
 
-    return (
-        <CardContainer>
-            <TimeBox>
-                <Card>
-                    <CardHeading>Timer</CardHeading>
-                    <Timer />
-                </Card>
-            </TimeBox>
+  return (
+    <CardContainer>
+      {/* TIMER */}
+      <TimeBox>
+        <Card>
+          <CardHeading>Timer</CardHeading>
+          <Timer />
+        </Card>
+      </TimeBox>
 
-            <DailyBox>
-                <Card>
-                    <CardHeading>Daily progress</CardHeading>
-                    <DailyProgress tasks={tasks} loading={loadingTasks} error={tasksError} />
-                </Card>
-            </DailyBox>
+      {/* TODAY TASKS */}
+      <TasksBox>
+        <Card>
+          <CardHeading>Today's tasks</CardHeading>
 
-            <TasksBox>
-                <Card>
-                    <CardHeading>Today's tasks</CardHeading>
+          {loading && <p>Loading...</p>}
+          {!loading && error && <p style={{ color: "red" }}>{error}</p>}
 
-                    {loadingTasks && <p>Loading...</p>}
+          {!loading && !error && (
+            todayTasks.length ? (
+              <CardList>
+                {todayTasks.map((t) => (
+                  <li key={t._id || t.id}>{t.title}</li>
+                ))}
+              </CardList>
+            ) : (
+              <p>No tasks for today 🎉</p>
+            )
+          )}
+        </Card>
+      </TasksBox>
 
-                    {tasksError && (
-                        <p style={{ color: "red" }}>{tasksError}</p>
-                    )}
+      {/* DAILY PROGRESS */}
+      <DailyBox>
+        <Card>
+          <CardHeading>Daily progress</CardHeading>
 
-                    {!loadingTasks && !tasksError && (
-                        <CardList>
-                            {tasks.filter((t) => !t.completed).map((t) => (
-                                <li key={t.id}>
-                                    {t.title}
-                                </li>
-                            ))}
-                        </CardList>
-                    )}
-                </Card>
-            </TasksBox>
+          {loading && <p>Loading...</p>}
+          {!loading && error && <p style={{ color: "red" }}>{error}</p>}
+          {!loading && !error && <DailyProgress percent={dailyProgress} />}
+        </Card>
+      </DailyBox>
 
-            <WeeklyBox>
-                <Card>
-                    <CardHeading>Weekly progress</CardHeading>
-                    <WeeklyProgress tasks={tasks} loading={loadingTasks} error={tasksError} />
-                </Card>
-            </WeeklyBox>
+      {/* WEEKLY PROGRESS */}
+      <WeeklyBox>
+        <Card>
+          <CardHeading>Weekly progress</CardHeading>
 
-            <SessionsBox>
-                <Card>
-                    <CardHeading>Upcoming sessions</CardHeading>
-                    <CardList>
-                        {upcomingSessions.slice(0, 3).map((s) => (
-                            <li key={s.id}>
-                                {s.title} — {s.date} at {s.time}
-                            </li>
-                        ))}
-                    </CardList>
-                </Card>
-            </SessionsBox>
+          {loading && <p>Loading...</p>}
+          {!loading && error && <p style={{ color: "red" }}>{error}</p>}
+          {!loading && !error && <WeeklyProgress weeklyData={weeklyProgress} />}
+        </Card>
+      </WeeklyBox>
 
-            <DeadlinesBox>
-                <Card>
-                    <CardHeading>Upcoming deadlines</CardHeading>
-                    <CardList>
-                        {upcomingDeadlines.slice(0, 6).map((d) => (
-                            <li key={d.id}>
-                                {d.title} — {d.due}
-                            </li>
-                        ))}
-                    </CardList>
-                </Card>
-            </DeadlinesBox>
-        </CardContainer>
-    );
+      {/* UPCOMING SESSIONS */}
+      <SessionsBox>
+        <Card>
+          <CardHeading>Upcoming sessions</CardHeading>
+
+          {loading && <p>Loading...</p>}
+          {!loading && error && <p style={{ color: "red" }}>{error}</p>}
+
+          {!loading && !error && (
+            upcomingSessions.length ? (
+              <CardList>
+                {upcomingSessions.slice(0, 3).map((s) => (
+                  <li key={s._id || s.id}>
+                    {s.title} — {s.date} at {s.time}
+                  </li>
+                ))}
+              </CardList>
+            ) : (
+              <p>No upcoming sessions</p>
+            )
+          )}
+        </Card>
+      </SessionsBox>
+
+      {/* UPCOMING DEADLINES */}
+      <DeadlinesBox>
+        <Card>
+          <CardHeading>Upcoming deadlines</CardHeading>
+
+          {loading && <p>Loading...</p>}
+          {!loading && error && <p style={{ color: "red" }}>{error}</p>}
+
+          {!loading && !error && (
+            upcomingDeadlines.length ? (
+              <CardList>
+                {upcomingDeadlines.slice(0, 6).map((d) => (
+                  <li key={d._id || d.id}>
+                    {d.title} — {new Date(d.due).toLocaleDateString()}
+                  </li>
+                ))}
+              </CardList>
+            ) : (
+              <p>No deadlines</p>
+            )
+          )}
+        </Card>
+      </DeadlinesBox>
+    </CardContainer>
+  );
 };
 
 export default CardContainerComp;

@@ -1,106 +1,51 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-/**
- * Unified custom hook for all API calls with comprehensive state management
- * 
- * Supports multiple usage patterns:
- * 1. Simple string URL:
- *    useApi("https://api.example.com/tasks")
- * 
- * 2. URL with query parameters:
- *    useApi("https://api.example.com/tasks", { _page: 1, _limit: 10 })
- * 
- * 3. URL with fetch options:
- *    useApi("https://api.example.com/tasks", {}, { headers: {...}, method: "GET" })
- * 
- * 4. Config object with params:
- *    useApi({ url: "https://api.example.com/tasks", params: { page: 1 } })
- * 
- * @param {string|object} urlOrConfig - URL string or { url, params } config object
- * @param {object} params - Query parameters (alternative to config.params)
- * @param {object} options - Fetch options (method, headers, body, etc.)
- * @returns {object} - { data, loading, error, refetch }
- */
-export const useApi = (urlOrConfig, params, options) => {
-  const [data, setData] = useState([]);
+export function useApi(url, options = {}) {
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const abortControllerRef = useRef(null);
 
-  // Build the full URL - done directly to ensure stable dependencies
-  let baseUrl;
-  let queryParams = {};
-
-  if (typeof urlOrConfig === "string") {
-    baseUrl = urlOrConfig;
-    queryParams = params || {};
-  } else if (typeof urlOrConfig === "object" && urlOrConfig?.url) {
-    baseUrl = urlOrConfig.url;
-    queryParams = urlOrConfig.params || {};
-  } else {
-    throw new Error("useApi: Invalid URL configuration");
-  }
-
-  // Build full URL with query string
-  const queryString = new URLSearchParams(queryParams).toString();
-  const fullUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
-
-  const fetchData = useCallback(async () => {
-    // Abort any previous request to prevent memory leaks
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Create new abort controller for this request
-    abortControllerRef.current = new AbortController();
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
     try {
-      setLoading(true);
-      setError(null);
+      const userInfoRaw = localStorage.getItem("userInfo");
+      const userInfo = userInfoRaw ? JSON.parse(userInfoRaw) : null;
+      const token = userInfo?.token;
 
-      const response = await fetch(fullUrl, {
+      const res = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(options.headers || {}),
         },
-        ...(options || {}),
-        signal: abortControllerRef.current.signal,
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+      // אם השרת מחזיר שגיאה (401/500 וכו')
+      if (!res.ok) {
+        let msg = `Request failed (${res.status})`;
+        try {
+          const errJson = await res.json();
+          msg = errJson?.message || msg;
+        } catch (_) {}
+        throw new Error(msg);
       }
 
-      const result = await response.json();
-      setData(result);
-      setError(null);
-    } catch (err) {
-      // Don't set error if request was aborted (component unmounted)
-      if (err.name !== "AbortError") {
-        setError(err.message || "Failed to fetch data");
-        setData([]);
-      }
+      const json = await res.json();
+      setData(json);
+    } catch (e) {
+      setError(e?.message || String(e));
+      setData(null);
     } finally {
       setLoading(false);
     }
-  }, [fullUrl, options]);
+  }, [url, options.headers]);
 
-  // Fetch data when URL changes
   useEffect(() => {
-    fetchData();
-
-    // Cleanup: abort request on unmount
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, [fetchData, fullUrl]);
-
-  // Manual refetch function
-  const refetch = useCallback(() => {
-    fetchData();
-  }, [fetchData]);
+    refetch();
+  }, [refetch]);
 
   return { data, loading, error, refetch };
-};
+}

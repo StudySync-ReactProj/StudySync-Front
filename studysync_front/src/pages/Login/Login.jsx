@@ -75,19 +75,37 @@ export default function Login() {
 
       console.log("Login successful! Data from server:", data);
 
-      // 2. Save user info and token in LocalStorage
+      // ✅ 2. Extract userId safely (supports multiple backend shapes)
+      const userId =
+        data?._id ||
+        data?.id ||
+        data?.userId ||
+        data?.user?._id ||
+        data?.user?.id;
+
+      if (userId) {
+        localStorage.setItem("userId", String(userId));
+      } else {
+        console.warn(
+          "⚠️ userId not found in login response. Check backend response shape.",
+          data
+        );
+      }
+
+      // 3. Save user info and token in LocalStorage
       localStorage.setItem("userInfo", JSON.stringify(data));
 
-      // 3. Update Redux with the data returned from server (including username and token)
-      dispatch(loginUser({
-        username: data.username,
-        email: data.email,
-        token: data.token 
-      }));
+      // 4. Update Redux with the data returned from server (including username and token)
+      dispatch(
+        loginUser({
+          username: data.username,
+          email: data.email,
+          token: data.token,
+        })
+      );
 
-      // 4. Navigation
+      // 5. Navigation
       navigate("/dashboard");
-
     } catch (error) {
       const message = error.response?.data?.message || "Something went wrong";
       setErrors((prev) => ({ ...prev, general: message }));
@@ -99,7 +117,6 @@ export default function Login() {
   return (
     <FormContainer title="StudySync" subtitle="Sign-in">
       <LoginFormStack spacing={3} component="form" onSubmit={handleSubmit}>
-
         {/* Email Field */}
         <TextFieldComp
           inputLabel="Email"
@@ -128,10 +145,7 @@ export default function Login() {
       {/* Footer (Signup link) */}
       <FooterText>
         Don't have an account?
-        <FooterLink
-          component="span"
-          onClick={() => navigate("/signup")}
-        >
+        <FooterLink component="span" onClick={() => navigate("/signup")}>
           Signup Here
         </FooterLink>
       </FooterText>
