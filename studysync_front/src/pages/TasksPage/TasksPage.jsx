@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 // Import async thunks from your slice
-import { fetchTasks, addTaskAsync, deleteTaskAsync } from "../../store/tasksSlice";
+import { fetchTasks, addTaskAsync, deleteTaskAsync, updateTaskStatus } from "../../store/tasksSlice";
 import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
 import TasksList from "../../components/TasksList/TasksList.jsx";
@@ -48,6 +48,11 @@ const TasksPage = () => {
   const handleDeleteTask = (taskId) => {
     // taskId here is the MongoDB _id
     dispatch(deleteTaskAsync(taskId));
+  };
+
+  const handleStatusChange = (taskId, newStatus) => {
+    // Dispatch the updateTaskStatus async thunk with MongoDB _id and new status
+    dispatch(updateTaskStatus({ id: taskId, status: newStatus }));
   };
 
   const handleToggleAddForm = () => {
@@ -96,6 +101,7 @@ const TasksPage = () => {
         ) : (
           <TasksList
             tasks={tasks}
+            onStatusChange={handleStatusChange}
             onDeleteTask={handleDeleteTask}
           />
         )}

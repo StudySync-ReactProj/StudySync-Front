@@ -1,13 +1,11 @@
 import * as React from 'react';
 import { Box, Typography, IconButton, Stack, Select, MenuItem, FormControl } from '@mui/material';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { TasksWrapper, StyledTaskCard, PriorityBadge } from './TasksList.style.js';
 
 // Individual Task Item Component
-function TaskItem({ task, onToggleComplete, onStatusChange, onDeleteTask }) {
+function TaskItem({ task, onStatusChange, onDeleteTask }) {
   // Check if task is completed based on status from backend
   const isCompleted = task.status === 'Completed';
 
@@ -15,14 +13,6 @@ function TaskItem({ task, onToggleComplete, onStatusChange, onDeleteTask }) {
     <StyledTaskCard elevation={0}>
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" width="100%">
         <Stack direction="row" spacing={2} alignItems="center" flex={1}>
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={() => onToggleComplete(task._id)} // Using MongoDB _id
-          >
-            {isCompleted ? <CheckCircleIcon /> : <RadioButtonUncheckedIcon />}
-          </IconButton>
-
           <Box>
             <Stack direction="row" spacing={1} alignItems="center">
               <Typography
@@ -83,7 +73,7 @@ function TaskItem({ task, onToggleComplete, onStatusChange, onDeleteTask }) {
 }
 
 // Main Task List Component
-export default function MobileStyleTaskList({ tasks = [], onToggleTask, onStatusChange, onDeleteTask }) {
+export default function MobileStyleTaskList({ tasks = [], onStatusChange, onDeleteTask }) {
   
   // Safe mapping - only map if tasks exist
   const rows = tasks.map(task => ({
@@ -100,8 +90,7 @@ export default function MobileStyleTaskList({ tasks = [], onToggleTask, onStatus
         <TaskItem 
           key={row._id} // Using the MongoDB unique ID
           task={row} 
-          onToggleComplete={() => onToggleTask?.(row._id)} 
-          onStatusChange={(newStatus) => onStatusChange?.(row._id, newStatus)}
+          onStatusChange={onStatusChange}
           onDeleteTask={() => onDeleteTask?.(row._id)} 
         />
       ))}

@@ -32,6 +32,17 @@ export const deleteTaskAsync = createAsyncThunk('tasks/deleteTask', async (id, t
   }
 });
 
+// Update Task Status
+export const updateTaskStatus = createAsyncThunk('tasks/updateTaskStatus', async ({ id, status }, thunkAPI) => {
+  try {
+    const response = await API.put(`/tasks/${id}`, { status });
+    return response.data; // Returns updated task
+  } catch (error) {
+    console.error('Error updating task status:', error.response || error);
+    return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
+  }
+});
+
 const tasksSlice = createSlice({
   name: 'tasks',
   initialState: { tasks: [], loading: false, error: null },
@@ -47,6 +58,12 @@ const tasksSlice = createSlice({
       })
       .addCase(deleteTaskAsync.fulfilled, (state, action) => {
         state.tasks = state.tasks.filter(t => (t._id || t.id) !== action.payload);
+      })
+      .addCase(updateTaskStatus.fulfilled, (state, action) => {
+        const index = state.tasks.findIndex(t => (t._id || t.id) === action.payload._id);
+        if (index !== -1) {
+          state.tasks[index] = action.payload;
+        }
       });
   },
 });
