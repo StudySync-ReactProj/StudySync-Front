@@ -202,8 +202,18 @@ const CalendarSync = () => {
      */
     const handleConnectGoogle = async () => {
         try {
-            const userId = "6978fee797b46e0b7967d68a";
-            const url = `http://localhost:3000/api/google-calendar/auth-url?userId=${userId}`;
+            // Use environment variable with fallback
+            const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            
+            // Get userId from Redux user state instead of hardcoding
+            const userId = user?._id || user?.id || localStorage.getItem('userId');
+            
+            if (!userId) {
+                alert('User ID not found. Please log in again.');
+                return;
+            }
+            
+            const url = `${API_BASE_URL}/api/google-calendar/auth-url?userId=${userId}`;
 
             const response = await fetch(url, {
                 headers: {

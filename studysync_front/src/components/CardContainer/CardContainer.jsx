@@ -16,8 +16,11 @@ import DailyProgress from "../DailyProgress/DailyProgress";
 import WeeklyProgress from "../WeeklyProgress/WeeklyProgress";
 import { useApi } from "../../hooks/useApi";
 
+// Use environment variable with fallback
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 const CardContainerComp = () => {
-  const { data: stats, loading, error } = useApi("http://localhost:3000/api/stats");
+  const { data: stats, loading, error } = useApi(`${API_BASE_URL}/api/stats`);
 
   // דיפולטים כדי שלא יקרוס אם stats עדיין null
   const todayTasks = stats?.tasks ?? [];

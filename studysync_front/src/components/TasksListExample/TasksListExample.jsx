@@ -1,6 +1,9 @@
 import React, { useState, useMemo } from "react";
 import { useApi } from "../../hooks/useApi";
 
+// Use environment variable with fallback
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 /**
  * Example component using useApi hook
  * Displays a list of tasks with pagination and filtering
@@ -22,7 +25,7 @@ const TasksListExample = () => {
 
   // Single hook call - handles all data fetching with dynamic params
   const { data: tasks, loading, error, refetch } = useApi(
-    "http://localhost:3000/api/stats",
+    `${API_BASE_URL}/api/stats`,
     params
   );
 

@@ -1,3 +1,6 @@
+// Use environment variable with fallback
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 export const fetchFreeBusyData = async (userId, emails) => {
     // שליפת הטוקן של האפליקציה (לא של גוגל)
     const storedUserInfo = localStorage.getItem('userInfo');
@@ -13,7 +16,7 @@ export const fetchFreeBusyData = async (userId, emails) => {
     console.log("Verified Auth Token:", authToken);
 
     try {
-        const response = await fetch('http://localhost:3000/api/google-calendar/freebusy', {
+        const response = await fetch(`${API_BASE_URL}/api/google-calendar/freebusy`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

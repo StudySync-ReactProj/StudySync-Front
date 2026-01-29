@@ -1,5 +1,8 @@
 import axios from 'axios';
-const serverURL = 'http://localhost:3000/api';
+
+// Use environment variable with fallback
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const serverURL = `${API_BASE_URL}/api`;
 
 const API = axios.create({
   baseURL: serverURL, // Your server address
