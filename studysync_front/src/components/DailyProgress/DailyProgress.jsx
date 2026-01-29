@@ -8,21 +8,22 @@ import {
     FooterText,
 } from "./DailyProgress.style"
 
-export default function DailyProgress({tasks = [], loading = false, error=null}){
+export default function DailyProgress({ tasks = [], loading = false, error = null }) {
 
+    
     const total = tasks.length;
-    const completed= tasks.filter((t) => t.completed).length;
-    const percent=total === 0 ? 0 : Math.round((completed/total)*100);
+    const completed = tasks.filter((t) => t.completed).length;
+    const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
 
-    const [animatedPercent, setAnimatedPercent]=useState(0);
+    const [animatedPercent, setAnimatedPercent] = useState(0);
 
-    useEffect(()=>{
+    useEffect(() => {
         const id = setTimeout(() => setAnimatedPercent(percent), 50);
         return () => clearTimeout(id);
-    },[percent]);
+    }, [percent]);
 
-    if(loading) return <p>Loading daily progress...</p>;
-    if(error) return <p style={{color:"red"}}>{error}</p>;
+    if (loading) return <p>Loading daily progress...</p>;
+    if (error) return <p style={{ color: "red" }}>{error}</p>;
 
     return (
         <ProgressWrapper>
@@ -33,10 +34,6 @@ export default function DailyProgress({tasks = [], loading = false, error=null})
                     <ProgressLabel>{percent}%</ProgressLabel>
                 </ProgressFill>
             </ProgressBar>
-
-
-            
-            <FooterText>You're on 7-day streak!</FooterText>
         </ProgressWrapper>
-);
+    );
 }

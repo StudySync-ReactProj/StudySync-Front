@@ -15,6 +15,7 @@ import pauseLight from "../../assets/pause_light.svg";
 import pauseDark from "../../assets/pause-dark.svg";
 import replayLight from "../../assets/replay_light.svg";
 import replayDark from "../../assets/replay_dark.svg";
+import API from "../../api/axiosConfig";
 
 
 function formatHMS(totalSeconds) {
@@ -37,10 +38,23 @@ export default function Timer() {
   const { seconds, reset } = useTimer(isRunning ? 1000 : null);
   const { h, m, s } = formatHMS(seconds);
 
+  // Called when user refresh timer
+  const handleStop = async () => {
+    const minutes = Math.floor(seconds / 60);
+
+    if (minutes > 0) {
+      await API.post("/progress/session", { minutes });
+    }
+
+    setIsRunning(false);
+  };
+
+
   // Select appropriate icons based on theme
   const playIcon = isDark ? playDark : playLight;
   const pauseIcon = isDark ? pauseDark : pauseLight;
   const replayIcon = isDark ? replayDark : replayLight;
+
 
   return (
     <TimerLayout>
@@ -61,7 +75,7 @@ export default function Timer() {
         )}
         <ControlButton
           onClick={() => {
-            setIsRunning(false);
+            handleStop();
             reset();
           }}
         >
