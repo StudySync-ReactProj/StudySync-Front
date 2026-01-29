@@ -3,6 +3,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { UserProvider } from "./context/UserContext.jsx";
 
 import "./App.css";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
@@ -45,19 +46,20 @@ function App() {
   }, [theme]);
 
   return (
-    <ThemeProvider theme={muiTheme}>
-      <CssBaseline />
-      <Routes>
+    <UserProvider>
+      <ThemeProvider theme={muiTheme}>
+        <CssBaseline />
+        <Routes>
 
-        {/* Redirect based on authentication status */}
-        <Route
-          path="/"
-          element={
-            isLoggedIn
-              ? <Navigate to="/dashboard" replace />
-              : <Navigate to="/login" replace />
-          }
-        />
+          {/* Redirect based on authentication status */}
+          <Route
+            path="/"
+            element={
+              isLoggedIn
+                ? <Navigate to="/dashboard" replace />
+                : <Navigate to="/login" replace />
+            }
+          />
 
         {/* Login route */}
         <Route path="/login" element={<Login />} />
@@ -105,6 +107,7 @@ function App() {
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </ThemeProvider>
+    </UserProvider>
   );
 }
 export default App;

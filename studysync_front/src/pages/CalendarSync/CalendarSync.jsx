@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { Add as AddIcon, Refresh as RefreshIcon } from "@mui/icons-material";
+
+// Custom Hook
+import { useApi } from "../../hooks/useApi";
+import API from "../../api/axiosConfig";
 
 // Components
 import MainScheduler from "../../components/CalendarMain/MainScheduler.jsx";
@@ -9,39 +13,38 @@ import CalendarSidebar from "../../components/CalendarSideBar/CalendarSidebar.js
 import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
 import MeetingPollModal from "../../components/MeetingPollModal/MeetingPollModal.jsx";
-// import SyncGoogleButton from "../../components/SyncGoogleButton/SyncGoogleButton";
-
-// Store Actions
-import { fetchEvents, createEventAsync, fetchGoogleCalendarEvents } from "../../store/eventsSlice";
 
 // Styles
 import { styles } from "./CalendarSync.style";
 
 const CalendarSync = () => {
-    const dispatch = useDispatch();
-
     // ============================================
     // STATE MANAGEMENT
     // ============================================
 
     const [currentDate, setCurrentDate] = useState(new Date());
     const [isPollModalOpen, setIsPollModalOpen] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
 
-    // Get events and user data from Redux Store
-    const { events } = useSelector((state) => state.events);
+    // Get user data from Redux Store
     const { user } = useSelector((state) => state.auth || state.user);
 
     // ============================================
-    // EFFECTS - Data Fetching & OAuth Handling
+    // DATA FETCHING WITH useApi HOOK
     // ============================================
 
-    // Fetch events from backend on component mount
-    useEffect(() => {
-        dispatch(fetchEvents());
-        dispatch(fetchGoogleCalendarEvents()).catch(() => {
-            // Silently ignore if Google Calendar not connected yet
-        });
-    }, [dispatch]);
+    // Fetch events from backend
+    const { data: events, loading: eventsLoading, error: eventsError, refetch: refetchEvents } = useApi('/events');
+    
+    // Fetch Google Calendar events
+    const { data: googleEvents, loading: googleLoading, error: googleError, refetch: refetchGoogleEvents } = useApi('/google-calendar/events', {
+        skip: false,
+        initialData: []
+    });
+
+    // ============================================
+    // EFFECTS - OAuth Handling
+    // ============================================
 
     // Handle OAuth callback - refresh Google Calendar events after successful connection
     useEffect(() => {
@@ -51,10 +54,10 @@ const CalendarSync = () => {
             window.history.replaceState({}, document.title, window.location.pathname);
             // Refetch Google Calendar events with a small delay to ensure DB is updated
             setTimeout(() => {
-                dispatch(fetchGoogleCalendarEvents());
+                refetchGoogleEvents();
             }, 800);
         }
-    }, [dispatch]);
+    }, [refetchGoogleEvents]);
 
     // ============================================
     // HELPER FUNCTIONS - Event Formatting
@@ -66,6 +69,8 @@ const CalendarSync = () => {
      * @returns {Array} Formatted events with standardized structure
      */
     const formatGoogleEvents = (events) => {
+        if (!events || !Array.isArray(events)) return [];
+        
         return events
             .filter(event => event.source === 'google')
             .map(event => {
@@ -100,6 +105,8 @@ const CalendarSync = () => {
      * @returns {Array} Formatted events with standardized structure
      */
     const formatDBEvents = (events) => {
+        if (!events || !Array.isArray(events)) return [];
+        
         return events
             .filter(event => event.source !== 'google')
             .map(event => {
@@ -143,10 +150,15 @@ const CalendarSync = () => {
             .filter(event => event !== null);
     };
 
-    // Combine Google Calendar events and database events into a single array
+    // Combine all events (from backend and Google Calendar)
+    const allBackendEvents = events || [];
+    const allGoogleEvents = googleEvents || [];
+    const combinedEvents = [...allBackendEvents, ...allGoogleEvents];
+    
+    // Format combined events for display
     const allEvents = [
-        ...formatGoogleEvents(events || []),
-        ...formatDBEvents(events || [])
+        ...formatGoogleEvents(combinedEvents),
+        ...formatDBEvents(combinedEvents)
     ];
 
     // ============================================
@@ -163,7 +175,7 @@ const CalendarSync = () => {
      */
     const handleCleanupTestEvents = async () => {
         const testKeywords = ['test', 'please work', 'hello', 'djshcbbdsjb', 'hellp'];
-        const eventsToDelete = events.filter(event =>
+        const eventsToDelete = (events || []).filter(event =>
             event.source !== 'google' &&
             testKeywords.some(keyword => event.title?.toLowerCase().includes(keyword))
         );
@@ -188,12 +200,22 @@ const CalendarSync = () => {
      * Handle meeting poll submission
      * Creates a new event with 'Draft' status and closes the modal
      */
-    const handleSubmitMeetingPoll = (meetingData) => {
-        dispatch(createEventAsync({
-            ...meetingData,
-            status: 'Draft'
-        }));
-        handleClosePollModal();
+    const handleSubmitMeetingPoll = async (meetingData) => {
+        setActionLoading(true);
+        try {
+            await API.post('/events', {
+                ...meetingData,
+                status: 'Draft'
+            });
+            handleClosePollModal();
+            // Refetch events to update the list
+            refetchEvents();
+        } catch (error) {
+            console.error('Failed to create event:', error);
+            alert('Failed to create meeting poll. Please try again.');
+        } finally {
+            setActionLoading(false);
+        }
     };
 
     /**
@@ -237,6 +259,13 @@ const CalendarSync = () => {
             alert("Check your Server/Console for errors.");
         }
     };
+    
+    /**
+     * Refresh Google Calendar events
+     */
+    const handleRefreshGoogle = () => {
+        refetchGoogleEvents();
+    };
 
     // ============================================
     // RENDER
@@ -249,43 +278,57 @@ const CalendarSync = () => {
                 <MainTitle title="CalendarSync" />
                 <Box sx={{ display: 'flex', gap: 1 }}>
                     <Tooltip title="Refresh Google Calendar Events" arrow>
-                        <IconButton
-                            color="primary"
-                            size="medium"
-                            onClick={() => dispatch(fetchGoogleCalendarEvents())}
-                            sx={{
-                                bgcolor: 'primary.main',
-                                color: 'white',
-                                '&:hover': {
-                                    bgcolor: 'primary.dark',
-                                },
-                                width: 40,
-                                height: 40,
-                                borderRadius: 2
-                            }}
-                        >
-                            <RefreshIcon />
-                        </IconButton>
+                        <span>
+                            <IconButton
+                                color="primary"
+                                size="medium"
+                                onClick={handleRefreshGoogle}
+                                disabled={googleLoading || actionLoading}
+                                sx={{
+                                    bgcolor: 'primary.main',
+                                    color: 'white',
+                                    '&:hover': {
+                                        bgcolor: 'primary.dark',
+                                    },
+                                    '&:disabled': {
+                                        bgcolor: 'action.disabledBackground',
+                                        color: 'action.disabled',
+                                    },
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: 2
+                                }}
+                            >
+                                <RefreshIcon />
+                            </IconButton>
+                        </span>
                     </Tooltip>
 
                     <Tooltip title="Add Meeting Poll" arrow>
-                        <IconButton
-                            color="primary"
-                            size="medium"
-                            onClick={handleOpenPollModal}
-                            sx={{
-                                bgcolor: 'primary.main',
-                                color: 'white',
-                                '&:hover': {
-                                    bgcolor: 'primary.dark',
-                                },
-                                width: 40,
-                                height: 40,
-                                borderRadius: 2
-                            }}
-                        >
-                            <AddIcon />
-                        </IconButton>
+                        <span>
+                            <IconButton
+                                color="primary"
+                                size="medium"
+                                onClick={handleOpenPollModal}
+                                disabled={actionLoading}
+                                sx={{
+                                    bgcolor: 'primary.main',
+                                    color: 'white',
+                                    '&:hover': {
+                                        bgcolor: 'primary.dark',
+                                    },
+                                    '&:disabled': {
+                                        bgcolor: 'action.disabledBackground',
+                                        color: 'action.disabled',
+                                    },
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: 2
+                                }}
+                            >
+                                <AddIcon />
+                            </IconButton>
+                        </span>
                     </Tooltip>
                 </Box>
             </Box>
