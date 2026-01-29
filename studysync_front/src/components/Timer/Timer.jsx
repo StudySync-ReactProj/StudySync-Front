@@ -53,7 +53,6 @@ export default function Timer({ onSessionSaved }) {
   };
 
 
-
   // Select appropriate icons based on theme
   const playIcon = isDark ? playDark : playLight;
   const pauseIcon = isDark ? pauseDark : pauseLight;
@@ -90,4 +89,4 @@ export default function Timer({ onSessionSaved }) {
     </TimerLayout>
   );
 
-}
+};

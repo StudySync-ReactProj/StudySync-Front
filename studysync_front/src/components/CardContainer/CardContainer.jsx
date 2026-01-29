@@ -8,14 +8,12 @@ import {
   DeadlinesBox,
   CardHeading,
   CardList,
-  ErrorText,
+  // ErrorText,
   GoalRow,
   GoalLabel,
   GoalInput,
   GoalButton,
   GoalHint,
-  RefreshRow,
-  RefreshButton,
 } from "./CardContainer.style";
 
 import Card from "../Card/Card";
@@ -91,17 +89,7 @@ const CardContainerComp = ({ stats, progressData, onRefreshProgress }) => {
       <TimeBox>
         <Card>
           <CardHeading>Timer</CardHeading>
-          <Timer />
-
-          <RefreshRow>
-            <RefreshButton 
-              type="button" 
-              onClick={onRefreshProgress}
-              disabled={savingGoal}
-            >
-              Refresh progress
-            </RefreshButton>
-          </RefreshRow>
+          <Timer onSessionSaved={onRefreshProgress} />
         </Card>
       </TimeBox>
 
@@ -139,8 +127,8 @@ const CardContainerComp = ({ stats, progressData, onRefreshProgress }) => {
               onBlur={saveGoal}
               disabled={savingGoal}
             />
-            <GoalButton 
-              type="button" 
+            <GoalButton
+              type="button"
               onClick={saveGoal}
               disabled={savingGoal}
             >
