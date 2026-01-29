@@ -14,8 +14,8 @@ import {
   GoalInput,
   GoalButton,
   GoalHint,
-  // RefreshRow,
-  // RefreshButton,
+  RefreshRow,
+  RefreshButton,
 } from "./CardContainer.style";
 
 import Card from "../Card/Card";
@@ -23,37 +23,29 @@ import Timer from "../Timer/Timer";
 import DailyProgress from "../DailyProgress/DailyProgress";
 import WeeklyProgress from "../WeeklyProgress/WeeklyProgress";
 
-import { useApi } from "../../hooks/useApi";
 import API from "../../api/axiosConfig";
 
-// Use environment variable with fallback
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-
-const CardContainerComp = () => {
-  // ---- STATS (tasks + deadlines) ----
-  const {
-    data: stats,
-    loading: statsLoading,
-    error: statsError,
-  } = useApi(`${API_BASE_URL}/api/stats`);
-
-  // ---- PROGRESS (goal + last 7 days) ----
-  const {
-    data: progressRes,
-    loading: progressLoading,
-    error: progressError,
-    refetch: refetchProgress,
-  } = useApi(`${API_BASE_URL}/api/progress/weekly`);
-
-  // Safe fallbacks (avoid crash on first render)
+/**
+ * CardContainerComp - Presentation Component
+ * 
+ * Receives all data as props from Dashboard (smart container)
+ * No direct API calls - only displays data and handles user interactions
+ * 
+ * @param {Object} stats - Tasks and deadlines data
+ * @param {Object} progressData - Weekly progress and goal data
+ * @param {Function} onRefreshProgress - Callback to refresh progress data
+ */
+const CardContainerComp = ({ stats, progressData, onRefreshProgress }) => {
+  // Safe fallbacks (avoid crash if data is undefined)
   const todayTasks = stats?.tasks ?? [];
   const upcomingDeadlines = stats?.upcomingDeadlines ?? [];
 
-  const weeklyData = progressRes?.weekly ?? [];
-  const serverGoal = Number(progressRes?.dailyGoalMinutes ?? 60);
+  const weeklyData = progressData?.weekly ?? [];
+  const serverGoal = Number(progressData?.dailyGoalMinutes ?? 60);
 
   // Goal input state (smooth typing)
   const [goalInput, setGoalInput] = useState(serverGoal);
+  const [savingGoal, setSavingGoal] = useState(false);
 
   // Sync when server returns updated goal
   useEffect(() => {
@@ -78,12 +70,18 @@ const CardContainerComp = () => {
   const saveGoal = async () => {
     const minutes = Math.max(1, Number(goalInput) || 1);
 
+    setSavingGoal(true);
     try {
-      // axiosConfig baseURL should already include "/api"
       await API.post("/progress/goal", { minutes });
-      refetchProgress(); // reload goal + weekly
+      // Trigger parent refresh callback
+      if (onRefreshProgress) {
+        onRefreshProgress();
+      }
     } catch (err) {
       console.error("Failed to save goal", err);
+      alert("Failed to save goal. Please try again.");
+    } finally {
+      setSavingGoal(false);
     }
   };
 
@@ -93,13 +91,17 @@ const CardContainerComp = () => {
       <TimeBox>
         <Card>
           <CardHeading>Timer</CardHeading>
-          <Timer onSessionSaved={refetchProgress} />
+          <Timer />
 
-          {/* <RefreshRow>
-            <RefreshButton type="button" onClick={refetchProgress}>
+          <RefreshRow>
+            <RefreshButton 
+              type="button" 
+              onClick={onRefreshProgress}
+              disabled={savingGoal}
+            >
               Refresh progress
             </RefreshButton>
-          </RefreshRow> */}
+          </RefreshRow>
         </Card>
       </TimeBox>
 
@@ -108,21 +110,16 @@ const CardContainerComp = () => {
         <Card>
           <CardHeading>Today's tasks</CardHeading>
 
-          {statsLoading && <p>Loading...</p>}
-          {!statsLoading && statsError && <ErrorText>{statsError}</ErrorText>}
-
-          {!statsLoading && !statsError && (
-            todayTasks.length ? (
-              <CardList>
-                {todayTasks.map((t) => (
-                  <li key={t._id || t.id} data-status={t.status}>
-                    {t.title}
-                  </li>
-                ))}
-              </CardList>
-            ) : (
-              <p>No tasks for today 🎉</p>
-            )
+          {todayTasks.length ? (
+            <CardList>
+              {todayTasks.map((t) => (
+                <li key={t._id || t.id} data-status={t.status}>
+                  {t.title}
+                </li>
+              ))}
+            </CardList>
+          ) : (
+            <p>No tasks for today 🎉</p>
           )}
         </Card>
       </TasksBox>
@@ -140,9 +137,14 @@ const CardContainerComp = () => {
               value={goalInput}
               onChange={(e) => setGoalInput(e.target.value)}
               onBlur={saveGoal}
+              disabled={savingGoal}
             />
-            <GoalButton type="button" onClick={saveGoal}>
-              Save
+            <GoalButton 
+              type="button" 
+              onClick={saveGoal}
+              disabled={savingGoal}
+            >
+              {savingGoal ? 'Saving...' : 'Save'}
             </GoalButton>
           </GoalRow>
 
@@ -150,14 +152,7 @@ const CardContainerComp = () => {
             Studied: {studiedTodayMinutes} / {goalTodayMinutes} minutes
           </GoalHint>
 
-          {progressLoading && <p>Loading...</p>}
-          {!progressLoading && progressError && (
-            <ErrorText>{progressError}</ErrorText>
-          )}
-
-          {!progressLoading && !progressError && (
-            <DailyProgress percent={dailyPercent} />
-          )}
+          <DailyProgress percent={dailyPercent} />
         </Card>
       </DailyBox>
 
@@ -165,15 +160,7 @@ const CardContainerComp = () => {
       <WeeklyBox>
         <Card>
           <CardHeading>Weekly progress</CardHeading>
-
-          {progressLoading && <p>Loading...</p>}
-          {!progressLoading && progressError && (
-            <ErrorText>{progressError}</ErrorText>
-          )}
-
-          {!progressLoading && !progressError && (
-            <WeeklyProgress weeklyData={weeklyData} />
-          )}
+          <WeeklyProgress weeklyData={weeklyData} />
         </Card>
       </WeeklyBox>
 
@@ -182,21 +169,16 @@ const CardContainerComp = () => {
         <Card>
           <CardHeading>Upcoming deadlines</CardHeading>
 
-          {statsLoading && <p>Loading...</p>}
-          {!statsLoading && statsError && <ErrorText>{statsError}</ErrorText>}
-
-          {!statsLoading && !statsError && (
-            upcomingDeadlines.length ? (
-              <CardList>
-                {upcomingDeadlines.slice(0, 6).map((d) => (
-                  <li key={d._id || d.id}>
-                    {d.title} — {new Date(d.due).toLocaleDateString()}
-                  </li>
-                ))}
-              </CardList>
-            ) : (
-              <p>No deadlines</p>
-            )
+          {upcomingDeadlines.length ? (
+            <CardList>
+              {upcomingDeadlines.slice(0, 6).map((d) => (
+                <li key={d._id || d.id}>
+                  {d.title} — {new Date(d.due).toLocaleDateString()}
+                </li>
+              ))}
+            </CardList>
+          ) : (
+            <p>No deadlines</p>
           )}
         </Card>
       </DeadlinesBox>

@@ -1,9 +1,8 @@
 // src/pages/TasksPage/TasksPage.jsx
 
-import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-// Import async thunks from your slice
-import { fetchTasks, addTaskAsync, deleteTaskAsync, updateTaskStatus } from "../../store/tasksSlice";
+import { useState } from "react";
+import { useApi } from "../../hooks/useApi";
+import API from "../../api/axiosConfig";
 import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
 import TasksList from "../../components/TasksList/TasksList.jsx";
@@ -11,48 +10,71 @@ import AddTaskForm from "../../components/AddTaskForm/AddTaskForm.jsx";
 import { Button, Box, CircularProgress, Alert } from "@mui/material";
 
 const TasksPage = () => {
-  const dispatch = useDispatch();
-
-  // Get tasks and status from Redux store
-  const { tasks, loading, error } = useSelector((state) => state.tasks);
+  // ========== DATA FETCHING WITH useApi HOOK ==========
+  const { data: tasks, loading, error, refetch } = useApi('/tasks');
 
   // Local state for UI toggles and form inputs
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState("Medium");
   const [newTaskDueDate, setNewTaskDueDate] = useState("");
-
-  // ========== FETCH TASKS ON MOUNT ==========
-  useEffect(() => {
-    dispatch(fetchTasks());
-  }, [dispatch]);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState(null);
 
   // ========== HANDLERS ==========
 
- const handleAddTask = () => {
-  if (newTaskText.trim()) {
-    const taskData = {
-      title: newTaskText,
-      // Ensure values match the backend Enum exactly
-      priority: newTaskPriority.charAt(0).toUpperCase() + newTaskPriority.slice(1).toLowerCase(), 
-      dueDate: newTaskDueDate || new Date().toISOString(),
-      status: 'Not Started' // Matches backend Enum exactly
-    };
+  const handleAddTask = async () => {
+    if (newTaskText.trim()) {
+      const taskData = {
+        title: newTaskText,
+        priority: newTaskPriority.charAt(0).toUpperCase() + newTaskPriority.slice(1).toLowerCase(), 
+        dueDate: newTaskDueDate || new Date().toISOString(),
+        status: 'Not Started'
+      };
 
-    dispatch(addTaskAsync(taskData));
-    setNewTaskText("");
-    setShowAddForm(false);
-  }
-};
+      setActionLoading(true);
+      setActionError(null);
 
-  const handleDeleteTask = (taskId) => {
-    // taskId here is the MongoDB _id
-    dispatch(deleteTaskAsync(taskId));
+      try {
+        await API.post('/tasks', taskData);
+        setNewTaskText("");
+        setShowAddForm(false);
+        // Refetch tasks to get updated list
+        refetch();
+      } catch (err) {
+        setActionError(err.response?.data?.message || "Failed to add task");
+      } finally {
+        setActionLoading(false);
+      }
+    }
   };
 
-  const handleStatusChange = (taskId, newStatus) => {
-    // Dispatch the updateTaskStatus async thunk with MongoDB _id and new status
-    dispatch(updateTaskStatus({ id: taskId, status: newStatus }));
+  const handleDeleteTask = async (taskId) => {
+    setActionLoading(true);
+    setActionError(null);
+
+    try {
+      await API.delete(`/tasks/${taskId}`);
+      refetch();
+    } catch (err) {
+      setActionError(err.response?.data?.message || "Failed to delete task");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleStatusChange = async (taskId, newStatus) => {
+    setActionLoading(true);
+    setActionError(null);
+
+    try {
+      await API.put(`/tasks/${taskId}`, { status: newStatus });
+      refetch();
+    } catch (err) {
+      setActionError(err.response?.data?.message || "Failed to update task");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleToggleAddForm = () => {
@@ -69,6 +91,7 @@ const TasksPage = () => {
           variant="contained"
           color={showAddForm ? "secondary" : "primary"}
           onClick={handleToggleAddForm}
+          disabled={actionLoading}
         >
           {showAddForm ? "Cancel" : "Add New Task"}
         </Button>
@@ -76,6 +99,7 @@ const TasksPage = () => {
 
       {/* Show Error Alert if fetch fails */}
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {actionError && <Alert severity="error" sx={{ mb: 2 }}>{actionError}</Alert>}
 
       {/* Render Add Task Form */}
       {showAddForm && (
@@ -100,7 +124,7 @@ const TasksPage = () => {
           </Box>
         ) : (
           <TasksList
-            tasks={tasks}
+            tasks={tasks || []}
             onStatusChange={handleStatusChange}
             onDeleteTask={handleDeleteTask}
           />
