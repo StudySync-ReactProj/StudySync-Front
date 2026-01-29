@@ -35,7 +35,6 @@ export const fetchGoogleCalendarEvents = createAsyncThunk(
         } catch (error) {
             // If any error occurs, return empty array to prevent app crashes
             // Users can still view and manage their local events
-            console.log('ℹ️  Google Calendar fetch skipped or failed - continuing with local events only');
             return [];
         }
     }
@@ -68,7 +67,6 @@ const eventsSlice = createSlice({
             })
             .addCase(fetchGoogleCalendarEvents.fulfilled, (state, action) => {
                 state.isLoading = false;
-                console.log('Google Data in Slice:', action.payload);
                 
                 // Remove old Google events before adding new ones to prevent duplicates
                 const nonGoogleEvents = state.events.filter(event => event.source !== 'google');
@@ -79,7 +77,6 @@ const eventsSlice = createSlice({
                 state.isLoading = false;
                 // Don't set error state for Google Calendar failures
                 // App should continue working with local events
-                console.log('ℹ️  Google Calendar sync skipped - local events remain available');
             })
             .addCase(deleteEventAsync.pending, (state) => {
                 state.isLoading = true;

@@ -82,12 +82,6 @@ const CalendarSync = () => {
                     return null;
                 }
 
-                console.log('Google Event:', event.summary, {
-                    raw: startSource,
-                    parsed: startDate,
-                    display: startDate.toLocaleString()
-                });
-
                 return {
                     event_id: `google-${event.id || event._id}`,
                     title: `${event.summary || event.title}`,
@@ -121,13 +115,6 @@ const CalendarSync = () => {
                     console.warn('Invalid DB event date:', event);
                     return null;
                 }
-
-                console.log('DB Event:', event.title, {
-                    raw: startSource,
-                    parsed: startDate,
-                    display: startDate.toLocaleString(),
-                    ISO: startDate.toISOString()
-                });
 
                 // Determine color based on event type and invite status
                 // Priority: Invited status first, then draft status, then default
@@ -190,7 +177,6 @@ const CalendarSync = () => {
             try {
                 // You'll need to implement deleteEventAsync in your eventsSlice
                 // For now, we'll log the IDs that should be deleted
-                console.log('Events to delete:', eventsToDelete.map(e => e._id));
                 alert(`Found ${eventsToDelete.length} test events. Backend delete endpoint needed.`);
             } catch (error) {
                 console.error('Failed to delete events:', error);
