@@ -3,7 +3,9 @@ import { styled } from "@mui/material/styles";
 export const SchedulerWrapper = styled("div")(({ theme }) => ({
     height: "800px",
     width: "100%",
-    overflow: "auto",
+    overflow: "visible",
+    display: "flex",
+    flexDirection: "column",
 
     /* All tabs (TODAY / MONTH / WEEK / DAY) */
     "& .rs__header .MuiTab-root": {
@@ -53,5 +55,18 @@ export const SchedulerWrapper = styled("div")(({ theme }) => ({
     /* View navigator buttons */
     "& .rs__view_navigator button": {
         color: `${theme.palette.text.primary} !important`,
+    },
+
+    /* Calendar header dates - make them bigger */
+    "& .rs__cell__header": {
+        fontSize: "1.1rem !important",
+    },
+
+    "& .rs__cell__header > *": {
+        fontSize: "1.1rem !important",
+    },
+
+    "& .rs__header__date": {
+        fontSize: "1.1rem !important",
     },
 }));
