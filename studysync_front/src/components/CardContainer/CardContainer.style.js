@@ -2,7 +2,7 @@ import { styled } from "@mui/material/styles";
 
 export const CardContainer = styled("div")({
     display: "grid",
-    gridTemplateColumns: "648px 648px",
+    gridTemplateColumns: "600px 600px",
     columnGap: "40px",
     rowGap: "40px",
     justifyContent: "center",
@@ -12,13 +12,13 @@ export const CardContainer = styled("div")({
 /* size for each card*/
 // clock
 export const TimeBox = styled("div")({
-    width: "648px",
-    height: "189px",
+    width: "600px",
+    height: "179px",
 });
 
 // Today's tasks
 export const TasksBox = styled("div")({
-    width: "648px",
+    width: "600px",
     height: "416px",
     gridRow: "1 / span 2",
     gridColumn: "2 / 3",
@@ -26,28 +26,28 @@ export const TasksBox = styled("div")({
 
 // Daily prog
 export const DailyBox = styled("div")({
-    width: "648px",
-    height: "189px",
+    width: "600px",
+    height: "179px",
 });
 
 // weekly prog
 export const WeeklyBox = styled("div")({
-    width: "648px",
-    height: "416px",
+    width: "600px",
+    height: "400px",
 });
 
 // upcoming sessions
-export const SessionsBox = styled("div")({
-    width: "648px",
-    height: "416px",
+export const DeadlinesBox = styled("div")({
+    width: "600px",
+    height: "400px",
 });
 
 // deadlines
-export const DeadlinesBox = styled("div")({
-    width: "1336px",
-    height: "369px",
-    gridColumn: "1 / span 2",
-});
+// export const DeadlinesBox = styled("div")({
+//     width: "1336px",
+//     height: "369px",
+//     gridColumn: "1 / span 2",
+// });
 
 export const CardHeading = styled("h3")(({ theme }) => ({
     marginBottom: "15px",

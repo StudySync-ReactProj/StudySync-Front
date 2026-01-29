@@ -5,7 +5,7 @@ import {
   TasksBox,
   DailyBox,
   WeeklyBox,
-  SessionsBox,
+  // SessionsBox,
   DeadlinesBox,
   CardHeading,
   CardList,
@@ -82,30 +82,6 @@ const CardContainerComp = () => {
           {!loading && !error && <WeeklyProgress weeklyData={weeklyProgress} />}
         </Card>
       </WeeklyBox>
-
-      {/* UPCOMING SESSIONS */}
-      <SessionsBox>
-        <Card>
-          <CardHeading>Upcoming sessions</CardHeading>
-
-          {loading && <p>Loading...</p>}
-          {!loading && error && <p style={{ color: "red" }}>{error}</p>}
-
-          {!loading && !error && (
-            upcomingSessions.length ? (
-              <CardList>
-                {upcomingSessions.slice(0, 3).map((s) => (
-                  <li key={s._id || s.id}>
-                    {s.title} — {s.date} at {s.time}
-                  </li>
-                ))}
-              </CardList>
-            ) : (
-              <p>No upcoming sessions</p>
-            )
-          )}
-        </Card>
-      </SessionsBox>
 
       {/* UPCOMING DEADLINES */}
       <DeadlinesBox>
