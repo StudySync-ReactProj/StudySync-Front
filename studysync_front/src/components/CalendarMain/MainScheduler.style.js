@@ -1,8 +1,9 @@
 import { styled } from "@mui/material/styles";
 
 export const SchedulerWrapper = styled("div")(({ theme }) => ({
-    height: "100%",
+    height: "800px",
     width: "100%",
+    overflow: "auto",
 
     /* All tabs (TODAY / MONTH / WEEK / DAY) */
     "& .rs__header .MuiTab-root": {

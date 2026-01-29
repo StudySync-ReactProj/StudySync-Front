@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Box } from "@mui/material";
+import { Box, IconButton, Tooltip } from "@mui/material";
+import { Add as AddIcon, Refresh as RefreshIcon } from "@mui/icons-material";
 
 // Components
 import MainScheduler from "../../components/CalendarMain/MainScheduler.jsx";
 import CalendarSidebar from "../../components/CalendarSideBar/CalendarSidebar.jsx";
 import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
-import ButtonCont from "../../components/ButtonCont/ButtonCont.jsx";
 import MeetingPollModal from "../../components/MeetingPollModal/MeetingPollModal.jsx";
+// import SyncGoogleButton from "../../components/SyncGoogleButton/SyncGoogleButton";
 
 // Store Actions
 import { fetchEvents, createEventAsync, fetchGoogleCalendarEvents } from "../../store/eventsSlice";
@@ -71,6 +72,8 @@ const CalendarSync = () => {
                 const startSource = event.start?.dateTime || event.start?.date || event.start;
                 const endSource = event.end?.dateTime || event.end?.date || event.end;
 
+                // Parse dates - if they come with Z (UTC), they'll be converted to local time automatically
+                // The Date object stores time in UTC internally but displays in local timezone
                 const startDate = new Date(startSource);
                 const endDate = new Date(endSource);
 
@@ -79,9 +82,15 @@ const CalendarSync = () => {
                     return null;
                 }
 
+                console.log('Google Event:', event.summary, {
+                    raw: startSource,
+                    parsed: startDate,
+                    display: startDate.toLocaleString()
+                });
+
                 return {
                     event_id: `google-${event.id || event._id}`,
-                    title: `🗓️ ${event.summary || event.title}`,
+                    title: `${event.summary || event.title}`,
                     start: startDate,
                     end: endDate,
                     color: "#4285F4",
@@ -103,7 +112,8 @@ const CalendarSync = () => {
                 // Use startDateTime/endDateTime directly from event object (backend now saves these)
                 const startSource = event.startDateTime || event.selectedSlot?.startDateTime || event.createdAt;
                 const endSource = event.endDateTime || event.selectedSlot?.endDateTime;
-                
+
+                // Parse dates - Date constructor automatically converts UTC to local time
                 const startDate = new Date(startSource);
                 const endDate = endSource ? new Date(endSource) : new Date(startDate.getTime() + 3600000);
 
@@ -112,14 +122,21 @@ const CalendarSync = () => {
                     return null;
                 }
 
+                console.log('DB Event:', event.title, {
+                    raw: startSource,
+                    parsed: startDate,
+                    display: startDate.toLocaleString(),
+                    ISO: startDate.toISOString()
+                });
+
                 return {
                     event_id: event._id || event.id,
-                    title: event.status === 'Draft' ? `🗳️ Poll: ${event.title}` : event.title,
-                    start: startDate, // Scheduler library uses local timezone automatically
+                    title: event.status === 'Draft' ? `${event.title}` : event.title,
+                    start: startDate,
                     end: endDate,
                     description: event.description || '',
                     participants: event.participants || [],
-                    color: event.status === 'Draft' ? "#ff9800" : "#2196f3",
+                    color: event.status === 'Draft' ? "#C98BB9" : "#2196f3",
                     source: 'local'
                 };
             })
@@ -146,11 +163,11 @@ const CalendarSync = () => {
      */
     const handleCleanupTestEvents = async () => {
         const testKeywords = ['test', 'please work', 'hello', 'djshcbbdsjb', 'hellp'];
-        const eventsToDelete = events.filter(event => 
-            event.source !== 'google' && 
+        const eventsToDelete = events.filter(event =>
+            event.source !== 'google' &&
             testKeywords.some(keyword => event.title?.toLowerCase().includes(keyword))
         );
-        
+
         if (eventsToDelete.length === 0) {
             alert('No test events found to delete');
             return;
@@ -221,12 +238,46 @@ const CalendarSync = () => {
             {/* Header Section - Title and Action Buttons */}
             <Box sx={styles.headerContainer}>
                 <MainTitle title="CalendarSync" />
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Tooltip title="Refresh Google Calendar Events" arrow>
+                        <IconButton
+                            color="primary"
+                            size="medium"
+                            onClick={() => dispatch(fetchGoogleCalendarEvents())}
+                            sx={{
+                                bgcolor: 'primary.main',
+                                color: 'white',
+                                '&:hover': {
+                                    bgcolor: 'primary.dark',
+                                },
+                                width: 40,
+                                height: 40,
+                                borderRadius: 2
+                            }}
+                        >
+                            <RefreshIcon />
+                        </IconButton>
+                    </Tooltip>
 
-                <Box>
-                    <ButtonCont
-                        text="Create Meeting Poll"
-                        onClick={handleOpenPollModal}
-                    />
+                    <Tooltip title="Add Meeting Poll" arrow>
+                        <IconButton
+                            color="primary"
+                            size="medium"
+                            onClick={handleOpenPollModal}
+                            sx={{
+                                bgcolor: 'primary.main',
+                                color: 'white',
+                                '&:hover': {
+                                    bgcolor: 'primary.dark',
+                                },
+                                width: 40,
+                                height: 40,
+                                borderRadius: 2
+                            }}
+                        >
+                            <AddIcon />
+                        </IconButton>
+                    </Tooltip>
                 </Box>
             </Box>
 

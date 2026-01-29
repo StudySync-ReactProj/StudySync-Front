@@ -72,7 +72,7 @@ export default function MeetingPollModal({ open, onClose }) {
         onClose();
     };
 
-    // פונקציית הסנכרון
+    // Check participant availability using Google Calendar data
     const handleCheckAvailability = async () => {
         // Extract user ID from JWT token or direct property
         const currentUserId = user?._id || user?.id || getUserIdFromToken(user?.token);
@@ -80,18 +80,20 @@ export default function MeetingPollModal({ open, onClose }) {
         console.log("🔍 Checking availability for user:", currentUserId);
         
         if (!currentUserId || formData.participants.length === 0) {
-            console.log("⚠️ Aborting sync: No user or no participants");
+            console.log("⚠️ Aborting availability check: No user or no participants");
+            setAlert("Please add participants to check availability");
             return;
         }
 
         setIsLoadingBusyData(true);
+        setAlert(null);
         try {
             const emails = formData.participants
                 .map(p => p.email)
                 .filter(e => e && e.includes('@'));
             
             const allEmails = [...new Set([user.email, ...emails])];
-            console.log("📡 Calling fetchFreeBusyData for:", allEmails);
+            console.log("📡 Fetching availability for:", allEmails);
 
             const data = await fetchFreeBusyData(currentUserId, allEmails);
             

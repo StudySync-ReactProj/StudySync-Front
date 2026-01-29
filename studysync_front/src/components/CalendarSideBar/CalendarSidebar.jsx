@@ -8,9 +8,11 @@ import { enUS } from "date-fns/locale";
 import { isSameDay, format } from "date-fns";
 
 const CalendarSidebar = ({ currentDate, onDateChange, events = [], onConnectGoogle }) => {
-    const todayEvents = events.filter((event) =>
-        isSameDay(event.start, currentDate)
-    );
+    // Filter events for the selected day and sort by start time (earliest to latest)
+    const todayEvents = events
+        .filter((event) => isSameDay(event.start, currentDate))
+        .sort((a, b) => new Date(a.start) - new Date(b.start));
+    
     return (
         <Paper
             elevation={3}
@@ -26,9 +28,33 @@ const CalendarSidebar = ({ currentDate, onDateChange, events = [], onConnectGoog
             }}
         >
             {/* Header */}
-            <Box sx={{ p: 2 }}>
-                <Typography variant="h6" fontWeight="bold">Sync Up</Typography>
+            {/* <Box sx={{ p: 2 }}> */}
+            {/* Google Calendar Connection */}
+            <Box sx={{ p: 2, textAlign: 'center' }}>
+                {/* <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                    Sync your events with Google
+                </Typography> */}
+                <Button
+                    variant="outlined"
+                    fullWidth
+                    startIcon={<GoogleIcon />}
+                    onClick={onConnectGoogle}
+                    sx={(theme) => ({
+                        textTransform: 'none',
+                        borderRadius: '8px',
+                        borderColor: theme.palette.mode === 'dark' ? '#CFCBFF' : '#6D63FF',
+                        color: theme.palette.mode === 'dark' ? '#CFCBFF' : '#6D63FF',
+                        '&:hover': {
+                            borderColor: theme.palette.mode === 'dark' ? '#CFCBFF' : '#6D63FF',
+                            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(129, 199, 132, 0.08)' : 'rgba(66, 133, 244, 0.04)',
+                        },
+                        fontWeight: 'bold'
+                    })}
+                >
+                    Connect Google Calendar
+                </Button>
             </Box>
+            {/* </Box> */}
             <Divider />
 
             {/* Mini calendar */}
@@ -63,7 +89,7 @@ const CalendarSidebar = ({ currentDate, onDateChange, events = [], onConnectGoog
                                             {event.location && ` | ${event.location}`}
                                         </>
                                     }
-                                    primaryTypographyProps={{ fontWeight: "bold", fontSize: "0.9rem" }}
+                                    primaryTypographyProps={{ fontWeight: "bold", fontSize: "0.85rem" }}
                                 />
                             </ListItem>
                         ))
@@ -73,31 +99,7 @@ const CalendarSidebar = ({ currentDate, onDateChange, events = [], onConnectGoog
 
             <Divider />
 
-            {/* Google Calendar Connection */}
-            <Box sx={{ p: 2, textAlign: 'center' }}>
-                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-                    Sync your events with Google
-                </Typography>
-                <Button
-                    variant="outlined"
-                    fullWidth
-                    startIcon={<GoogleIcon />}
-                    onClick={onConnectGoogle}
-                    sx={{
-                        textTransform: 'none',
-                        borderRadius: '8px',
-                        borderColor: '#4285F4',
-                        color: '#4285F4',
-                        '&:hover': {
-                            borderColor: '#357ae8',
-                            backgroundColor: 'rgba(66, 133, 244, 0.04)',
-                        },
-                        fontWeight: 'bold'
-                    }}
-                >
-                    Connect Google Calendar
-                </Button>
-            </Box>
+
         </Paper>
     );
 };
