@@ -1,3 +1,4 @@
+// DailyProgress.jsx
 import React, { useEffect, useState } from "react";
 import {
     ProgressWrapper,
@@ -5,25 +6,18 @@ import {
     ProgressBar,
     ProgressFill,
     ProgressLabel,
-    FooterText,
-} from "./DailyProgress.style"
+} from "./DailyProgress.style";
 
-export default function DailyProgress({ tasks = [], loading = false, error = null }) {
+export default function DailyProgress({ percent = 0 }) {
+    const safe = Math.max(0, Math.min(100, Number(percent) || 0));
 
-    
-    const total = tasks.length;
-    const completed = tasks.filter((t) => t.completed).length;
-    const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
-
+    // Simple animation
     const [animatedPercent, setAnimatedPercent] = useState(0);
 
     useEffect(() => {
-        const id = setTimeout(() => setAnimatedPercent(percent), 50);
+        const id = setTimeout(() => setAnimatedPercent(safe), 50);
         return () => clearTimeout(id);
-    }, [percent]);
-
-    if (loading) return <p>Loading daily progress...</p>;
-    if (error) return <p style={{ color: "red" }}>{error}</p>;
+    }, [safe]);
 
     return (
         <ProgressWrapper>
@@ -31,7 +25,7 @@ export default function DailyProgress({ tasks = [], loading = false, error = nul
 
             <ProgressBar>
                 <ProgressFill percent={animatedPercent}>
-                    <ProgressLabel>{percent}%</ProgressLabel>
+                    <ProgressLabel>{safe}%</ProgressLabel>
                 </ProgressFill>
             </ProgressBar>
         </ProgressWrapper>

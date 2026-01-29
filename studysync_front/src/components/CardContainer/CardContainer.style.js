@@ -9,7 +9,7 @@ export const CardContainer = styled("div")({
     marginTop: "40px",
 });
 
-/* size for each card*/
+/* size for each card */
 // clock
 export const TimeBox = styled("div")({
     width: "600px",
@@ -36,18 +36,11 @@ export const WeeklyBox = styled("div")({
     height: "400px",
 });
 
-// upcoming sessions
+// deadlines
 export const DeadlinesBox = styled("div")({
     width: "600px",
     height: "400px",
 });
-
-// deadlines
-// export const DeadlinesBox = styled("div")({
-//     width: "1336px",
-//     height: "369px",
-//     gridColumn: "1 / span 2",
-// });
 
 export const CardHeading = styled("h3")(({ theme }) => ({
     marginBottom: "15px",
@@ -56,6 +49,11 @@ export const CardHeading = styled("h3")(({ theme }) => ({
     fontSize: "1.5rem",
     fontWeight: 600,
 }));
+
+export const ErrorText = styled("p")({
+    margin: 0,
+    color: "red",
+});
 
 export const CardList = styled("ul")(({ theme }) => ({
     paddingLeft: "18px",
@@ -66,6 +64,70 @@ export const CardList = styled("ul")(({ theme }) => ({
         color: theme.palette.text.primary,
         fontFamily: theme.typography.fontFamily,
         lineHeight: 1.5,
+        fontSize: "1.2rem",
+    },
+
+    // Completed task style (no inline styles)
+    "& li[data-status='Completed']": {
+        textDecoration: "line-through",
+        opacity: 0.6,
     },
 }));
 
+/* ---- Daily goal UI ---- */
+export const GoalRow = styled("div")({
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 10,
+});
+
+export const GoalLabel = styled("span")(({ theme }) => ({
+    color: theme.palette.text.secondary,
+    fontFamily: theme.typography.fontFamily,
+    fontSize: "0.95rem",
+}));
+
+export const GoalInput = styled("input")(({ theme }) => ({
+    width: 90,
+    borderRadius: 10,
+    border: `1px solid ${theme.palette.divider}`,
+    background: theme.palette.background.default,
+    color: theme.palette.text.primary,
+    outline: "none",
+}));
+
+export const GoalButton = styled("button")(({ theme }) => ({
+    border: "none",
+    borderRadius: 10,
+    padding: "8px 12px",
+    cursor: "pointer",
+    background: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    fontWeight: 600,
+}));
+
+export const GoalHint = styled("p")(({ theme }) => ({
+    marginTop: 0,
+    marginBottom: 12,
+    color: theme.palette.text.secondary,
+    fontFamily: theme.typography.fontFamily,
+    fontSize: "0.95rem",
+}));
+
+/* ---- Refresh button ---- */
+export const RefreshRow = styled("div")({
+    marginTop: 10,
+    display: "flex",
+    justifyContent: "flex-start",
+});
+
+export const RefreshButton = styled("button")(({ theme }) => ({
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: 10,
+    padding: "8px 12px",
+    cursor: "pointer",
+    background: theme.palette.background.default,
+    color: theme.palette.text.primary,
+    fontWeight: 600,
+}));
