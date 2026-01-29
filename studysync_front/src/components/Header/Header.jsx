@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/Logo_StudySync.svg";
 import ThemeToggleButton from "../ThemeToggleButton/ThemeToggleButton";
 import Wrapper from "../Wrapper/Wrapper.jsx";
-import LogoDark from "../../assets/whiteLogo.png"
+import LogoDark from "../../assets/whiteLogo.svg";
 import { useTheme } from "@mui/material/styles";
 
 import {
