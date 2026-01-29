@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { Add as AddIcon, Refresh as RefreshIcon } from "@mui/icons-material";
 
 // Components
@@ -129,6 +129,17 @@ const CalendarSync = () => {
                     ISO: startDate.toISOString()
                 });
 
+                // Determine color based on event type and invite status
+                // Priority: Invited status first, then draft status, then default
+                let eventColor;
+                if (event.isInvited) {
+                    eventColor = "#B0BEC5"; // Soft grey for invited events (regardless of status)
+                } else if (event.status === 'Draft') {
+                    eventColor = "#C98BB9"; // Purple for your own drafts
+                } else {
+                    eventColor = "#2196f3"; // Blue for your google events
+                }
+
                 return {
                     event_id: event._id || event.id,
                     title: event.status === 'Draft' ? `${event.title}` : event.title,
@@ -136,7 +147,9 @@ const CalendarSync = () => {
                     end: endDate,
                     description: event.description || '',
                     participants: event.participants || [],
-                    color: event.status === 'Draft' ? "#C98BB9" : "#2196f3",
+                    creator: event.creator,
+                    isInvited: event.isInvited || false,
+                    color: eventColor,
                     source: 'local'
                 };
             })
@@ -291,6 +304,35 @@ const CalendarSync = () => {
                 />
 
                 <Box sx={styles.schedulerContainer}>
+                    {/* Color Legend */}
+                    <Box sx={{
+                        display: 'flex',
+                        gap: 3,
+                        mb: 2,
+                        p: 1.5,
+                        backgroundColor: 'background.paper',
+                        borderRadius: 1,
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                        flexWrap: 'wrap'
+                    }}>
+                        {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ width: 16, height: 16, backgroundColor: '#2196f3', borderRadius: 1 }} />
+                            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>Your Events</Typography>
+                            </Box> */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ width: 16, height: 16, backgroundColor: '#C98BB9', borderRadius: 1 }} />
+                            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>My Events</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ width: 16, height: 16, backgroundColor: '#B0BEC5', borderRadius: 1 }} />
+                            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>Invited Events</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ width: 16, height: 16, backgroundColor: '#4285F4', borderRadius: 1 }} />
+                            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>Google Calendar</Typography>
+                        </Box>
+                    </Box>
+
                     <MainScheduler
                         selectedDate={currentDate}
                         events={allEvents}

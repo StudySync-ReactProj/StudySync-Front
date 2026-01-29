@@ -12,9 +12,18 @@ export const SchedulerWrapper = styled("div")(({ theme }) => ({
         opacity: 1,
     },
 
-    /* Hide TODAY tab - it's the first one */
-    "& .rs__header .MuiTab-root:first-of-type": {
-        display: "none",
+    /* More aggressive hide - target all buttons in tabs container */
+    "& .rs__header .MuiTabs-flexContainer button": {
+        display: "none !important",
+    },
+
+    /* Re-show only Month and Week - they should be 3rd and 4th */
+    "& .rs__header .MuiTabs-flexContainer button:nth-of-type(3)": {
+        display: "inline-flex !important",
+    },
+    
+    "& .rs__header .MuiTabs-flexContainer button:nth-of-type(4)": {
+        display: "inline-flex !important",
     },
 
     /* hover */
