@@ -32,7 +32,7 @@ const settings = ["Logout"];
 function Header({ theme, setTheme }) {
   const navigate = useNavigate();
   // Use centralized user context instead of direct Redux selector
-  const { user, username } = useUser();
+  const { user } = useUser();
   const dispatch = useDispatch();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
