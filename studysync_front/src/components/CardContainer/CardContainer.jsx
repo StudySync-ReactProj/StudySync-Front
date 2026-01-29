@@ -51,7 +51,16 @@ const CardContainerComp = () => {
             todayTasks.length ? (
               <CardList>
                 {todayTasks.map((t) => (
-                  <li key={t._id || t.id}>{t.title}</li>
+                  <li 
+                    key={t._id || t.id}
+                    style={{
+                      textDecoration: t.status === 'Completed' ? 'line-through' : 'none',
+                      opacity: t.status === 'Completed' ? 0.6 : 1,
+                      fontSize: '1.2rem'
+                    }}
+                  >
+                    {t.title}
+                  </li>
                 ))}
               </CardList>
             ) : (
