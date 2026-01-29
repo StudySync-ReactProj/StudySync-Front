@@ -79,7 +79,7 @@ export const GoalRow = styled("div")({
     display: "flex",
     alignItems: "center",
     gap: 10,
-    marginBottom: 10,
+    marginTop: "-15px",
 });
 
 export const GoalLabel = styled("span")(({ theme }) => ({
@@ -115,19 +115,19 @@ export const GoalHint = styled("p")(({ theme }) => ({
     fontSize: "0.95rem",
 }));
 
-/* ---- Refresh button ---- */
-export const RefreshRow = styled("div")({
-    marginTop: 10,
-    display: "flex",
-    justifyContent: "flex-start",
-});
+// /* ---- Refresh button ---- */
+// export const RefreshRow = styled("div")({
+//     marginTop: 10,
+//     display: "flex",
+//     justifyContent: "flex-start",
+// });
 
-export const RefreshButton = styled("button")(({ theme }) => ({
-    border: `1px solid ${theme.palette.divider}`,
-    borderRadius: 10,
-    padding: "8px 12px",
-    cursor: "pointer",
-    background: theme.palette.background.default,
-    color: theme.palette.text.primary,
-    fontWeight: 600,
-}));
+// export const RefreshButton = styled("button")(({ theme }) => ({
+//     border: `1px solid ${theme.palette.divider}`,
+//     borderRadius: 10,
+//     padding: "8px 12px",
+//     cursor: "pointer",
+//     background: theme.palette.background.default,
+//     color: theme.palette.text.primary,
+//     fontWeight: 600,
+// }));

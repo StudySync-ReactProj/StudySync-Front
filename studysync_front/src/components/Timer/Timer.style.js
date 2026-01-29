@@ -20,7 +20,7 @@ export const TimeDisplay = styled("div")(({ theme }) => ({
   letterSpacing: "2px",
   lineHeight: 1,
   textAlign: "center",
-  marginBottom: "16px",
+  marginTop: "10px",
 
   // instead of hardcoded colors, adapt to dark/light mode:
   color: theme.palette.text.primary,

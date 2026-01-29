@@ -14,8 +14,8 @@ import {
   GoalInput,
   GoalButton,
   GoalHint,
-  RefreshRow,
-  RefreshButton,
+  // RefreshRow,
+  // RefreshButton,
 } from "./CardContainer.style";
 
 import Card from "../Card/Card";
@@ -93,13 +93,13 @@ const CardContainerComp = () => {
       <TimeBox>
         <Card>
           <CardHeading>Timer</CardHeading>
-          <Timer />
+          <Timer onSessionSaved={refetchProgress} />
 
-          <RefreshRow>
+          {/* <RefreshRow>
             <RefreshButton type="button" onClick={refetchProgress}>
               Refresh progress
             </RefreshButton>
-          </RefreshRow>
+          </RefreshRow> */}
         </Card>
       </TimeBox>
 
