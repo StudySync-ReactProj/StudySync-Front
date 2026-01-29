@@ -331,6 +331,7 @@ const CalendarSync = () => {
 
                     <MainScheduler
                         selectedDate={currentDate}
+                        onDateChange={setCurrentDate}
                         events={allEvents}
                     />
                 </Box>
