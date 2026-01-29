@@ -115,19 +115,3 @@ export const GoalHint = styled("p")(({ theme }) => ({
     fontSize: "0.95rem",
 }));
 
-// /* ---- Refresh button ---- */
-// export const RefreshRow = styled("div")({
-//     marginTop: 10,
-//     display: "flex",
-//     justifyContent: "flex-start",
-// });
-
-// export const RefreshButton = styled("button")(({ theme }) => ({
-//     border: `1px solid ${theme.palette.divider}`,
-//     borderRadius: 10,
-//     padding: "8px 12px",
-//     cursor: "pointer",
-//     background: theme.palette.background.default,
-//     color: theme.palette.text.primary,
-//     fontWeight: 600,
-// }));

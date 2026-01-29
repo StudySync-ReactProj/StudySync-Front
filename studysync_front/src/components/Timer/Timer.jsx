@@ -30,7 +30,7 @@ function formatHMS(totalSeconds) {
   };
 }
 
-export default function Timer() {
+export default function Timer({ onSessionSaved }) {
   const [isRunning, setIsRunning] = useState(false);
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
@@ -38,16 +38,20 @@ export default function Timer() {
   const { seconds, reset } = useTimer(isRunning ? 1000 : null);
   const { h, m, s } = formatHMS(seconds);
 
-  // Called when user refresh timer
+  // Called when user presses replay/stop
   const handleStop = async () => {
     const minutes = Math.floor(seconds / 60);
 
     if (minutes > 0) {
       await API.post("/progress/session", { minutes });
+
+      // 🔥 tell parent to refresh graphs
+      if (onSessionSaved) onSessionSaved();
     }
 
     setIsRunning(false);
   };
+
 
 
   // Select appropriate icons based on theme
@@ -79,6 +83,7 @@ export default function Timer() {
             reset();
           }}
         >
+
           <img src={replayIcon} alt="Replay" />
         </ControlButton>
       </Controls>
