@@ -13,6 +13,8 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/Logo_StudySync.svg";
 import ThemeToggleButton from "../ThemeToggleButton/ThemeToggleButton";
 import Wrapper from "../Wrapper/Wrapper.jsx";
+import LogoDark from "../../assets/whiteLogo.png"
+import { useTheme } from "@mui/material/styles";
 
 import {
   NavAppBar,
@@ -32,6 +34,9 @@ function Header({ theme, setTheme }) {
   const dispatch = useDispatch();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const muiTheme = useTheme();
+  const isDark = muiTheme.palette.mode === "dark";
+
 
   const handleCloseUserMenu = (setting) => {
     setAnchorElUser(null);
@@ -48,7 +53,7 @@ function Header({ theme, setTheme }) {
           {/* LEFT SIDE */}
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <img
-              src={Logo}
+              src={isDark ? LogoDark : Logo}
               alt="StudySync Logo"
               style={{ height: "80px", cursor: "pointer", marginLeft: "-20px", marginTop: "8px" }}
               onClick={() => navigate("/dashboard")}
