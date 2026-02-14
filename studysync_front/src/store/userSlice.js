@@ -17,15 +17,25 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     loginUser: (state, action) => {
-      // action.payload will now contain { username, email, token }
-      state.user = action.payload;
+      // action.payload should contain { username, email, token, _id or id }
+      state.user = {
+        ...action.payload,
+        // Ensure we have _id stored (backend might send 'id' or '_id')
+        _id: action.payload._id || action.payload.id,
+      };
       state.isLoggedIn = true;
+      
+      // Also update localStorage to include _id
+      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      userInfo._id = action.payload._id || action.payload.id;
+      localStorage.setItem("userInfo", JSON.stringify(userInfo));
     },
     logoutUser: (state) => {
       state.user = null;
       state.isLoggedIn = false;
       // Clear browser storage on logout
       localStorage.removeItem("userInfo");
+      localStorage.removeItem("userId");
     },
   },
 });

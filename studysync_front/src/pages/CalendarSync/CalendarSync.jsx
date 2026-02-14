@@ -26,8 +26,8 @@ const CalendarSync = () => {
     const [isPollModalOpen, setIsPollModalOpen] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
 
-    // Get user data from Redux Store
-    const { user } = useSelector((state) => state.auth || state.user);
+    // Get user data from Redux Store (state.user.user based on userSlice)
+    const user = useSelector((state) => state.user?.user);
 
     // ============================================
     // DATA FETCHING WITH useApi HOOK
@@ -41,6 +41,11 @@ const CalendarSync = () => {
         skip: false,
         initialData: []
     });
+    
+    // Debug: Log when events change
+    useEffect(() => {
+        console.log('📊 CalendarSync: Events state updated. Count:', events?.length || 0);
+    }, [events]);
 
     // ============================================
     // EFFECTS - OAuth Handling
@@ -201,17 +206,31 @@ const CalendarSync = () => {
      * Creates a new event with 'Draft' status and closes the modal
      */
     const handleSubmitMeetingPoll = async (meetingData) => {
+        console.log('🚀 CalendarSync: handleSubmitMeetingPoll called with:', meetingData);
         setActionLoading(true);
+        
         try {
-            await API.post('/events', {
+            // Create the event via API
+            const response = await API.post('/events', {
                 ...meetingData,
                 status: 'Draft'
             });
+            
+            console.log('✅ CalendarSync: Event created successfully:', response.data);
+            
+            // Close modal immediately for better UX
             handleClosePollModal();
-            // Refetch events to update the list
-            refetchEvents();
+            
+            // Small delay to ensure database transaction is complete
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Refetch events to update the calendar
+            console.log('🔄 CalendarSync: Refetching events...');
+            const result = await refetchEvents();
+            console.log('✅ CalendarSync: Events refetched successfully. New count:', result?.data?.length);
+            
         } catch (error) {
-            console.error('Failed to create event:', error);
+            console.error('❌ CalendarSync: Failed to create event:', error);
             alert('Failed to create meeting poll. Please try again.');
         } finally {
             setActionLoading(false);

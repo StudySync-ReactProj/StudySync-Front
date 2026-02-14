@@ -16,10 +16,10 @@ import ParticipantsStep from './steps/ParticipantsStep';
 import OptionsStep from './steps/OptionsStep';
 import ButtonCont from '../ButtonCont/ButtonCont';
 
-export default function MeetingPollModal({ open, onClose }) {
+export default function MeetingPollModal({ open, onClose, onSubmit }) {
     const dispatch = useDispatch();
     
-    // Fix: Correctly access user from Redux store with fallback
+    // Correctly access user from Redux store with fallback
     const user = useSelector((state) => state.user.user || state.user);
     
     // Helper function to decode JWT token and extract user ID
@@ -206,14 +206,24 @@ export default function MeetingPollModal({ open, onClose }) {
         console.log('📅 Meeting payload before dispatch:', meetingData);
 
         try {
-            const result = await dispatch(createEventAsync(meetingData)).unwrap();
-            console.log('✅ Full server response:', JSON.stringify(result, null, 2));
-            console.log('📆 Event created with startDateTime:', result.startDateTime);
-            console.log('📆 Event created with endDateTime:', result.endDateTime);
-            console.log('⏰ Duration object:', result.duration);
-            handleClose();
+            // If parent component provides onSubmit callback, use it (CalendarSync does this)
+            if (onSubmit) {
+                console.log('✅ Using parent onSubmit callback');
+                await onSubmit(meetingData);
+                handleClose();
+            } else {
+                // Fallback to Redux dispatch if no callback provided
+                console.log('✅ Using Redux dispatch (fallback)');
+                const result = await dispatch(createEventAsync(meetingData)).unwrap();
+                console.log('✅ Full server response:', JSON.stringify(result, null, 2));
+                console.log('📆 Event created with startDateTime:', result.startDateTime);
+                console.log('📆 Event created with endDateTime:', result.endDateTime);
+                console.log('⏰ Duration object:', result.duration);
+                handleClose();
+            }
         } catch (err) { 
-            console.error('❌ Save error:', err); 
+            console.error('❌ Save error:', err);
+            alert('Failed to create meeting poll. Please try again.');
         }
     };
 

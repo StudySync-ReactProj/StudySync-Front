@@ -48,7 +48,7 @@ const EmptyStateOverlay = () => {
       }}
     >
       <Typography variant="h6" color="primary" sx={{ mb: 1 }}>
-        🗓️ Your schedule is clear for today!
+        Your schedule is clear for now!
       </Typography>
       <Typography variant="body2" color="text.secondary">
         Start by creating a meeting poll or syncing your calendar.

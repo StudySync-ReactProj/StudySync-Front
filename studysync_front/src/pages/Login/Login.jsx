@@ -95,9 +95,10 @@ export default function Login() {
       // 3. Save user info and token in LocalStorage
       localStorage.setItem("userInfo", JSON.stringify(data));
 
-      // 4. Update Redux with the data returned from server (including username and token)
+      // 4. Update Redux with the data returned from server (including username, email, token, and _id)
       dispatch(
         loginUser({
+          _id: userId,
           username: data.username,
           email: data.email,
           token: data.token,

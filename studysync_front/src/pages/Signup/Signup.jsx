@@ -82,11 +82,19 @@ export default function Signup() {
 
             console.log("Signup successful!", data);
 
-            // 2. שמירת המידע ב-LocalStorage (השרת מחזיר טוקן גם בהרשמה)
+            // 2. Extract userId safely (supports multiple backend shapes)
+            const userId = data?._id || data?.id || data?.userId || data?.user?._id || data?.user?.id;
+            
+            if (userId) {
+                localStorage.setItem("userId", String(userId));
+            }
+
+            // 3. שמירת המידע ב-LocalStorage (השרת מחזיר טוקן גם בהרשמה)
             localStorage.setItem("userInfo", JSON.stringify(data));
 
-            // 3. עדכון Redux כדי שהמשתמש ייכנס ישר למערכת
+            // 4. עדכון Redux כדי שהמשתמש ייכנס ישר למערכת
             dispatch(loginUser({
+                _id: userId,
                 username: data.username,
                 email: data.email,
                 token: data.token,
