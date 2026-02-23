@@ -62,7 +62,7 @@ export function useApi(url, options = {}) {
       setData(response.data);
       return { success: true, data: response.data };
     } catch (err) {
-      // Extract user-friendly error message
+      // Extract error message
       const errorMessage = 
         err.response?.data?.message || 
         err.response?.data?.error ||

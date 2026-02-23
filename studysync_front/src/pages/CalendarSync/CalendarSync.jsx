@@ -97,6 +97,7 @@ const CalendarSync = () => {
                     title: `${event.summary || event.title}`,
                     start: startDate,
                     end: endDate,
+                    description: event.description || '',
                     color: "#4285F4",
                     source: 'google'
                 };
@@ -395,6 +396,7 @@ const CalendarSync = () => {
                         selectedDate={currentDate}
                         onDateChange={setCurrentDate}
                         events={allEvents}
+                        onEventUpdate={refetchEvents}
                     />
                 </Box>
             </Box>

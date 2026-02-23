@@ -5,20 +5,8 @@
  * EMPTY STATE OVERLAY COMPONENT
  * =============================================================================
  * 
- * A presentational component that displays a friendly message when the
- * calendar has no events to show.
+ * This component is displayed when there are no events to show in the calendar.
  * 
- * Features:
- * - Positioned absolutely over the calendar grid (doesn't hide the grid)
- * - Semi-transparent white background with shadow for depth
- * - Friendly emoji and helpful message to guide users
- * - Encourages user action (create meeting poll or sync calendar)
- * 
- * Props: None - this is a static presentational component
- * 
- * Purpose: Improves UX by providing guidance when the calendar is empty,
- * while still maintaining visibility of the calendar grid itself.
- * Follows Material Design principles for empty states.
  * =============================================================================
  */
 

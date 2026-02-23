@@ -14,7 +14,7 @@
  * - Minimum height ensures proper visibility
  * 
  * Props:
- * - message (optional): Custom loading text (defaults to "Loading events...")
+ * * @param {string} message - Optional loading message to display
  * 
  * Purpose: Provides a reusable loading state component that can be used
  * anywhere in the application where calendar data is being fetched.
@@ -25,12 +25,6 @@
 import React from "react";
 import { Box, CircularProgress, Typography } from "@mui/material";
 
-/**
- * LoadingOverlay Component
- * Displays a centered loading spinner with message
- * 
- * @param {string} message - Optional loading message to display
- */
 const LoadingOverlay = ({ message = "Loading events..." }) => {
   return (
     <Box

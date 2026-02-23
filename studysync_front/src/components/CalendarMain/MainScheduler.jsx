@@ -1,27 +1,83 @@
 // src/components/Calendar/MainScheduler.jsx
-import React from "react";
+import React, { useMemo } from "react";
 import { Scheduler } from "@aldabil/react-scheduler";
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { ChevronLeft, ChevronRight, Today } from "@mui/icons-material";
 import { SchedulerWrapper } from "./MainScheduler.style";
 import { useCalendarData } from "../../hooks/useCalendarData";
 import { getCurrentTime } from "../../utils/dateUtils";
-import ParticipantsViewer from "./ParticipantsViewer";
+import EventDetailsPopup from "./EventDetailsPopup";
 import LoadingOverlay from "./LoadingOverlay";
 import EmptyStateOverlay from "./EmptyStateOverlay";
 
 /**
  * MainScheduler Component
  * Displays a weekly calendar scheduler with events
- * Supports loading states, empty states, and event management
  * 
  * @param {Date} selectedDate - Currently selected date for the scheduler
  * @param {Function} onDateChange - Callback to update selected date
  * @param {Array} events - Array of events to display
- */
-const MainScheduler = ({ selectedDate, onDateChange, events = [] }) => {
-  const { isLoading, currentUser, handleDeleteEvent } = useCalendarData();
-  const scrollToTime = "07:00"; // Always scroll to 7 AM
+ * @param {Function} onEventUpdate - Optional callback to trigger after edit/delete operations
+ **/
+
+const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate }) => {
+  const { isLoading, currentUser, handleDeleteEvent, handleEditEvent } = useCalendarData(onEventUpdate);
+  const scrollToTime = "08:00"; // Always scroll to 8 AM
+
+  // Format events for the scheduler - ensure correct date types and ID field
+  const formattedEvents = useMemo(() => {
+    return events.map(event => ({
+      ...event,
+      event_id: event._id || event.event_id || event.id,
+      start: new Date(event.startDateTime || event.start),
+      end: new Date(event.endDateTime || event.end),
+    }));
+  }, [events]);
+
+  //
+  const onEventDelete = async (deletedId) => {
+    const eventToDelete = events.find(e => e.event_id === deletedId);
+
+    if (!eventToDelete) {
+      console.error('Event not found');
+      return Promise.reject('Event not found');
+    }
+
+    if (eventToDelete.source === 'google') {
+      alert('Cannot delete Google Calendar events from this app');
+      return Promise.reject('Cannot delete Google Calendar events');
+    }
+
+    if (eventToDelete.creator !== currentUser?._id) {
+      alert('You can only delete events you created');
+      return Promise.reject('Unauthorized');
+    }
+
+    // Call the delete handler which will handle confirmation and API call
+    await handleDeleteEvent(eventToDelete);
+    return deletedId; // Return the ID to confirm deletion to the library
+  };
+
+  // Handle edit/confirm action from scheduler's built-in button
+  const onEventEdit = async (event, action) => {
+    // Permission check: Only allow editing local events created by current user (no Google events)
+    if (event.source === 'google') {
+      alert('Cannot edit Google Calendar events from this app');
+      return Promise.reject('Cannot edit Google Calendar events');
+    }
+    // If event has a creator field, check if it matches current user ID
+    if (event.creator && currentUser?._id && String(event.creator) !== String(currentUser._id)) {
+      alert('You can only edit events you created');
+      return Promise.reject('Unauthorized');
+    }
+
+    // Call the edit handler
+    if (handleEditEvent) {
+      return await handleEditEvent(event); // so the library can update the event with returned data
+    }
+
+    return event;
+  };
 
   // Week navigation handlers
   const handlePreviousWeek = () => {
@@ -153,26 +209,50 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [] }) => {
           selectedDate={selectedDate}
           scrollToTime={scrollToTime}
           hourHeight={40}
-          editable={false}
-          deletable={false}
+
+          // Enable built-in actions with conditional logic
+          editable={true}
+          deletable={true}
           draggable={false}
-          customEditor={() => false}
+
+          // Hook into built-in delete action
+          onDelete={onEventDelete}
+
+          // Hook into built-in edit/confirm action
+          onConfirm={onEventEdit}
+
+          // Disable custom editor, use built-in viewer with action buttons
+          // customEditor={() => false}
+
+          // Keep cell/event click handlers (for future functionality)
           onCellClick={() => { }}
           onEventClick={() => { }}
+
           navigation={false}
           disableViewNavigator={true}
-          viewerExtraComponent={(fields, event) => (
-            <ParticipantsViewer
-              event={event}
-              close={fields.close}
-              onDeleteEvent={handleDeleteEvent}
-              currentUserId={currentUser?._id}
-            />
-          )}
+
+          // Custom content in the viewer popup (description + participants only)
+          viewerExtraComponent={(fields, event) => {
+            // Only show delete button in viewer if user is the creator
+            const isCreator = currentUser?._id && event.creator === currentUser?._id;
+            const isLocalEvent = event.source !== 'google';
+
+            return (
+              <EventDetailsPopup
+                event={event}
+                close={fields.close}
+                // Don't pass onDeleteEvent - let the library handle it
+                currentUserId={currentUser?._id}
+                // Hide the library's delete button for non-creators or Google events
+                showActions={isLocalEvent && isCreator}
+              />
+            );
+          }}
+
           week={{
             weekDays: [0, 1, 2, 3, 4, 5, 6],
             weekStartOn: 0,
-            startHour: 0,
+            startHour: 6,
             endHour: 24,
             step: 60,
           }}

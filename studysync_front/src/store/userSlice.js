@@ -8,6 +8,7 @@ const initialState = {
     username: storedUser.username,
     email: storedUser.email,
     token: storedUser.token,
+    _id:storedUser._id || storedUser.id,
   } : null,
   isLoggedIn: !!storedUser,
 };
