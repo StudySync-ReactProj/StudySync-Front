@@ -9,6 +9,7 @@ import { getCurrentTime } from "../../utils/dateUtils";
 import EventDetailsPopup from "./EventDetailsPopup";
 import LoadingOverlay from "./LoadingOverlay";
 import EmptyStateOverlay from "./EmptyStateOverlay";
+import API from "../../api/axiosConfig";
 
 /**
  * MainScheduler Component
@@ -110,6 +111,21 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate 
   const handleToday = () => {
     if (onDateChange) {
       onDateChange(new Date());
+    }
+  };
+
+  // Handle RSVP status update
+  const handleRsvp = async (eventId, status) => {
+    try {
+      await API.put(`/events/${eventId}/rsvp`, { status });
+      
+      // Trigger refetch to update the UI
+      if (onEventUpdate) {
+        await onEventUpdate();
+      }
+    } catch (error) {
+      console.error('Failed to update RSVP status:', error);
+      alert('Failed to update your response. Please try again.');
     }
   };
 
@@ -253,9 +269,11 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate 
                 event={event}
                 close={fields.close}
                 // Don't pass onDeleteEvent - let the library handle it
+                currentUser={currentUser}
                 currentUserId={currentUser?._id}
                 // Hide the library's delete button for non-creators or Google events
                 showActions={isLocalEvent && isCreator}
+                onRsvp={handleRsvp}
               />
             );
           }}
