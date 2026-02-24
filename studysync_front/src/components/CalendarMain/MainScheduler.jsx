@@ -1,5 +1,5 @@
 // src/components/Calendar/MainScheduler.jsx
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useEffect } from "react";
 import { Scheduler } from "@aldabil/react-scheduler";
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { ChevronLeft, ChevronRight, Today } from "@mui/icons-material";
@@ -34,28 +34,39 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate 
     }));
   }, [events]);
 
+  // Use ref to always have access to latest formatted events (solves closure issue)
+  const formattedEventsRef = useRef(formattedEvents);
+  
+  useEffect(() => {
+    formattedEventsRef.current = formattedEvents;
+  }, [formattedEvents]);
+
   //
   const onEventDelete = async (deletedId) => {
-    const eventToDelete = events.find(e => e.event_id === deletedId);
+    const eventToDelete = formattedEventsRef.current.find(e => String(e.event_id) === String(deletedId));
 
     if (!eventToDelete) {
       console.error('Event not found');
       return Promise.reject('Event not found');
     }
-
+    // Permission check
     if (eventToDelete.source === 'google') {
       alert('Cannot delete Google Calendar events from this app');
       return Promise.reject('Cannot delete Google Calendar events');
     }
-
-    if (eventToDelete.creator !== currentUser?._id) {
+    // If event has a creator field, check if it matches current user ID
+    if (eventToDelete.creator && currentUser?._id && String(eventToDelete.creator) !== String(currentUser._id)) {
       alert('You can only delete events you created');
       return Promise.reject('Unauthorized');
     }
 
-    // Call the delete handler which will handle confirmation and API call
-    await handleDeleteEvent(eventToDelete);
-    return deletedId; // Return the ID to confirm deletion to the library
+    try {
+      // Await the delete operation to ensure it completes before allowing the scheduler to remove the event from the UI
+      await handleDeleteEvent(eventToDelete);
+      return deletedId; // Return the deleted ID to allow the scheduler to remove it from the UI
+    } catch (error) {
+      return Promise.reject(error); // if user cancels or if delete fails, reject to prevent the scheduler from removing the event from the UI
+    }
   };
 
   // Handle edit/confirm action from scheduler's built-in button
@@ -200,12 +211,12 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate 
       {/* Scrollable calendar content */}
       <Box sx={{ position: 'relative', flex: 1, overflow: 'auto' }}>
         {/* Show empty state overlay when no events exist */}
-        {events.length === 0 && <EmptyStateOverlay />}
+        {formattedEvents.length === 0 && <EmptyStateOverlay />}
 
         <Scheduler
-          key={selectedDate.toISOString()}
+          key={`${selectedDate.toISOString()}-${formattedEvents.length}`}
           view="week"
-          events={events || []}
+          events={formattedEvents}
           selectedDate={selectedDate}
           scrollToTime={scrollToTime}
           hourHeight={40}

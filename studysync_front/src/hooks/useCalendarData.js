@@ -17,26 +17,30 @@ export const useCalendarData = (refetchCallback = null) => {
 
   const handleDeleteEvent = async (event, closeViewer) => {
     const confirmDelete = window.confirm('Are you sure you want to delete this event?');
-    if (confirmDelete) {
-      try {
-        await dispatch(deleteEventAsync(event.event_id || event._id)).unwrap();
-        if (closeViewer) {
-          closeViewer();
-        }
-        // Trigger refetch if callback provided
-        if (refetchCallback) {
-          refetchCallback();
-        }
-      } catch (error) {
-        console.error('Failed to delete event:', error);
-        alert('Failed to delete event. Please try again.');
+    if (!confirmDelete) {
+      throw new Error('User cancelled deletion');
+    }
+    try {
+      // making sure we sending the correct ID field to the API
+      await dispatch(deleteEventAsync(event._id || event.event_id || event.id)).unwrap();
+
+      // Trigger refetch to update UI with latest data
+      if (refetchCallback) {
+        await refetchCallback();
       }
+
+      if (closeViewer) {
+        closeViewer();
+      }
+      return true;
+    } catch (error) {
+      console.error('Failed to delete event:', error);
+      alert('Failed to delete event. Please try again.');
+      throw error; // throw error to prevent the scheduler from removing the event from the UI
     }
   };
 
   const handleEditEvent = async (event) => {
-    console.log('Edit event triggered with:', event);
-    
     try {
       const updatedEventPayload = {
         ...event,
@@ -46,28 +50,26 @@ export const useCalendarData = (refetchCallback = null) => {
       };
 
       const updatedEvent = await dispatch(updateEventAsync(updatedEventPayload)).unwrap();
-      
-      console.log('DB Update Success:', updatedEvent);
 
       const returnedEvent = {
-        ...event,          
-        ...updatedEvent,       
-        event_id: event.event_id, 
+        ...event,
+        ...updatedEvent,
+        event_id: event.event_id,
         start: new Date(updatedEvent.startDateTime || event.start),
         end: new Date(updatedEvent.endDateTime || event.end)
       };
-      
+
       // Trigger refetch if callback provided to sync with external data sources
       if (refetchCallback) {
         refetchCallback();
       }
-      
-      return returnedEvent; 
+
+      return returnedEvent;
 
     } catch (error) {
       console.error('Failed to update event:', error);
       alert('Failed to update event. Please try again.');
-      throw error; 
+      throw error;
     }
   };
 
