@@ -95,6 +95,7 @@ export const GoalInput = styled("input")(({ theme }) => ({
     background: theme.palette.background.default,
     color: theme.palette.text.primary,
     outline: "none",
+    textAlign: "center",
 }));
 
 export const GoalButton = styled("button")(({ theme }) => ({

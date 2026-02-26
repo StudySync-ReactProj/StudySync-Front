@@ -17,27 +17,27 @@ export const Subtitle = styled("div")(({ theme }) => ({
     justifyContent: "center",
     color: theme.palette.text.primary,
 }));
-//strong purple line
+//outside purple line
 export const ProgressBar = styled("div")({
     position: "relative",
     width: "100%",
     height: "18px",
-    background: "#7A6FF0",
+    background: "rgba(233, 229, 255, 0.80)",
     borderRadius: "60px",
     overflow: "hidden",
 });
-//soft purple line
+//inside purple line
 export const ProgressFill = styled("div")(({ percent }) => ({
     position: "relative",
     height: "100%",
     width: `${percent}%`,
-    background: "rgba(233, 229, 255, 0.80)",
+    background: "#7A6FF0",
     borderRadius: "60px",
     transition: "width 800ms ease",
     overflow: "visible",
     minWidth: percent === 0 ? "0px" : "44px",
 }));
-//the percents on the soft purple line
+//the percents on the inside purple line
 export const ProgressLabel = styled("span")({
     position: "absolute",
     right: "10px",
