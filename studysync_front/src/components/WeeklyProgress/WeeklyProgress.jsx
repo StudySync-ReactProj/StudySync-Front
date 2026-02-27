@@ -5,7 +5,12 @@ import {
     LegendRow,
     LegendItem,
     LegendSwatch,
+    ChartContainer,
+    YAxisLabels,
+    YAxisLabel,
     InnerChart,
+    GridContainer,
+    GridLine,
     BarsRow,
     DayCol,
     BarStack,
@@ -16,10 +21,19 @@ import {
 
 const DAYS = ["SUN", "MON", "TUE", "WED", "THR", "FRI", "SAT"];
 
-// Convert value to percent of max (0-100)
-function toPercent(value, max) {
-    if (!max) return 0;
-    return Math.round((value / max) * 100);
+// Maximum Y-axis value in minutes (10 hours)
+const MAX_MINUTES_AXIS = 600; // 10 hours
+
+/**
+ * Converts minutes to percentage height on the chart
+ * @param {number} minutes - Time in minutes
+ * @param {number} maxMinutes - Maximum value on Y-axis (default 600 for 10 hours)
+ * @returns {number} Percentage (0-100)
+ */
+function minutesToPercent(minutes, maxMinutes = MAX_MINUTES_AXIS) {
+    if (!maxMinutes || maxMinutes <= 0) return 0;
+    // Cap at 100% to prevent bars from overflowing
+    return Math.min(100, Math.round((minutes / maxMinutes) * 100));
 }
 
 // Build a safe fallback week (if server returns empty)
@@ -32,7 +46,7 @@ function buildFallbackWeek(goalMinutesPerDay = 60) {
 }
 
 export default function WeeklyProgress({
-    weeklyData = [],          // <-- NEW: data from server
+    weeklyData = [],          // <-- data from server
     loading = false,
     error = null,
     goalMinutesPerDay = 60,   // fallback goal if missing
@@ -60,19 +74,20 @@ export default function WeeklyProgress({
         return normalized.slice(-7);
     }, [weeklyData, goalMinutesPerDay]);
 
-    // Max goal for consistent bar scaling
-    const maxGoal = useMemo(() => {
-        return Math.max(1, ...weekData.map((d) => d.goalMinutes || 1));
-    }, [weekData]);
-
-    // Prepare chart values as percentages
+    // Prepare chart values with dynamic scaling
     const chart = useMemo(() => {
         return weekData.map((d) => {
-            const studiedCapped = Math.min(d.studiedMinutes, d.goalMinutes);
-            const studiedPct = toPercent(studiedCapped, maxGoal);
-            return { ...d, studiedPct };
+            // Scale both goal and studied minutes to percentages based on fixed 10-hour axis
+            const goalPercent = minutesToPercent(d.goalMinutes);
+            const studiedPercent = minutesToPercent(d.studiedMinutes);
+
+            return {
+                ...d,
+                goalPercent,
+                studiedPercent,
+            };
         });
-    }, [weekData, maxGoal]);
+    }, [weekData]);
 
     // Simple mount animation
     const [animate, setAnimate] = useState(false);
@@ -84,8 +99,16 @@ export default function WeeklyProgress({
     if (loading) return <p>Loading weekly progress...</p>;
     if (error) return <p style={{ color: "red" }}>{error}</p>;
 
+    // Get today's day name
+    const today = new Date();
+    const todayDayIndex = today.getDay();
+    const todayDayName = DAYS[todayDayIndex];
+
     // Key to restart animation on data change
     const chartKey = `${chart.map((d) => `${d.day}-${d.studiedMinutes}-${d.goalMinutes}`).join("|")}`;
+
+    // Y-axis labels: 8, 7, 6, 5, 4, 3, 2 hours
+    const yAxisHours = [8, 6, 4, 2, 0];
 
     return (
         <WeeklyWrapper>
@@ -93,30 +116,53 @@ export default function WeeklyProgress({
                 <LegendRow>
                     <LegendItem>
                         <LegendSwatch variant="goal" />
-                        <span>Goal</span>
+                        <span>Time Studied</span>
                     </LegendItem>
                     <LegendItem>
                         <LegendSwatch variant="studied" />
-                        <span>Time Studied</span>
+                        <span>Goal</span>
                     </LegendItem>
                 </LegendRow>
 
-                <InnerChart key={chartKey}>
-                    <BarsRow>
-                        {chart.map((d) => (
-                            <DayCol key={d.day}>
-                                <BarStack>
-                                    {/* Goal is always 100% height (relative to maxGoal) */}
-                                    <GoalBar value={animate ? 100 : 0} />
-                                    {/* Studied is % of maxGoal */}
-                                    <StudiedBar value={animate ? d.studiedPct : 0} />
-                                </BarStack>
-
-                                <DayLabel>{d.day}</DayLabel>
-                            </DayCol>
+                <ChartContainer>
+                    {/* Y-Axis Labels */}
+                    <YAxisLabels>
+                        {yAxisHours.map((hour) => (
+                            <YAxisLabel key={`axis-${hour}`}>{hour}h</YAxisLabel>
                         ))}
-                    </BarsRow>
-                </InnerChart>
+                    </YAxisLabels>
+
+                    {/* Inner Chart with Grid and Bars */}
+                    <InnerChart key={chartKey}>
+                        {/* Grid Lines */}
+                        <GridContainer>
+                            {yAxisHours.map((hour) => (
+                                <GridLine
+                                    key={`grid-${hour}`}
+                                    style={{
+                                        bottom: `${((hour - 2) / 8) * 100}%`,
+                                    }}
+                                />
+                            ))}
+                        </GridContainer>
+
+                        {/* Bars */}
+                        <BarsRow>
+                            {chart.map((d) => (
+                                <DayCol key={d.day}>
+                                    <BarStack>
+                                        {/* Goal Bar - scaled to day's specific goal */}
+                                        <GoalBar heightPercent={animate ? d.goalPercent : 0} />
+                                        {/* Studied Bar - scaled to actual time studied */}
+                                        <StudiedBar heightPercent={animate ? d.studiedPercent : 0} />
+                                    </BarStack>
+
+                                    <DayLabel isToday={d.day === todayDayName}>{d.day}</DayLabel>
+                                </DayCol>
+                            ))}
+                        </BarsRow>
+                    </InnerChart>
+                </ChartContainer>
             </ChartWrapper>
         </WeeklyWrapper>
     );
