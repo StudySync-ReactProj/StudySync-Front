@@ -94,11 +94,17 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                 endDateTime: originalEndDate.toISOString()
             };
 
+            // Ensure participants have an id field for proper removal
+            const participantsWithIds = (eventToEdit.participants || []).map(p => ({
+                ...p,
+                id: p.id || p._id || p.email // Use existing id, _id, or email as fallback
+            }));
+
             setFormData({
                 title: eventToEdit.title || '',
                 description: eventToEdit.description || '',
                 locationType: eventToEdit.locationType || 'online',
-                participants: eventToEdit.participants || [],
+                participants: participantsWithIds,
                 selectedSlots: [originalSlot], // Pre-select the original time slot
                 hours,
                 minutes
@@ -230,7 +236,12 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
 
             let scan = new Date(current);
             if (scan.toDateString() === now.toDateString()) {
+                // Use the later of 8 AM or current time
                 scan = new Date(Math.max(scan.getTime(), now.getTime()));
+                
+                // Round up to the nearest 30-minute interval (e.g., 21:03 -> 21:30, 21:31 -> 22:00)
+                const coeff = 1000 * 60 * 30; // 30 minutes in milliseconds
+                scan = new Date(Math.ceil(scan.getTime() / coeff) * coeff);
             }
 
             while (scan.getTime() + durationMs <= dayEnd.getTime()) {
@@ -324,7 +335,12 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                                 // Show assistant when adding a new participant
                                 setShowAssistant(true);
                             }}
-                            onRemoveParticipant={(id) => setFormData(prev => ({ ...prev, participants: prev.participants.filter(p => p.id !== id) }))}
+                            onRemoveParticipant={(idOrEmail) => {
+                                setFormData(prev => ({
+                                    ...prev,
+                                    participants: prev.participants.filter(p => p.id !== idOrEmail && p.email !== idOrEmail)
+                                }));
+                            }}
                         />
                     </Box>
                     <Box sx={{ width: '65%', p: 3, bgcolor: '#fafafa', overflowY: 'auto' }}>

@@ -126,65 +126,100 @@ const OptionsStep = ({
                             borderRadius: '4px',
                         },
                     }}>
-                        {availableSlots.map((slot) => {
+                        {availableSlots.map((slot, index, array) => {
                             const isSelected = formData.selectedSlots.some(s => s.id === slot.id);
 
+                            // Detect gap between this slot and the next slot
+                            const nextSlot = array[index + 1];
+                            let hasGap = false;
+                            let isDayChange = false;
+
+                            if (nextSlot) {
+                                const currentEnd = new Date(slot.endDateTime);
+                                const nextStart = new Date(nextSlot.startDateTime);
+
+                                // If the next slot starts strictly after the current slot ends, there is a gap
+                                if (nextStart.getTime() > currentEnd.getTime()) {
+                                    hasGap = true;
+                                    // Check if the day actually changed
+                                    if (currentEnd.toDateString() !== nextStart.toDateString()) {
+                                        isDayChange = true;
+                                    }
+                                }
+                            }
+
                             return (
-                                <ListItem
-                                    key={slot.id}
-                                    disablePadding
-                                    sx={{ 
-                                        borderBottom: 1,
-                                        borderColor: 'divider',
-                                        '&:last-child': {
-                                            borderBottom: 0
-                                        }
-                                    }}
-                                >
-                                    <ListItemButton 
-                                        onClick={() => onToggleSlot(slot)}
-                                        dense
-                                        sx={{
-                                            py: 0.75,
-                                            bgcolor: isSelected ? 'rgba(25, 118, 210, 0.08)' : 'inherit',
-                                            '&:hover': {
-                                                bgcolor: isSelected ? 'rgba(25, 118, 210, 0.12)' : 'rgba(0, 0, 0, 0.04)'
+                                <React.Fragment key={slot.id}>
+                                    <ListItem
+                                        disablePadding
+                                        sx={{ 
+                                            borderBottom: hasGap ? 0 : 1,
+                                            borderColor: 'divider',
+                                            '&:last-child': {
+                                                borderBottom: 0
                                             }
                                         }}
                                     >
-                                        <ListItemIcon sx={{ minWidth: 40 }}>
-                                            <Checkbox
-                                                edge="start"
-                                                checked={isSelected}
-                                                tabIndex={-1}
-                                                disableRipple
-                                                size="small"
+                                        <ListItemButton 
+                                            onClick={() => onToggleSlot(slot)}
+                                            dense
+                                            sx={{
+                                                py: 0.75,
+                                                bgcolor: isSelected ? 'rgba(25, 118, 210, 0.08)' : 'inherit',
+                                                '&:hover': {
+                                                    bgcolor: isSelected ? 'rgba(25, 118, 210, 0.12)' : 'rgba(0, 0, 0, 0.04)'
+                                                }
+                                            }}
+                                        >
+                                            <ListItemIcon sx={{ minWidth: 40 }}>
+                                                <Checkbox
+                                                    edge="start"
+                                                    checked={isSelected}
+                                                    tabIndex={-1}
+                                                    disableRipple
+                                                    size="small"
+                                                />
+                                            </ListItemIcon>
+                                            <ListItemText
+                                                primary={
+                                                    <Typography variant="body2" fontWeight={500}>
+                                                        {slot.date}
+                                                    </Typography>
+                                                }
+                                                secondary={
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        {slot.time}
+                                                    </Typography>
+                                                }
                                             />
-                                        </ListItemIcon>
-                                        <ListItemText
-                                            primary={
-                                                <Typography variant="body2" fontWeight={500}>
-                                                    {slot.date}
-                                                </Typography>
-                                            }
-                                            secondary={
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {slot.time}
-                                                </Typography>
-                                            }
+                                            
+                                            {/* All recommended slots are pre-verified as available */}
+                                            <Chip 
+                                                icon={<AvailableIcon fontSize="small" />} 
+                                                label="Available" 
+                                                color="success" 
+                                                variant="outlined" 
+                                                size="small"
+                                                sx={{ fontSize: '0.7rem', height: '24px' }}
+                                            />
+                                        </ListItemButton>
+                                    </ListItem>
+
+                                    {/* Gap indicator - different styles for day changes vs intra-day gaps */}
+                                    {hasGap && (
+                                        <Box 
+                                            sx={{ 
+                                                height: isDayChange ? '4px' : '2px', 
+                                                backgroundColor: isDayChange ? '#64748B' : '#94A3B8', // Dark slate for day change, solid gray for intra-day
+                                                my: 2, 
+                                                mx: 2,
+                                                borderRadius: '2px', 
+                                                opacity: 1,
+                                                border: 'none' // Ensure there are no dashed borders overriding the background
+                                            }} 
                                         />
-                                        
-                                        {/* All recommended slots are pre-verified as available */}
-                                        <Chip 
-                                            icon={<AvailableIcon fontSize="small" />} 
-                                            label="Available" 
-                                            color="success" 
-                                            variant="outlined" 
-                                            size="small"
-                                            sx={{ fontSize: '0.7rem', height: '24px' }}
-                                        />
-                                    </ListItemButton>
-                                </ListItem>
+                                    )}
+                                </React.Fragment>
                             );
                         })}
                     </List>

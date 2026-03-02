@@ -121,13 +121,13 @@ const ParticipantsStep = ({
                     <List dense disablePadding>
                         {formData.participants.map((participant) => (
                             <ListItem
-                                key={participant.id}
+                                key={participant.id || participant.email}
                                 sx={{ py: 0.5 }}
                                 secondaryAction={
                                     <IconButton 
                                         edge="end" 
                                         size="small"
-                                        onClick={() => onRemoveParticipant(participant.id)}
+                                        onClick={() => onRemoveParticipant(participant.id || participant.email)}
                                     >
                                         <DeleteIcon fontSize="small" />
                                     </IconButton>
