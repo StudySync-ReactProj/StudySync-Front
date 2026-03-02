@@ -9,6 +9,7 @@ import { getCurrentTime } from "../../utils/dateUtils";
 import EventDetailsPopup from "./EventDetailsPopup";
 import LoadingOverlay from "./LoadingOverlay";
 import EmptyStateOverlay from "./EmptyStateOverlay";
+import { enGB } from "date-fns/locale";
 import API from "../../api/axiosConfig";
 
 /**
@@ -21,23 +22,29 @@ import API from "../../api/axiosConfig";
  * @param {Function} onEventUpdate - Optional callback to trigger after edit/delete operations
  **/
 
-const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate }) => {
-  const { isLoading, currentUser, handleDeleteEvent, handleEditEvent } = useCalendarData(onEventUpdate);
+const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate, onEditPoll }) => {
+  const { isLoading, currentUser, handleDeleteEvent, handleCreateEvent, handleEditEvent } = useCalendarData(onEventUpdate);
   const scrollToTime = "08:00"; // Always scroll to 8 AM
 
   // Format events for the scheduler - ensure correct date types and ID field
   const formattedEvents = useMemo(() => {
-    return events.map(event => ({
-      ...event,
-      event_id: event._id || event.event_id || event.id,
-      start: new Date(event.startDateTime || event.start),
-      end: new Date(event.endDateTime || event.end),
-    }));
+    return events.map(event => {
+      const hasParticipants = event.participants && event.participants.length > 0;
+      const isGoogle = event.source === 'google';
+
+      return {
+        ...event,
+        event_id: event._id || event.event_id || event.id,
+        start: new Date(event.startDateTime || event.start),
+        end: new Date(event.endDateTime || event.end),
+        editable: !hasParticipants && !isGoogle
+      };
+    });
   }, [events]);
 
   // Use ref to always have access to latest formatted events (solves closure issue)
   const formattedEventsRef = useRef(formattedEvents);
-  
+
   useEffect(() => {
     formattedEventsRef.current = formattedEvents;
   }, [formattedEvents]);
@@ -70,22 +77,26 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate 
     }
   };
 
-  // Handle edit/confirm action from scheduler's built-in button
-  const onEventEdit = async (event, action) => {
-    // Permission check: Only allow editing local events created by current user (no Google events)
-    if (event.source === 'google') {
-      alert('Cannot edit Google Calendar events from this app');
-      return Promise.reject('Cannot edit Google Calendar events');
-    }
-    // If event has a creator field, check if it matches current user ID
-    if (event.creator && currentUser?._id && String(event.creator) !== String(currentUser._id)) {
-      alert('You can only edit events you created');
-      return Promise.reject('Unauthorized');
-    }
+  // Handle create/edit/confirm action from scheduler's built-in button
+  const onConfirmAction = async (event, action) => {
+    if (action === "create") {
+      return await handleCreateEvent(event);
+    } else if (action === "edit") {
+      // Permission check: Only allow editing local events created by current user (no Google events)
+      if (event.source === 'google') {
+        alert('Cannot edit Google Calendar events from this app');
+        return Promise.reject('Cannot edit Google Calendar events');
+      }
+      // If event has a creator field, check if it matches current user ID
+      if (event.creator && currentUser?._id && String(event.creator) !== String(currentUser._id)) {
+        alert('You can only edit events you created');
+        return Promise.reject('Unauthorized');
+      }
 
-    // Call the edit handler
-    if (handleEditEvent) {
-      return await handleEditEvent(event); // so the library can update the event with returned data
+      // Call the edit handler
+      if (handleEditEvent) {
+        return await handleEditEvent(event); // so the library can update the event with returned data
+      }
     }
 
     return event;
@@ -118,7 +129,7 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate 
   const handleRsvp = async (eventId, status) => {
     try {
       await API.put(`/events/${eventId}/rsvp`, { status });
-      
+
       // Trigger refetch to update the UI
       if (onEventUpdate) {
         await onEventUpdate();
@@ -236,6 +247,8 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate 
           selectedDate={selectedDate}
           scrollToTime={scrollToTime}
           hourHeight={40}
+          hourFormat="24"
+          locale={enGB} // Use English locale for date formatting and to replace the am/pm fomette in the modal
 
           // Enable built-in actions with conditional logic
           editable={true}
@@ -245,11 +258,8 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate 
           // Hook into built-in delete action
           onDelete={onEventDelete}
 
-          // Hook into built-in edit/confirm action
-          onConfirm={onEventEdit}
-
-          // Disable custom editor, use built-in viewer with action buttons
-          // customEditor={() => false}
+          // Hook into built-in create/edit/confirm action
+          onConfirm={onConfirmAction}
 
           // Keep cell/event click handlers (for future functionality)
           onCellClick={() => { }}
@@ -263,16 +273,21 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate 
             // Only show delete button in viewer if user is the creator
             const isCreator = currentUser?._id && event.creator === currentUser?._id;
             const isLocalEvent = event.source !== 'google';
+            const hasParticipants = event.participants && event.participants.length > 0;
 
             return (
               <EventDetailsPopup
                 event={event}
-                close={fields.close}
                 // Don't pass onDeleteEvent - let the library handle it
                 currentUser={currentUser}
                 currentUserId={currentUser?._id}
                 // Hide the library's delete button for non-creators or Google events
                 showActions={isLocalEvent && isCreator}
+                hasParticipants={hasParticipants}
+                onEditClick={() => {
+                  document.body.click();
+                  if (onEditPoll) onEditPoll(event);
+                }}
                 onRsvp={handleRsvp}
               />
             );

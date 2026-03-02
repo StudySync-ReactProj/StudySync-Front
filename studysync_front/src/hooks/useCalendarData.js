@@ -1,6 +1,7 @@
 // src/hooks/useCalendarData.js
 import { useSelector, useDispatch } from "react-redux";
-import { deleteEventAsync, updateEventAsync } from "../store/eventsSlice";
+import { deleteEventAsync, updateEventAsync, createEventAsync } from "../store/eventsSlice";
+import { getEventColor } from "../utils/eventUtils";
 
 /*
   Custom hook to manage calendar data and actions
@@ -37,6 +38,40 @@ export const useCalendarData = (refetchCallback = null) => {
       console.error('Failed to delete event:', error);
       alert('Failed to delete event. Please try again.');
       throw error; // throw error to prevent the scheduler from removing the event from the UI
+    }
+  };
+
+  const handleCreateEvent = async (event) => {
+    try {
+      const payload = {
+        title: event.title,
+        description: event.subtitle,
+        startDateTime: event.start,
+        endDateTime: event.end,
+        status: 'Scheduled'
+      };
+
+      const createdEvent = await dispatch(createEventAsync(payload)).unwrap();
+
+      const returnedEvent = {
+        ...event,
+        event_id: createdEvent._id || createdEvent.id,
+        start: new Date(createdEvent.startDateTime),
+        end: new Date(createdEvent.endDateTime),
+        color: getEventColor(createdEvent, currentUser?._id)
+      };
+
+      // Trigger refetch if callback provided
+      if (refetchCallback) {
+        refetchCallback();
+      }
+
+      return returnedEvent;
+
+    } catch (error) {
+      console.error('Failed to create event:', error);
+      alert('Failed to create event. Please try again.');
+      throw error;
     }
   };
 
@@ -77,6 +112,7 @@ export const useCalendarData = (refetchCallback = null) => {
     isLoading,
     currentUser,
     handleDeleteEvent,
+    handleCreateEvent,
     handleEditEvent
   };
 };

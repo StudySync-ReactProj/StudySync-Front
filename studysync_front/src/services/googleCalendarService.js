@@ -1,7 +1,7 @@
 // Use environment variable with fallback
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-export const fetchFreeBusyData = async (userId, emails) => {
+export const fetchFreeBusyData = async (userId, emails, excludeEventId = null) => {
     // Get JWT token from localStorage
     const storedUserInfo = localStorage.getItem('userInfo');
 
@@ -19,6 +19,9 @@ export const fetchFreeBusyData = async (userId, emails) => {
         }
         
         console.log("✅ Auth Token found, making freebusy request");
+        if (excludeEventId) {
+            console.log("🔍 Excluding event ID from availability check:", excludeEventId);
+        }
 
         const response = await fetch(`${API_BASE_URL}/api/google-calendar/freebusy`, {
             method: 'POST',
@@ -30,7 +33,8 @@ export const fetchFreeBusyData = async (userId, emails) => {
                 userId,
                 emails,
                 timeMin: new Date().toISOString(),
-                timeMax: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+                timeMax: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                excludeEventId
             })
         });
         

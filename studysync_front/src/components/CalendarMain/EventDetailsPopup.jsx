@@ -28,31 +28,30 @@ import React from "react";
 import { Box, Avatar, Typography, Button, ButtonGroup } from "@mui/material";
 
 
-const EventDetailsPopup = ({ event, close, currentUser, currentUserId, showActions, onRsvp }) => {
-  const hasParticipants = event.participants && event.participants.length > 0;
+const EventDetailsPopup = ({ event, currentUser, currentUserId, showActions, hasParticipants, onEditClick, onRsvp }) => {
   const hasDescription = event.description && event.description.trim().length > 0;
-  
+
   // Debug logging
   console.log('🔍 EventDetailsPopup Debug:');
   console.log('  currentUserId:', currentUserId);
   console.log('  currentUser.email:', currentUser?.email);
   console.log('  event.participants:', event.participants);
   console.log('  event.source:', event.source);
-  
+
   // Check if current user is a participant - match by email
-  const currentUserParticipant = hasParticipants 
+  const currentUserParticipant = hasParticipants
     ? event.participants.find(p => {
-        console.log('  Checking participant:', p.email, 'against user email:', currentUser?.email);
-        return p.email === currentUser?.email;
-      })
+      console.log('  Checking participant:', p.email, 'against user email:', currentUser?.email);
+      return p.email === currentUser?.email;
+    })
     : null;
-  
+
   console.log('  currentUserParticipant:', currentUserParticipant);
-  
+
   const isParticipant = !!currentUserParticipant;
   const currentUserStatus = currentUserParticipant?.status?.toLowerCase() || 'pending';
   const canRsvp = isParticipant && event.source !== 'google';
-  
+
   console.log('  isParticipant:', isParticipant);
   console.log('  canRsvp:', canRsvp);
 
@@ -70,9 +69,9 @@ const EventDetailsPopup = ({ event, close, currentUser, currentUserId, showActio
         <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.primary' }}>
           Description:
         </Typography>
-        <Typography 
-          variant="body2" 
-          sx={{ 
+        <Typography
+          variant="body2"
+          sx={{
             color: hasDescription ? 'text.secondary' : 'text.disabled',
             fontStyle: hasDescription ? 'normal' : 'italic',
             lineHeight: 1.6,
@@ -97,7 +96,7 @@ const EventDetailsPopup = ({ event, close, currentUser, currentUserId, showActio
             {event.participants.map((participant, index) => {
               // Get RSVP status (default to 'Pending' if missing)
               const status = participant.status || 'Pending';
-              
+
               // Determine status color based on status value (case-insensitive)
               const statusLower = status.toLowerCase();
               let statusColor;
@@ -136,7 +135,7 @@ const EventDetailsPopup = ({ event, close, currentUser, currentUserId, showActio
                       {participant.name || participant.email}
                     </Typography>
                   </Box>
-                  <Typography 
+                  <Typography
                     variant="caption"
                     sx={{
                       color: statusColor,
@@ -154,6 +153,27 @@ const EventDetailsPopup = ({ event, close, currentUser, currentUserId, showActio
         </Box>
       )}
 
+      {/* Edit Meeting Button */}
+      {showActions && hasParticipants && onEditClick && (
+        <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid rgba(0, 0, 0, 0.08)' }}>
+          <Button
+            variant="outlined"
+            color="primary"
+            fullWidth
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onEditClick) onEditClick();
+            }}
+            sx={{
+              textTransform: 'none',
+              fontWeight: 600
+            }}
+          >
+            Edit Meeting
+          </Button>
+        </Box>
+      )}
+
       {/* RSVP Buttons Section */}
       {canRsvp && (
         <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid rgba(0, 0, 0, 0.08)' }}>
@@ -166,7 +186,7 @@ const EventDetailsPopup = ({ event, close, currentUser, currentUserId, showActio
               disabled={currentUserStatus === 'accepted'}
               variant={currentUserStatus === 'accepted' ? 'contained' : 'outlined'}
               color="success"
-              sx={{ 
+              sx={{
                 flex: 1,
                 textTransform: 'none',
                 fontWeight: 600
@@ -179,7 +199,7 @@ const EventDetailsPopup = ({ event, close, currentUser, currentUserId, showActio
               disabled={currentUserStatus === 'maybe'}
               variant={currentUserStatus === 'maybe' ? 'contained' : 'outlined'}
               color="warning"
-              sx={{ 
+              sx={{
                 flex: 1,
                 textTransform: 'none',
                 fontWeight: 600
@@ -192,7 +212,7 @@ const EventDetailsPopup = ({ event, close, currentUser, currentUserId, showActio
               disabled={currentUserStatus === 'declined'}
               variant={currentUserStatus === 'declined' ? 'contained' : 'outlined'}
               color="error"
-              sx={{ 
+              sx={{
                 flex: 1,
                 textTransform: 'none',
                 fontWeight: 600
@@ -203,7 +223,7 @@ const EventDetailsPopup = ({ event, close, currentUser, currentUserId, showActio
           </ButtonGroup>
         </Box>
       )}
-      
+
       {/* Note: Edit and Delete buttons are handled by the scheduler library */}
     </Box>
   );

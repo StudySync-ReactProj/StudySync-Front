@@ -7,6 +7,9 @@ import { Add as AddIcon, Refresh as RefreshIcon } from "@mui/icons-material";
 import { useApi } from "../../hooks/useApi";
 import API from "../../api/axiosConfig";
 
+// Utilities
+import { getEventColor } from "../../utils/eventUtils";
+
 // Components
 import MainScheduler from "../../components/CalendarMain/MainScheduler.jsx";
 import CalendarSidebar from "../../components/CalendarSideBar/CalendarSidebar.jsx";
@@ -24,6 +27,7 @@ const CalendarSync = () => {
 
     const [currentDate, setCurrentDate] = useState(new Date());
     const [isPollModalOpen, setIsPollModalOpen] = useState(false);
+    const [eventToEdit, setEventToEdit] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
 
     // Get user data from Redux Store (state.user.user based on userSlice)
@@ -98,8 +102,8 @@ const CalendarSync = () => {
                     start: startDate,
                     end: endDate,
                     description: event.description || '',
-                    color: "#4285F4",
-                    source: 'google'
+                    source: 'google',
+                    color: getEventColor({ ...event, source: 'google' }, user?._id)
                 };
             })
             .filter(event => event !== null);
@@ -129,17 +133,6 @@ const CalendarSync = () => {
                     return null;
                 }
 
-                // Determine color based on event type and invite status
-                // Priority: Invited status first, then draft status, then default
-                let eventColor;
-                if (event.isInvited) {
-                    eventColor = "#B0BEC5"; // Soft grey for invited events (regardless of status)
-                } else if (event.status === 'Draft') {
-                    eventColor = "#C98BB9"; // Purple for your own drafts
-                } else {
-                    eventColor = "#2196f3"; // Blue for your google events
-                }
-
                 return {
                     event_id: event._id || event.id,
                     title: event.status === 'Draft' ? `${event.title}` : event.title,
@@ -149,8 +142,8 @@ const CalendarSync = () => {
                     participants: event.participants || [],
                     creator: event.creator,
                     isInvited: event.isInvited || false,
-                    color: eventColor,
-                    source: 'local'
+                    source: 'local',
+                    color: getEventColor(event, user?._id)
                 };
             })
             .filter(event => event !== null);
@@ -173,7 +166,18 @@ const CalendarSync = () => {
 
     // Meeting Poll Modal handlers
     const handleOpenPollModal = () => setIsPollModalOpen(true);
-    const handleClosePollModal = () => setIsPollModalOpen(false);
+    const handleClosePollModal = () => {
+        setIsPollModalOpen(false);
+        setEventToEdit(null); // Clear the event being edited
+    };
+
+    /**
+     * Handle edit poll click - opens MeetingPollModal with event data
+     */
+    const handleEditPollClick = (event) => {
+        setEventToEdit(event);
+        setIsPollModalOpen(true);
+    };
 
     /**
      * Cleanup test events - Remove all events with test titles
@@ -204,20 +208,38 @@ const CalendarSync = () => {
 
     /**
      * Handle meeting poll submission
-     * Creates a new event with 'Draft' status and closes the modal
+     * Creates a new event or updates an existing one based on eventToEdit
      */
     const handleSubmitMeetingPoll = async (meetingData) => {
         console.log('🚀 CalendarSync: handleSubmitMeetingPoll called with:', meetingData);
+        console.log('📝 eventToEdit:', eventToEdit);
         setActionLoading(true);
         
         try {
-            // Create the event via API
-            const response = await API.post('/events', {
-                ...meetingData,
-                status: 'Draft'
-            });
+            let response;
             
-            console.log('✅ CalendarSync: Event created successfully:', response.data);
+            if (eventToEdit) {
+                // UPDATE MODE: Edit existing event
+                const eventId = eventToEdit._id || eventToEdit.event_id || eventToEdit.id;
+                console.log('✏️ Updating event with ID:', eventId);
+                
+                response = await API.put(`/events/${eventId}`, {
+                    ...meetingData,
+                    status: eventToEdit.status || 'Draft' // Preserve original status or default to Draft
+                });
+                
+                console.log('✅ CalendarSync: Event updated successfully:', response.data);
+            } else {
+                // CREATE MODE: Create new event
+                console.log('➕ Creating new event');
+                
+                response = await API.post('/events', {
+                    ...meetingData,
+                    status: 'Draft'
+                });
+                
+                console.log('✅ CalendarSync: Event created successfully:', response.data);
+            }
             
             // Close modal immediately for better UX
             handleClosePollModal();
@@ -231,8 +253,8 @@ const CalendarSync = () => {
             console.log('✅ CalendarSync: Events refetched successfully. New count:', result?.data?.length);
             
         } catch (error) {
-            console.error('❌ CalendarSync: Failed to create event:', error);
-            alert('Failed to create meeting poll. Please try again.');
+            console.error('❌ CalendarSync: Failed to save event:', error);
+            alert(`Failed to ${eventToEdit ? 'update' : 'create'} meeting poll. Please try again.`);
         } finally {
             setActionLoading(false);
         }
@@ -397,15 +419,17 @@ const CalendarSync = () => {
                         onDateChange={setCurrentDate}
                         events={allEvents}
                         onEventUpdate={refetchEvents}
+                        onEditPoll={handleEditPollClick}
                     />
                 </Box>
             </Box>
 
-            {/* Meeting Poll Creation Modal */}
+            {/* Meeting Poll Creation/Edit Modal */}
             <MeetingPollModal
                 open={isPollModalOpen}
                 onClose={handleClosePollModal}
                 onSubmit={handleSubmitMeetingPoll}
+                eventToEdit={eventToEdit}
             />
         </Wrapper>
     );

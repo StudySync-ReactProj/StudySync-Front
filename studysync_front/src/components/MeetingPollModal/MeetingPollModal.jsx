@@ -6,8 +6,13 @@ import {
     DialogActions,
     Box,
     IconButton,
+    Paper,
+    Typography,
+    Button,
+    Checkbox,
+    Chip,
 } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
+import { Close as CloseIcon, CheckCircle as CheckCircleIcon, EditCalendar as EditCalendarIcon } from '@mui/icons-material';
 import { createEventAsync } from '../../store/eventsSlice';
 import { fetchFreeBusyData } from '../../services/googleCalendarService';
 
@@ -16,7 +21,7 @@ import ParticipantsStep from './steps/ParticipantsStep';
 import OptionsStep from './steps/OptionsStep';
 import ButtonCont from '../ButtonCont/ButtonCont';
 
-export default function MeetingPollModal({ open, onClose, onSubmit }) {
+export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit }) {
     const dispatch = useDispatch();
     
     // Correctly access user from Redux store with fallback
@@ -41,6 +46,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit }) {
     const [alert, setAlert] = useState(null);
     const [smartAvailableSlots, setSmartAvailableSlots] = useState([]);
     const [hasCalculatedSlots, setHasCalculatedSlots] = useState(false);
+    const [showAssistant, setShowAssistant] = useState(false);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -55,6 +61,77 @@ export default function MeetingPollModal({ open, onClose, onSubmit }) {
     const updateForm = (field, value) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
+
+    // Pre-fill form when editing an existing event
+    useEffect(() => {
+        if (open && eventToEdit) {
+            console.log('📝 Pre-filling form with event data:', eventToEdit);
+            
+            // Calculate duration from event if available
+            let hours = '1';
+            let minutes = '0';
+            if (eventToEdit.duration) {
+                const totalMinutes = eventToEdit.duration.minutes || 60;
+                hours = Math.floor(totalMinutes / 60).toString();
+                minutes = (totalMinutes % 60).toString();
+            } else if (eventToEdit.start && eventToEdit.end) {
+                // Calculate from start/end times
+                const startTime = new Date(eventToEdit.start || eventToEdit.startDateTime).getTime();
+                const endTime = new Date(eventToEdit.end || eventToEdit.endDateTime).getTime();
+                const totalMinutes = (endTime - startTime) / (1000 * 60);
+                hours = Math.floor(totalMinutes / 60).toString();
+                minutes = (totalMinutes % 60).toString();
+            }
+
+            // Create a slot object for the event's original time slot
+            const originalStartDate = new Date(eventToEdit.start || eventToEdit.startDateTime);
+            const originalEndDate = new Date(eventToEdit.end || eventToEdit.endDateTime);
+            const originalSlot = {
+                id: originalStartDate.getTime().toString(),
+                date: originalStartDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+                time: `${originalStartDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${originalEndDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
+                startDateTime: originalStartDate.toISOString(),
+                endDateTime: originalEndDate.toISOString()
+            };
+
+            setFormData({
+                title: eventToEdit.title || '',
+                description: eventToEdit.description || '',
+                locationType: eventToEdit.locationType || 'online',
+                participants: eventToEdit.participants || [],
+                selectedSlots: [originalSlot], // Pre-select the original time slot
+                hours,
+                minutes
+            });
+
+            // Also add the original slot to the available slots list
+            setSmartAvailableSlots([originalSlot]);
+            setHasCalculatedSlots(true);
+            
+            // When editing, hide the assistant initially
+            setShowAssistant(false);
+            
+            console.log('🎯 Pre-selected original time slot:', originalSlot);
+        } else if (open && !eventToEdit) {
+            // When creating a new event, show the assistant
+            setShowAssistant(true);
+        } else if (!open) {
+            // Reset form when modal closes
+            setFormData({
+                title: '',
+                description: '',
+                locationType: 'online',
+                participants: [],
+                selectedSlots: [],
+                hours: '1',
+                minutes: '0'
+            });
+            setBusyData(null);
+            setSmartAvailableSlots([]);
+            setHasCalculatedSlots(false);
+            setShowAssistant(false);
+        }
+    }, [open, eventToEdit]);
 
     const handleClose = () => {
         setBusyData(null);
@@ -95,7 +172,10 @@ export default function MeetingPollModal({ open, onClose, onSubmit }) {
             const allEmails = [...new Set([user.email, ...emails])];
             console.log("📡 Fetching availability for:", allEmails);
 
-            const data = await fetchFreeBusyData(currentUserId, allEmails);
+            // Pass the current event ID to exclude it from availability check
+            const excludeEventId = eventToEdit?._id || eventToEdit?.event_id || eventToEdit?.id || null;
+            console.log("🔍 Excluding event from availability check:", excludeEventId);
+            const data = await fetchFreeBusyData(currentUserId, allEmails, excludeEventId);
             
             if (data?.calendars) {
                 console.log("✅ Busy data received:", data.calendars);
@@ -239,22 +319,150 @@ export default function MeetingPollModal({ open, onClose, onSubmit }) {
                         <ParticipantsStep 
                             formData={formData} 
                             updateForm={updateForm}
-                            onAddParticipant={(p) => setFormData(prev => ({ ...prev, participants: [...prev.participants, p] }))}
+                            onAddParticipant={(p) => {
+                                setFormData(prev => ({ ...prev, participants: [...prev.participants, p] }));
+                                // Show assistant when adding a new participant
+                                setShowAssistant(true);
+                            }}
                             onRemoveParticipant={(id) => setFormData(prev => ({ ...prev, participants: prev.participants.filter(p => p.id !== id) }))}
                         />
                     </Box>
                     <Box sx={{ width: '65%', p: 3, bgcolor: '#fafafa', overflowY: 'auto' }}>
-                        <OptionsStep 
-                            formData={formData}
-                            availableSlots={smartAvailableSlots}
-                            onToggleSlot={(id) => updateForm('selectedSlots', formData.selectedSlots.includes(id) ? [] : [id])}
-                            isLoadingBusyData={isLoadingBusyData}
-                            isCalculatingSlots={isCalculatingSlots}
-                            hasCalculatedSlots={hasCalculatedSlots}
-                            hasBusyData={!!busyData}
-                            onFindAvailableTimes={handleFindAvailableTimes}
-                            alert={alert}
-                        />
+                        {!showAssistant && eventToEdit ? (
+                            // Show current meeting time when editing and assistant is hidden
+                            <Box>
+                                <Typography variant="h6" fontWeight={600} gutterBottom>
+                                    Current Meeting Time
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                                    This meeting is currently scheduled for:
+                                </Typography>
+                                
+                                {/* Main Container with Selected Time Slot */}
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        bgcolor: '#F4F8FB',
+                                        p: 2,
+                                        borderRadius: 2,
+                                        mb: 2,
+                                    }}
+                                >
+                                    {/* Left Side: Checkbox + Date/Time */}
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                        <Checkbox
+                                            checked={true}
+                                            disabled
+                                            sx={{
+                                                color: '#112240',
+                                                '&.Mui-checked': {
+                                                    color: '#112240',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: '#112240',
+                                                },
+                                            }}
+                                        />
+                                        <Box>
+                                            {formData.selectedSlots.length > 0 && (() => {
+                                                const slot = formData.selectedSlots[0];
+                                                const startDate = new Date(slot.startDateTime);
+                                                const endDate = new Date(slot.endDateTime);
+                                                
+                                                // Format date: "Tue, Mar 3"
+                                                const formattedDate = startDate.toLocaleDateString('en-US', {
+                                                    weekday: 'short',
+                                                    month: 'short',
+                                                    day: 'numeric'
+                                                });
+                                                
+                                                // Format time: "13:30 - 14:30"
+                                                const formattedTime = `${startDate.toLocaleTimeString('en-US', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false
+                                                })} - ${endDate.toLocaleTimeString('en-US', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false
+                                                })}`;
+                                                
+                                                return (
+                                                    <>
+                                                        <Typography
+                                                            sx={{
+                                                                fontWeight: 'bold',
+                                                                fontSize: '1.1rem',
+                                                                color: '#112240',
+                                                                lineHeight: 1.2,
+                                                            }}
+                                                        >
+                                                            {formattedDate}
+                                                        </Typography>
+                                                        <Typography
+                                                            sx={{
+                                                                fontSize: '0.95rem',
+                                                                color: '#112240',
+                                                                fontWeight: 400,
+                                                            }}
+                                                        >
+                                                            {formattedTime}
+                                                        </Typography>
+                                                    </>
+                                                );
+                                            })()}
+                                        </Box>
+                                    </Box>
+
+                                    {/* Right Side: Available Badge */}
+                                    <Chip
+                                        icon={<CheckCircleIcon sx={{ fontSize: '1rem', color: '#2E7D32' }} />}
+                                        label="Available"
+                                        sx={{
+                                            bgcolor: 'white',
+                                            border: '1px solid #2E7D32',
+                                            color: '#2E7D32',
+                                            fontWeight: 500,
+                                            fontSize: '0.85rem',
+                                            '& .MuiChip-icon': {
+                                                color: '#2E7D32',
+                                            },
+                                        }}
+                                    />
+                                </Box>
+
+                                {/* Change Time Button */}
+                                <Button
+                                    variant="contained"
+                                    size="medium"
+                                    startIcon={<EditCalendarIcon />}
+                                    onClick={() => setShowAssistant(true)}
+                                    sx={{
+                                        px: 3,
+                                        py: 1,
+                                        textTransform: 'none',
+                                        fontSize: '0.875rem',
+                                    }}
+                                >
+                                    Change Time
+                                </Button>
+                            </Box>
+                        ) : (
+                            // Show the regular Scheduling Assistant
+                            <OptionsStep 
+                                formData={formData}
+                                availableSlots={smartAvailableSlots}
+                                onToggleSlot={(id) => updateForm('selectedSlots', formData.selectedSlots.includes(id) ? [] : [id])}
+                                isLoadingBusyData={isLoadingBusyData}
+                                isCalculatingSlots={isCalculatingSlots}
+                                hasCalculatedSlots={hasCalculatedSlots}
+                                hasBusyData={!!busyData}
+                                onFindAvailableTimes={handleFindAvailableTimes}
+                                alert={alert}
+                            />
+                        )}
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #eee' }}>
