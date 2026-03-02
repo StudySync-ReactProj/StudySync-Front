@@ -1,4 +1,4 @@
-import { useState } from "react";
+// no local state here; timer state comes from useTimer
 import { useTheme } from "@mui/material/styles";
 import useTimer from "../../hooks/useTimer";
 import {
@@ -31,16 +31,19 @@ function formatHMS(totalSeconds) {
 }
 
 export default function Timer({ onSessionSaved }) {
-  const [isRunning, setIsRunning] = useState(false);
+  // useTimer provides wall-clock accurate timing and control methods
+  const { elapsedSeconds, isRunning, start, pause, reset, getElapsedMs } = useTimer(250);
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
-  const { seconds, reset } = useTimer(isRunning ? 1000 : null);
-  const { h, m, s } = formatHMS(seconds);
+  const { h, m, s } = formatHMS(elapsedSeconds);
 
   // Called when user presses replay/stop
   const handleStop = async () => {
-    const minutes = Math.floor(seconds / 60);
+    // Use getElapsedMs() to compute minutes at click time (accurate even
+    // if the UI was slightly stale due to tick frequency).
+    const ms = getElapsedMs();
+    const minutes = Math.floor(ms / 60000);
 
     if (minutes > 0) {
       await API.post("/progress/session", { minutes });
@@ -49,7 +52,8 @@ export default function Timer({ onSessionSaved }) {
       if (onSessionSaved) onSessionSaved();
     }
 
-    setIsRunning(false);
+    // Pause the timer after saving session
+    pause();
   };
 
 
@@ -68,17 +72,18 @@ export default function Timer({ onSessionSaved }) {
 
       <Controls>
         {!isRunning ? (
-          <ControlButton onClick={() => setIsRunning(true)}>
+          <ControlButton onClick={() => start()}>
             <img src={playIcon} alt="Play" />
           </ControlButton>
         ) : (
-          <ControlButton onClick={() => setIsRunning(false)}>
+          <ControlButton onClick={() => pause()}>
             <img src={pauseIcon} alt="Pause" />
           </ControlButton>
         )}
         <ControlButton
           onClick={() => {
             handleStop();
+            // reset after handleStop to ensure saved duration uses current time
             reset();
           }}
         >
