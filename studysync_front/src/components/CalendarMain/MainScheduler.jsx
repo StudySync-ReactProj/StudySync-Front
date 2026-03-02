@@ -32,15 +32,37 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
       const hasParticipants = event.participants && event.participants.length > 0;
       const isGoogle = event.source === 'google';
 
+      // Check if current user needs to RSVP (case-insensitive status check, email matching)
+      const needsRsvp = event.participants?.some(
+        p => p.email === currentUser?.email && p.status?.toLowerCase() === 'pending'
+      );
+
+      const displayTitle = event.title || 'Untitled Event';
+
       return {
         ...event,
         event_id: event._id || event.event_id || event.id,
         start: new Date(event.startDateTime || event.start),
         end: new Date(event.endDateTime || event.end),
-        editable: !hasParticipants && !isGoogle
+        editable: !hasParticipants && !isGoogle,
+        title: needsRsvp ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{
+              width: '8px',
+              height: '8px',
+              backgroundColor: '#EF4444',
+              borderRadius: '50%',
+              display: 'inline-block',
+              flexShrink: 0
+            }} />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {displayTitle}
+            </span>
+          </div>
+        ) : displayTitle
       };
     });
-  }, [events]);
+  }, [events, currentUser]);
 
   // Use ref to always have access to latest formatted events (solves closure issue)
   const formattedEventsRef = useRef(formattedEvents);
