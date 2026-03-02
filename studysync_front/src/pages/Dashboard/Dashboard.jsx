@@ -37,11 +37,11 @@ const Dashboard = () => {
   const {
     data: progressData,
     loading: progressLoading,
-    error: progressError,
+    error: _progressError,
     refetch: refetchProgress,
   } = useApi(`${API_BASE_URL}/api/progress/weekly`, {
     skip: false,
-    initialData: { weekly: [], dailyGoalMinutes: 60 }
+    initialData: { weekly: [] }
   });
 
   // Combined loading state

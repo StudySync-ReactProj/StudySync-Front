@@ -21,19 +21,18 @@ import {
 
 const DAYS = ["SUN", "MON", "TUE", "WED", "THR", "FRI", "SAT"];
 
-// Maximum Y-axis value in minutes (10 hours)
-const MAX_MINUTES_AXIS = 600; // 10 hours
+// Minimum axis in minutes (10 hours) but axis will grow if data requires it
+const MIN_AXIS_MINUTES = 600; // 10 hours
 
 /**
- * Converts minutes to percentage height on the chart
+ * Converts minutes to percentage height on the chart relative to provided axis max
  * @param {number} minutes - Time in minutes
- * @param {number} maxMinutes - Maximum value on Y-axis (default 600 for 10 hours)
+ * @param {number} maxMinutes - Maximum value on Y-axis
  * @returns {number} Percentage (0-100)
  */
-function minutesToPercent(minutes, maxMinutes = MAX_MINUTES_AXIS) {
+function minutesToPercent(minutes, maxMinutes) {
     if (!maxMinutes || maxMinutes <= 0) return 0;
-    // Cap at 100% to prevent bars from overflowing
-    return Math.min(100, Math.round((minutes / maxMinutes) * 100));
+    return Math.round((minutes / maxMinutes) * 100);
 }
 
 // Build a safe fallback week (if server returns empty)
@@ -50,6 +49,7 @@ export default function WeeklyProgress({
     loading = false,
     error = null,
     goalMinutesPerDay = 60,   // fallback goal if missing
+    todayOverrideMinutes = null, // optional override applied to today's goal only
 }) {
     // Ensure we always have 7 days to render
     const weekData = useMemo(() => {
@@ -65,21 +65,46 @@ export default function WeeklyProgress({
         }));
 
         // If server sent less than 7 items, fill the rest
+        let finalWeek;
         if (normalized.length < 7) {
             const missing = 7 - normalized.length;
-            return normalized.concat(buildFallbackWeek(goalMinutesPerDay).slice(0, missing));
+            finalWeek = normalized.concat(buildFallbackWeek(goalMinutesPerDay).slice(0, missing));
+        } else {
+            // If server sent 7+ items, take the last 7
+            finalWeek = normalized.slice(-7);
         }
 
-        // If server sent more than 7, take the last 7
-        return normalized.slice(-7);
-    }, [weeklyData, goalMinutesPerDay]);
+        // Apply override to the last item (today) after finalizing the week array
+        if (todayOverrideMinutes != null) {
+            try {
+                const lastIdx = finalWeek.length - 1;
+                if (lastIdx >= 0 && finalWeek[lastIdx]) {
+                    finalWeek[lastIdx] = { ...finalWeek[lastIdx], goalMinutes: Number(todayOverrideMinutes) };
+                }
+            } catch (e) {
+                console.debug('WeeklyProgress: failed to apply todayOverrideMinutes to final week', e);
+            }
+        }
 
-    // Prepare chart values with dynamic scaling
+        return finalWeek;
+    }, [weeklyData, goalMinutesPerDay, todayOverrideMinutes]);
+
+    // Determine axis max so we never clamp studied values.
+    const axisMax = useMemo(() => {
+        const dataMax = weekData.reduce((acc, d) => {
+            return Math.max(acc, Number(d.studiedMinutes || 0), Number(d.goalMinutes || 0));
+        }, 0);
+        return Math.max(MIN_AXIS_MINUTES, dataMax || MIN_AXIS_MINUTES);
+    }, [weekData]);
+
+    // Prepare chart values with dynamic scaling relative to axisMax
     const chart = useMemo(() => {
         return weekData.map((d) => {
-            // Scale both goal and studied minutes to percentages based on fixed 10-hour axis
-            const goalPercent = minutesToPercent(d.goalMinutes);
-            const studiedPercent = minutesToPercent(d.studiedMinutes);
+            const goal = Number(d.goalMinutes || 0);
+            const studied = Number(d.studiedMinutes || 0);
+
+            const goalPercent = minutesToPercent(goal, axisMax);
+            const studiedPercent = minutesToPercent(studied, axisMax);
 
             return {
                 ...d,
@@ -87,7 +112,13 @@ export default function WeeklyProgress({
                 studiedPercent,
             };
         });
-    }, [weekData]);
+    }, [weekData, axisMax]);
+
+    // Y-axis label points (in minutes) derived from axisMax - show 4 ticks
+    const yAxisPoints = useMemo(() => {
+        const pts = [1, 0.75, 0.5, 0.25, 0];
+        return pts.map((p) => Math.round(axisMax * p));
+    }, [axisMax]);
 
     // Simple mount animation
     const [animate, setAnimate] = useState(false);
@@ -107,9 +138,6 @@ export default function WeeklyProgress({
     // Key to restart animation on data change
     const chartKey = `${chart.map((d) => `${d.day}-${d.studiedMinutes}-${d.goalMinutes}`).join("|")}`;
 
-    // Y-axis labels: 8, 7, 6, 5, 4, 3, 2 hours
-    const yAxisHours = [8, 6, 4, 2, 0];
-
     return (
         <WeeklyWrapper>
             <ChartWrapper>
@@ -127,8 +155,8 @@ export default function WeeklyProgress({
                 <ChartContainer>
                     {/* Y-Axis Labels */}
                     <YAxisLabels>
-                        {yAxisHours.map((hour) => (
-                            <YAxisLabel key={`axis-${hour}`}>{hour}h</YAxisLabel>
+                        {yAxisPoints.map((mins) => (
+                            <YAxisLabel key={`axis-${mins}`}>{Math.round(mins / 60)}h</YAxisLabel>
                         ))}
                     </YAxisLabels>
 
@@ -136,11 +164,11 @@ export default function WeeklyProgress({
                     <InnerChart key={chartKey}>
                         {/* Grid Lines */}
                         <GridContainer>
-                            {yAxisHours.map((hour) => (
+                            {yAxisPoints.map((mins) => (
                                 <GridLine
-                                    key={`grid-${hour}`}
+                                    key={`grid-${mins}`}
                                     style={{
-                                        bottom: `${((hour - 2) / 8) * 100}%`,
+                                        bottom: `${(mins / axisMax) * 100}%`,
                                     }}
                                 />
                             ))}
@@ -149,11 +177,11 @@ export default function WeeklyProgress({
                         {/* Bars */}
                         <BarsRow>
                             {chart.map((d) => (
-                                <DayCol key={d.day}>
+                                <DayCol key={d.day} title={`${d.studiedMinutes} / ${d.goalMinutes} (${d.goalMinutes > 0 ? Math.round((d.studiedMinutes / d.goalMinutes) * 100) : 0}%)`}>
                                     <BarStack>
-                                        {/* Goal Bar - scaled to day's specific goal */}
+                                        {/* Goal Bar - thin visual reference for day's goal */}
                                         <GoalBar heightPercent={animate ? d.goalPercent : 0} />
-                                        {/* Studied Bar - scaled to actual time studied */}
+                                        {/* Studied Bar - actual studied time */}
                                         <StudiedBar heightPercent={animate ? d.studiedPercent : 0} />
                                     </BarStack>
 
