@@ -8,22 +8,15 @@ import WelcomeHeader from "../../components/WelcomeHeader/WelcomeHeader.jsx";
 import CardContainerComp from "../../components/CardContainer/CardContainer.jsx";
 import DashboardSkeleton from "../../components/DashboardSkeleton/DashboardSkeleton.jsx";
 import DashboardError from "../../components/DashboardError/DashboardError.jsx";
+import PendingEventsStat from '../../components/PendingEventsStat/PendingEventsStat';
+import { Box } from "@mui/material"; // הוספתי Box מ-MUI כדי שנוכל לעשות רווח קטן
 
 // Use environment variable with fallback
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-/**
- * Dashboard - Smart Container Component
- * 
- * Responsibilities:
- * - Fetch all dashboard data (stats, progress)
- * - Manage loading and error states
- * - Pass data down to presentation components
- * - Centralize user context access
- */
 const Dashboard = () => {
-  // Get user from centralized context (eliminates duplicate fetching)
-  const { username } = useUser();
+  // 1. הוספנו פה שליפה של ה-user המלא כדי להעביר לקומפוננטה (תלוי איך קראת לזה בקונטקסט, לפעמים זה נקרא currentUser)
+  const { username, user } = useUser();
 
   // Fetch dashboard statistics (tasks, deadlines)
   const {
@@ -33,7 +26,7 @@ const Dashboard = () => {
     refetch: refetchStats,
   } = useApi(`${API_BASE_URL}/api/stats`);
 
-  // Fetch weekly progress data (skip if endpoint doesn't exist)
+  // Fetch weekly progress data
   const {
     data: progressData,
     loading: progressLoading,
@@ -44,8 +37,16 @@ const Dashboard = () => {
     initialData: { weekly: [] }
   });
 
-  // Combined loading state
-  const isLoading = statsLoading || progressLoading;
+  // 2. הוספנו פה שליפה של האירועים מהשרת (וודאי שהנתיב /api/events תואם לשרת שלך)
+  const {
+    data: events,
+    loading: eventsLoading,
+  } = useApi(`${API_BASE_URL}/api/events`, {
+    initialData: [] // נותן מערך ריק כברירת מחדל עד שיגיעו הנתונים
+  });
+
+  // 3. הוספנו את eventsLoading למצב הטעינה המשולב
+  const isLoading = statsLoading || progressLoading || eventsLoading;
 
   // Only show error if stats fails (progress is optional)
   const hasError = statsError;
@@ -55,11 +56,16 @@ const Dashboard = () => {
   const handleRetry = () => {
     refetchStats();
     refetchProgress();
+    // (אפשר גם להוסיף כאן ריפרש לאירועים אם יש לך פונקציית refetchEvents)
   };
 
   return (
     <Wrapper>
-      <WelcomeHeader username={username} />
+      {/* Header with Pending Invitations on same line */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, width: '100%' }}>
+        <WelcomeHeader username={username} />
+        <PendingEventsStat events={events} currentUser={user} />
+      </Box>
 
       {/* Loading State */}
       {isLoading && <DashboardSkeleton />}
