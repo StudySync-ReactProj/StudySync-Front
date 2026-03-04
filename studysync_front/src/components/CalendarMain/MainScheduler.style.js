@@ -69,4 +69,10 @@ export const SchedulerWrapper = styled("div")(({ theme }) => ({
     "& .rs__header__date": {
         fontSize: "1.1rem !important",
     },
+
+    /* Target today cell header - aggressive approach to override library styles */
+    "& .rs__today_cell p": {
+        color: theme.palette.mode === 'dark' ? "#FFFFFF !important" : `${theme.palette.text.primary} !important`,
+    },
+
 }));

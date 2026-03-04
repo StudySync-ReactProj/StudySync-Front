@@ -14,7 +14,8 @@ import TextFieldComp from '../../../components/TextFieldComp/TextFieldComp';
 export default function DetailsStep({ formData, updateForm }) {
     return (
         <Stack spacing={1}>
-            <Typography variant="h6" fontWeight={600} color="primary.main" sx={{ mb: 0.5 }}>
+            
+            <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5, color: (theme) => theme.palette.mode === 'dark' ? '#FFFFFF' : 'primary.main' }}>
                 Meeting Details
             </Typography>
 

@@ -191,10 +191,12 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
             onClick={handlePreviousWeek}
             size="small"
             sx={{
-              bgcolor: 'primary.main',
-              color: 'white',
+              bgcolor: 'background.paper',
+              color: 'text.primary',
+              border: 1,
+              borderColor: 'divider',
               '&:hover': {
-                bgcolor: 'primary.dark',
+                bgcolor: 'action.hover',
               },
               width: 32,
               height: 32,
@@ -220,7 +222,7 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
             }}
             onClick={handleToday}
           >
-            <Today sx={{ fontSize: 18, color: 'primary.main' }} />
+            <Today sx={{ fontSize: 18, color: 'text.primary' }} />
             <Typography
               variant="body2"
               sx={{
@@ -243,10 +245,12 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
             onClick={handleNextWeek}
             size="small"
             sx={{
-              bgcolor: 'primary.main',
-              color: 'white',
+              bgcolor: 'background.paper',
+              color: 'text.primary',
+              border: 1,
+              borderColor: 'divider',
               '&:hover': {
-                bgcolor: 'primary.dark',
+                bgcolor: 'action.hover',
               },
               width: 32,
               height: 32,

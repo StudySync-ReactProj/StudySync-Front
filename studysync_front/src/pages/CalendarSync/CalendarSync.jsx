@@ -322,15 +322,16 @@ const CalendarSync = () => {
                     <Tooltip title="Refresh Google Calendar Events" arrow>
                         <span>
                             <IconButton
-                                color="primary"
                                 size="medium"
                                 onClick={handleRefreshGoogle}
                                 disabled={googleLoading || actionLoading}
                                 sx={{
-                                    bgcolor: 'primary.main',
-                                    color: 'white',
+                                    bgcolor: 'background.paper',
+                                    color: 'text.primary',
+                                    border: 1,
+                                    borderColor: 'divider',
                                     '&:hover': {
-                                        bgcolor: 'primary.dark',
+                                        bgcolor: 'action.hover',
                                     },
                                     '&:disabled': {
                                         bgcolor: 'action.disabledBackground',
@@ -349,15 +350,16 @@ const CalendarSync = () => {
                     <Tooltip title="Add Meeting Poll" arrow>
                         <span>
                             <IconButton
-                                color="primary"
                                 size="medium"
                                 onClick={handleOpenPollModal}
                                 disabled={actionLoading}
                                 sx={{
-                                    bgcolor: 'primary.main',
-                                    color: 'white',
+                                    bgcolor: 'background.paper',
+                                    color: 'text.primary',
+                                    border: 1,
+                                    borderColor: 'divider',
                                     '&:hover': {
-                                        bgcolor: 'primary.dark',
+                                        bgcolor: 'action.hover',
                                     },
                                     '&:disabled': {
                                         bgcolor: 'action.disabledBackground',

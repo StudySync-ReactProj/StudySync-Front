@@ -1,23 +1,25 @@
 import React from 'react';
-import { 
-    Box, 
-    Typography, 
-    List, 
-    ListItem, 
-    ListItemButton, 
-    ListItemIcon, 
-    ListItemText, 
-    Checkbox, 
+import {
+    Box,
+    Typography,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemIcon,
+    ListItemText,
+    Checkbox,
     CircularProgress,
     Alert,
     Chip,
     Button
 } from '@mui/material';
 import { CheckCircle as AvailableIcon, Search as SearchIcon } from '@mui/icons-material';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
 
-const OptionsStep = ({ 
-    formData, 
-    availableSlots, 
+const OptionsStep = ({
+    formData,
+    availableSlots,
     onToggleSlot,
     isLoadingBusyData,
     isCalculatingSlots,
@@ -28,7 +30,7 @@ const OptionsStep = ({
 }) => {
     return (
         <Box>
-            <Typography variant="h6" fontWeight={600} gutterBottom>
+            <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                 Scheduling Assistant
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
@@ -53,8 +55,8 @@ const OptionsStep = ({
                         size="medium"
                         startIcon={<SearchIcon />}
                         onClick={onFindAvailableTimes}
-                        sx={{ 
-                            px: 3, 
+                        sx={{
+                            px: 3,
                             py: 1,
                             textTransform: 'none',
                             fontSize: '0.875rem'
@@ -70,13 +72,13 @@ const OptionsStep = ({
 
             {/* Loading indicator while calculating slots - Compact */}
             {isCalculatingSlots && (
-                <Box sx={{ 
-                    display: 'flex', 
+                <Box sx={{
+                    display: 'flex',
                     flexDirection: 'column',
-                    alignItems: 'center', 
+                    alignItems: 'center',
                     justifyContent: 'center',
-                    gap: 1.5, 
-                    py: 4 
+                    gap: 1.5,
+                    py: 4
                 }}>
                     <CircularProgress size={32} />
                     <Typography variant="body2" color="primary">
@@ -96,24 +98,10 @@ const OptionsStep = ({
             {/* Recommended Times List - Fixed height with scroll */}
             {hasCalculatedSlots && availableSlots.length > 0 && !isCalculatingSlots && (
                 <>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                        <Typography variant="subtitle2" fontWeight={600} color="success.main">
-                            Recommended Times ({availableSlots.length})
-                        </Typography>
-                        <Button
-                            size="small"
-                            startIcon={<SearchIcon fontSize="small" />}
-                            onClick={onFindAvailableTimes}
-                            sx={{ textTransform: 'none', fontSize: '0.75rem' }}
-                        >
-                            Refresh
-                        </Button>
-                    </Box>
-                    
-                    <List sx={{ 
-                        width: '100%', 
-                        bgcolor: 'background.paper', 
-                        maxHeight: '450px', 
+                    <List sx={{
+                        width: '100%',
+                        bgcolor: 'background.paper',
+                        maxHeight: '450px',
                         overflow: 'auto',
                         border: 1,
                         borderColor: 'divider',
@@ -121,9 +109,15 @@ const OptionsStep = ({
                         '&::-webkit-scrollbar': {
                             width: '8px',
                         },
+                        '&::-webkit-scrollbar-track': {
+                            backgroundColor: 'transparent',
+                        },
                         '&::-webkit-scrollbar-thumb': {
-                            backgroundColor: 'rgba(0,0,0,0.2)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
                             borderRadius: '4px',
+                        },
+                        '&::-webkit-scrollbar-thumb:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.3)',
                         },
                     }}>
                         {availableSlots.map((slot, index, array) => {
@@ -152,7 +146,7 @@ const OptionsStep = ({
                                 <React.Fragment key={slot.id}>
                                     <ListItem
                                         disablePadding
-                                        sx={{ 
+                                        sx={{
                                             borderBottom: hasGap ? 0 : 1,
                                             borderColor: 'divider',
                                             '&:last-child': {
@@ -160,7 +154,7 @@ const OptionsStep = ({
                                             }
                                         }}
                                     >
-                                        <ListItemButton 
+                                        <ListItemButton
                                             onClick={() => onToggleSlot(slot)}
                                             dense
                                             sx={{
@@ -178,6 +172,26 @@ const OptionsStep = ({
                                                     tabIndex={-1}
                                                     disableRipple
                                                     size="small"
+                                                    icon={
+                                                        <CheckBoxOutlineBlankIcon
+                                                            sx={{
+                                                                color: (theme) =>
+                                                                    theme.palette.mode === "dark"
+                                                                        ? "rgba(255,255,255,0.70)"
+                                                                        : theme.palette.text.secondary
+                                                            }}
+                                                        />
+                                                    }
+                                                    checkedIcon={
+                                                        <CheckBoxIcon
+                                                            sx={{
+                                                                color: (theme) =>
+                                                                    theme.palette.mode === "dark"
+                                                                        ? theme.palette.primary.light
+                                                                        : theme.palette.primary.main
+                                                            }}
+                                                        />
+                                                    }
                                                 />
                                             </ListItemIcon>
                                             <ListItemText
@@ -192,13 +206,13 @@ const OptionsStep = ({
                                                     </Typography>
                                                 }
                                             />
-                                            
+
                                             {/* All recommended slots are pre-verified as available */}
-                                            <Chip 
-                                                icon={<AvailableIcon fontSize="small" />} 
-                                                label="Available" 
-                                                color="success" 
-                                                variant="outlined" 
+                                            <Chip
+                                                icon={<AvailableIcon fontSize="small" />}
+                                                label="Available"
+                                                color="success"
+                                                variant="outlined"
                                                 size="small"
                                                 sx={{ fontSize: '0.7rem', height: '24px' }}
                                             />
@@ -207,16 +221,16 @@ const OptionsStep = ({
 
                                     {/* Gap indicator - different styles for day changes vs intra-day gaps */}
                                     {hasGap && (
-                                        <Box 
-                                            sx={{ 
-                                                height: isDayChange ? '4px' : '2px', 
+                                        <Box
+                                            sx={{
+                                                height: isDayChange ? '4px' : '2px',
                                                 backgroundColor: isDayChange ? '#64748B' : '#94A3B8', // Dark slate for day change, solid gray for intra-day
-                                                my: 2, 
+                                                my: 2,
                                                 mx: 2,
-                                                borderRadius: '2px', 
+                                                borderRadius: '2px',
                                                 opacity: 1,
                                                 border: 'none' // Ensure there are no dashed borders overriding the background
-                                            }} 
+                                            }}
                                         />
                                     )}
                                 </React.Fragment>

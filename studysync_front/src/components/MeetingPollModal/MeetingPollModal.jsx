@@ -321,7 +321,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
             <Box sx={{ position: 'relative' }}>
-                <IconButton onClick={handleClose} sx={{ position: 'absolute', right: 8, top: 8, zIndex: 1 }}>
+                <IconButton onClick={handleClose} sx={{ position: 'absolute', right: 8, top: 8, zIndex: 1, color: 'text.secondary' }}>
                     <CloseIcon />
                 </IconButton>
                 <DialogContent sx={{ p: 0, height: '75vh', display: 'flex', overflow: 'hidden' }}>
@@ -343,11 +343,11 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                             }}
                         />
                     </Box>
-                    <Box sx={{ width: '65%', p: 3, bgcolor: '#fafafa', overflowY: 'auto' }}>
+                    <Box sx={{ width: '65%', p: 3, bgcolor: 'background.default', overflowY: 'auto' }}>
                         {!showAssistant && eventToEdit ? (
                             // Show current meeting time when editing and assistant is hidden
                             <Box>
-                                <Typography variant="h6" fontWeight={600} gutterBottom>
+                                <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                                     Current Meeting Time
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -411,7 +411,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                                                             sx={{
                                                                 fontWeight: 'bold',
                                                                 fontSize: '1.1rem',
-                                                                color: '#112240',
+                                                                color: 'text.primary',
                                                                 lineHeight: 1.2,
                                                             }}
                                                         >
@@ -420,7 +420,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                                                         <Typography
                                                             sx={{
                                                                 fontSize: '0.95rem',
-                                                                color: '#112240',
+                                                                color: 'text.primary',
                                                                 fontWeight: 400,
                                                             }}
                                                         >
@@ -437,7 +437,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                                         icon={<CheckCircleIcon sx={{ fontSize: '1rem', color: '#2E7D32' }} />}
                                         label="Available"
                                         sx={{
-                                            bgcolor: 'white',
+                                            bgcolor: 'background.paper',
                                             border: '1px solid #2E7D32',
                                             color: '#2E7D32',
                                             fontWeight: 500,

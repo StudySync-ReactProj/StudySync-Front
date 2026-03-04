@@ -69,7 +69,7 @@ const CalendarSidebar = ({ currentDate, onDateChange, events = [], onConnectGoog
 
             {/* Dynamic event list */}
             <Box sx={{ p: 2, overflowY: "auto", flex: 1 }}>
-                <Typography variant="caption" color="primary" fontWeight="bold">
+                <Typography variant="caption" sx={{ color: 'text.primary', fontWeight: 'bold' }}>
                     {format(currentDate, "dd MMMM yyyy", { locale: enUS })}
                 </Typography>
 
