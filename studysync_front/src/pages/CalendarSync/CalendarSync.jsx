@@ -103,6 +103,7 @@ const CalendarSync = () => {
                     end: endDate,
                     description: event.description || '',
                     source: 'google',
+                    isAllDay: event.isAllDay || false,
                     color: getEventColor({ ...event, source: 'google' }, user?._id)
                 };
             })

@@ -44,6 +44,7 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
         event_id: event._id || event.event_id || event.id,
         start: new Date(event.startDateTime || event.start),
         end: new Date(event.endDateTime || event.end),
+        allDay: event.isAllDay || false,
         editable: !hasParticipants && !isGoogle,
         title: needsRsvp ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
