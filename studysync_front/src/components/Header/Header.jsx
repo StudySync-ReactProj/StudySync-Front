@@ -10,7 +10,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../../assets/dark.svg";
 import ThemeToggleButton from "../ThemeToggleButton/ThemeToggleButton";
 import Wrapper from "../Wrapper/Wrapper.jsx";
@@ -26,11 +26,16 @@ import {
   UserBox,
 } from "./Header.style";
 
-const pages = ["CalendarSync", "Tasks"];
+// Use objects so we can keep paths consistent and case-sensitive
+const pages = [
+  { label: "CalendarSync", path: "/CalendarSync" },
+  { label: "Tasks", path: "/TasksPage" },
+];
 const settings = ["Logout"];
 
 function Header({ theme, setTheme }) {
   const navigate = useNavigate();
+  const location = useLocation();
   // Use centralized user context instead of direct Redux selector
   const { user } = useUser();
   const dispatch = useDispatch();
@@ -73,14 +78,13 @@ function Header({ theme, setTheme }) {
               >
                 {pages.map((page) => (
                   <MenuItem
-                    key={page}
+                    key={page.label}
                     onClick={() => {
                       setAnchorElNav(null);
-                      if (page === "Tasks") navigate("/TasksPage");
-                      if (page === "CalendarSync") navigate("/calendarSync");
+                      navigate(page.path);
                     }}
                   >
-                    <BrandMobile component="span">{page}</BrandMobile>
+                    <BrandMobile component="span">{page.label}</BrandMobile>
                   </MenuItem>
                 ))}
               </Menu>
@@ -88,17 +92,18 @@ function Header({ theme, setTheme }) {
 
             {/* Desktop nav */}
             <DesktopNavBox>
-              {pages.map((page) => (
-                <NavButton
-                  key={page}
-                  onClick={() => {
-                    if (page === "Tasks") navigate("/TasksPage");
-                    if (page === "CalendarSync") navigate("/CalendarSync");
-                  }}
-                >
-                  {page}
-                </NavButton>
-              ))}
+              {pages.map((page) => {
+                const isActive = location.pathname === page.path;
+                return (
+                  <NavButton
+                    key={page.label}
+                    active={isActive}
+                    onClick={() => navigate(page.path)}
+                  >
+                    {page.label}
+                  </NavButton>
+                );
+              })}
             </DesktopNavBox>
           </div>
 

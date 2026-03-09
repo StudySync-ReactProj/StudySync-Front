@@ -62,20 +62,25 @@ export const DesktopNavBox = styled(Box)(({ theme }) => ({
 }));
 
 // Navigation tabs (desktop links)
-export const NavButton = styled(Button)(({ theme }) => ({
-    margin: theme.spacing(2, 2, 0.5, 0),
-    color: theme.palette.text.primary, // במקום primary.main קבוע
-    display: "block",
-    textTransform: "none",
-    fontSize: "20px",
+export const NavButton = styled(Button, { shouldForwardProp: (prop) => prop !== 'active' })(
+    ({ theme, active }) => ({
+        margin: theme.spacing(2, 2, 0.5, 0),
+        color: active ? theme.palette.primary.main : theme.palette.text.primary, // active color
+        display: "block",
+        textTransform: "none",
+        fontSize: "20px",
+        fontWeight: active ? 700 : 400,
+        paddingBottom: active ? '6px' : undefined,
+        borderBottom: active ? `3px solid ${theme.palette.primary.main}` : '3px solid transparent',
 
-    "&:hover": {
-        backgroundColor:
-            theme.palette.mode === "dark"
-                ? "rgba(255,255,255,0.08)"
-                : "rgba(0,0,0,0.04)",
-    },
-}));
+        "&:hover": {
+            backgroundColor:
+                theme.palette.mode === "dark"
+                    ? "rgba(255,255,255,0.08)"
+                    : "rgba(0,0,0,0.04)",
+        },
+    })
+);
 
 // Box that contains the avatar / user menu
 export const UserBox = styled(Box)(() => ({
