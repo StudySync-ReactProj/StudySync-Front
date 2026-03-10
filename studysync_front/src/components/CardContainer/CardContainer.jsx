@@ -20,6 +20,7 @@ import Card from "../Card/Card";
 import Timer from "../Timer/Timer";
 import DailyProgress from "../DailyProgress/DailyProgress";
 import WeeklyProgress from "../WeeklyProgress/WeeklyProgress";
+import Notification from "../Notifications/Notifications";
 
 import API from "../../api/axiosConfig";
 
@@ -54,7 +55,14 @@ const CardContainerComp = ({ stats, progressData, onRefreshProgress }) => {
   // Local override for today's goal (so setting a goal affects only today's display)
   // { date: 'Tue Mar 01 2026', minutes: 250 }
   const [todayGoalOverride, setTodayGoalOverride] = useState(null);
+  // In-app notification state (replaces browser alert)
+  const [notification, setNotification] = useState({ open: false, title: '', message: '', severity: 'info' });
   const LOCAL_OVERRIDE_KEY = 'studysync_today_goal_override';
+
+  const handleNotificationClose = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setNotification((s) => ({ ...s, open: false }));
+  };
 
   // Load persisted override on mount (if it matches today's date)
   useEffect(() => {
@@ -203,7 +211,12 @@ const CardContainerComp = ({ stats, progressData, onRefreshProgress }) => {
       const serverMsg = err?.response?.data?.message || err?.response?.data || err.message || 'Unknown error';
       // Show a clearer error to the user (include status if available)
       const status = err?.response?.status;
-      alert(`Failed to save goal${status ? ` (status ${status})` : ''}: ${serverMsg}`);
+      setNotification({
+        open: true,
+        title: 'Failed to save goal',
+        message: `Failed to save goal${status ? ` (status ${status})` : ''}: ${serverMsg}`,
+        severity: 'error'
+      });
       // Don't trigger onRefreshProgress on failure — local override remains active
     } finally {
       setSavingGoal(false);
@@ -256,7 +269,8 @@ const CardContainerComp = ({ stats, progressData, onRefreshProgress }) => {
                 const num = Number(val);
                 // If the user inserts more than 720, notify and clamp immediately
                 if (!isNaN(num) && num > 720) {
-                  alert("Don't study more then 12H");
+                  // show a non-blocking in-app notification instead of browser alert
+                  setNotification({ open: true, title: 'Study limit reached', message: "Don't study more than 12 hours.", severity: 'warning' });
                   val = '720';
                   setGoalInput(val);
                   setTodayGoalOverride({ date: new Date().toDateString(), minutes: 720 });
@@ -323,6 +337,15 @@ const CardContainerComp = ({ stats, progressData, onRefreshProgress }) => {
           )}
         </Card>
       </DeadlinesBox>
+
+      {/* Global in-component notification */}
+      <Notification
+        open={notification.open}
+        title={notification.title}
+        message={notification.message}
+        severity={notification.severity}
+        onClose={handleNotificationClose}
+      />
     </CardContainer>
   );
 };
