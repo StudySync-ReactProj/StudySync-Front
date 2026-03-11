@@ -8,6 +8,7 @@ import Wrapper from "../../components/Wrapper/Wrapper.jsx";
 import TasksList from "../../components/TasksList/TasksList.jsx";
 import AddTaskForm from "../../components/AddTaskForm/AddTaskForm.jsx";
 import { Button, Box, CircularProgress, Alert } from "@mui/material";
+import { styles } from './TasksPage.style';
 
 const TasksPage = () => {
   // ========== DATA FETCHING WITH useApi HOOK ==========
@@ -46,13 +47,14 @@ const TasksPage = () => {
     };
 
     if (newTaskSchedulingEnabled) {
-      // Convert local datetime-local to ISO string
-      try {
-        taskData.scheduledStart = new Date(newTaskScheduledStart).toISOString();
-      } catch (err) {
-        console.warn('Invalid scheduledStart value:', err);
-        // fallback to raw value
-        taskData.scheduledStart = newTaskScheduledStart;
+      // Convert local datetime-local to ISO string and compute scheduledEnd using estimatedMinutes
+      const startIso = new Date(newTaskScheduledStart).toISOString();
+      taskData.scheduledStart = startIso;
+
+      const est = Number(newTaskEstimatedMinutes) || 0;
+      if (est > 0) {
+        const end = new Date(new Date(startIso).getTime() + est * 60000);
+        taskData.scheduledEnd = end.toISOString();
       }
     }
 
@@ -71,7 +73,7 @@ const TasksPage = () => {
       setNewTaskScheduledStart("");
 
       // Refetch tasks to get updated list
-      refetch();
+      await refetch();
 
       // Notify CalendarSync to refresh its data (so scheduled tasks appear immediately)
       window.dispatchEvent(new CustomEvent('studySync:tasksUpdated'));
@@ -92,7 +94,7 @@ const TasksPage = () => {
 
     try {
       await API.delete(`/tasks/${taskId}`);
-      refetch();
+      await refetch();
     } catch (err) {
       setActionError(err.response?.data?.message || "Failed to delete task");
     } finally {
@@ -112,7 +114,7 @@ const TasksPage = () => {
         await API.put(`/tasks/${taskId}`, { status: newStatus });
       }
 
-      refetch();
+      await refetch();
 
       // Also notify calendar to refresh (in case task scheduling changed)
       window.dispatchEvent(new CustomEvent('studySync:tasksUpdated'));
@@ -131,7 +133,7 @@ const TasksPage = () => {
 
   return (
     <Wrapper>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box sx={styles.headerContainer}>
         <MainTitle title="My Tasks" />
         <Button
           variant="contained"
@@ -144,12 +146,12 @@ const TasksPage = () => {
       </Box>
 
       {/* Show Error Alert if fetch fails */}
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      {actionError && <Alert severity="error" sx={{ mb: 2 }}>{actionError}</Alert>}
+      {error && <Alert severity="error" sx={styles.alertMargin}>{error}</Alert>}
+      {actionError && <Alert severity="error" sx={styles.alertMargin}>{actionError}</Alert>}
 
       {/* Render Add Task Form */}
       {showAddForm && (
-        <Box sx={{ mb: 4 }}>
+        <Box sx={styles.addFormWrapper}>
           <AddTaskForm
             newTaskText={newTaskText}
             setNewTaskText={setNewTaskText}
@@ -165,6 +167,8 @@ const TasksPage = () => {
             setNewTaskSchedulingEnabled={setNewTaskSchedulingEnabled}
             newTaskScheduledStart={newTaskScheduledStart}
             setNewTaskScheduledStart={setNewTaskScheduledStart}
+            actionError={actionError}
+            actionLoading={actionLoading}
           />
         </Box>
       )}
@@ -172,15 +176,17 @@ const TasksPage = () => {
       {/* Show Loading Spinner or Task List */}
       <div id="tasks--list">
         {loading ? (
-          <Box display="flex" justifyContent="center" mt={4}>
+          <Box sx={styles.spinnerBox}>
             <CircularProgress />
           </Box>
         ) : (
-          <TasksList
-            tasks={tasks || []}
-            onStatusChange={handleStatusChange}
-            onDeleteTask={handleDeleteTask}
-          />
+          <Box sx={styles.tasksListContainer}>
+            <TasksList
+              tasks={tasks || []}
+              onStatusChange={handleStatusChange}
+              onDeleteTask={handleDeleteTask}
+            />
+          </Box>
         )}
       </div>
     </Wrapper>

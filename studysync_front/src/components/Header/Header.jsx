@@ -24,6 +24,10 @@ import {
   DesktopNavBox,
   NavButton,
   UserBox,
+  ToolbarContainer,
+  LeftGroup,
+  RightGroup,
+  LogoImg
 } from "./Header.style";
 
 // Use objects so we can keep paths consistent and case-sensitive
@@ -44,7 +48,6 @@ function Header({ theme, setTheme }) {
   const muiTheme = useTheme();
   const isDark = muiTheme.palette.mode === "dark";
 
-
   const handleCloseUserMenu = (setting) => {
     setAnchorElUser(null);
     if (setting === "Logout") {
@@ -56,13 +59,12 @@ function Header({ theme, setTheme }) {
   return (
     <NavAppBar position="static">
       <Wrapper>
-        <Toolbar disableGutters sx={{ justifyContent: "space-between" }}>
+        <ToolbarContainer disableGutters>
           {/* LEFT SIDE */}
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <img
+          <LeftGroup>
+            <LogoImg
               src={isDark ? LogoDark : Logo}
               alt="StudySync Logo"
-              style={{ height: "100px", cursor: "pointer", marginLeft: "-20px", marginTop: "8px" }}
               onClick={() => navigate("/dashboard")}
             />
 
@@ -105,10 +107,10 @@ function Header({ theme, setTheme }) {
                 );
               })}
             </DesktopNavBox>
-          </div>
+          </LeftGroup>
 
           {/* RIGHT SIDE */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <RightGroup>
             <ThemeToggleButton theme={theme} setTheme={setTheme} />
             <UserBox>
               <Tooltip title="Open settings">
@@ -133,8 +135,8 @@ function Header({ theme, setTheme }) {
                 ))}
               </Menu>
             </UserBox>
-          </div>
-        </Toolbar>
+          </RightGroup>
+        </ToolbarContainer>
       </Wrapper>
     </NavAppBar>
   );

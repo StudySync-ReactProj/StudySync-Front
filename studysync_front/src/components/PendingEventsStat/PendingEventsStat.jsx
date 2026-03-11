@@ -1,6 +1,7 @@
 // Component that shows in dashboard the number of pending events for the user
 import React from 'react';
 import { Box, Typography, Tooltip } from '@mui/material';
+import { styles as pendingStyles } from './PendingEventsStat.style';
 
 const PendingEventsStat = ({ events = [], currentUser }) => {
     // Calculate pending count - events waiting for user's RSVP
@@ -14,16 +15,16 @@ const PendingEventsStat = ({ events = [], currentUser }) => {
     if (pendingCount === 0) return null;
 
     return (
-        <Tooltip 
-            title="Events waiting for your RSVP response." 
+        <Tooltip
+            title="Events waiting for your RSVP response."
             arrow
             placement="bottom"
         >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'default' }}>
-                <Typography sx={{ fontWeight: 'bold', color: 'text.primary', fontSize: '1.1rem' }}>
+            <Box sx={pendingStyles.container}>
+                <Typography sx={pendingStyles.countText}>
                     {pendingCount}
                 </Typography>
-                <Typography sx={{ fontWeight: 'normal', color: 'text.primary', fontSize: '1.1rem' }}>
+                <Typography sx={pendingStyles.labelText}>
                     Pending Events
                 </Typography>
             </Box>

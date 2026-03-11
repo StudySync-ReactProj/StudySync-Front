@@ -2,7 +2,7 @@ import { styled } from "@mui/material/styles";
 import { Box, Paper } from "@mui/material";
 
 /** Main container that holds the list of cards */
-export const TasksWrapper = styled(Box)(({ theme }) => ({
+export const TasksWrapper = styled(Box)(() => ({
   display: "flex",
   flexDirection: "column",
   gap: "16px",
@@ -11,7 +11,7 @@ export const TasksWrapper = styled(Box)(({ theme }) => ({
 }));
 
 /** Individual card styling */
-export const StyledTaskCard = styled(Paper)(({ theme }) => ({
+export const StyledTaskCard = styled(Paper)(() => ({
   padding: "16px 24px",
   borderRadius: "16px",
   display: "flex",
@@ -45,3 +45,35 @@ export const PriorityBadge = styled(Box)(({ priority }) => {
     textTransform: "capitalize",
   };
 });
+
+// Additional style helpers to avoid inline sx objects in TasksList.jsx
+export const titleTypographySx = (isCompleted) => ({
+  fontWeight: 600,
+  color: 'text.primary',
+  textDecoration: isCompleted ? 'line-through' : 'none',
+  opacity: isCompleted ? 0.6 : 1
+});
+
+export const metaRowSx = {
+  mt: 0.5,
+  color: 'text.secondary',
+  display: 'flex',
+  gap: 2,
+  alignItems: 'center'
+};
+
+export const smallIconSx = { fontSize: 14 };
+
+export const formControlSx = { minWidth: 120 };
+
+export const selectSx = {
+  fontSize: '0.75rem',
+  height: '24px',
+  '& .MuiSelect-select': { py: 0 }
+};
+
+export const dueStackSx = { display: 'flex', alignItems: 'center', gap: 0.5 };
+
+export const taskCardInnerSx = { width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
+
+export const deleteButtonSx = { color: 'error.main' };

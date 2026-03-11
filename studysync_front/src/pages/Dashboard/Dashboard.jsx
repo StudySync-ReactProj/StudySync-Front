@@ -10,6 +10,7 @@ import DashboardSkeleton from "../../components/DashboardSkeleton/DashboardSkele
 import DashboardError from "../../components/DashboardError/DashboardError.jsx";
 import PendingEventsStat from '../../components/PendingEventsStat/PendingEventsStat';
 import { Box } from "@mui/material"; // הוספתי Box מ-MUI כדי שנוכל לעשות רווח קטן
+import { styles } from './Dashboard.style';
 
 // Use environment variable with fallback
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -62,7 +63,7 @@ const Dashboard = () => {
   return (
     <Wrapper>
       {/* Header with Pending Invitations on same line */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, width: '100%' }}>
+      <Box sx={styles.headerRow}>
         <WelcomeHeader username={username} />
         <PendingEventsStat events={events} currentUser={user} />
       </Box>

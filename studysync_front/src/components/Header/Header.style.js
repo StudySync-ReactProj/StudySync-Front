@@ -1,6 +1,6 @@
 // src/components/NavBar/NavBar.style.js
 import { styled } from "@mui/material/styles";
-import { AppBar, Box, Typography, Button } from "@mui/material";
+import { AppBar, Box, Typography, Button, Toolbar } from "@mui/material";
 
 // Top navigation bar container
 export const NavAppBar = styled(AppBar)(({ theme }) => ({
@@ -85,5 +85,28 @@ export const NavButton = styled(Button, { shouldForwardProp: (prop) => prop !== 
 // Box that contains the avatar / user menu
 export const UserBox = styled(Box)(() => ({
     flexGrow: 0,
+}));
+
+export const ToolbarContainer = styled(Toolbar)(() => ({
+    justifyContent: 'space-between'
+}));
+
+export const LeftGroup = styled(Box)(() => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 16
+}));
+
+export const RightGroup = styled(Box)(() => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12
+}));
+
+export const LogoImg = styled('img')(() => ({
+    height: 100,
+    cursor: 'pointer',
+    marginLeft: -20,
+    marginTop: 8
 }));
 

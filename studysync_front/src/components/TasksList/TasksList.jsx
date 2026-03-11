@@ -5,6 +5,16 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EventIcon from '@mui/icons-material/Event';
 import { TasksWrapper, StyledTaskCard, PriorityBadge } from './TasksList.style.js';
+import {
+  titleTypographySx,
+  metaRowSx,
+  smallIconSx,
+  formControlSx,
+  selectSx,
+  dueStackSx,
+  taskCardInnerSx,
+  deleteButtonSx
+} from './TasksList.style.js';
 
 // Individual Task Item Component
 function TaskItem({ task, onStatusChange, onDeleteTask }) {
@@ -16,8 +26,8 @@ function TaskItem({ task, onStatusChange, onDeleteTask }) {
     const start = new Date(task.scheduledStart);
     const end = new Date(task.scheduledEnd);
     return (
-      <Stack direction="row" spacing={0.5} alignItems="center">
-        <EventIcon sx={{ fontSize: 14 }} />
+      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ...metaRowSx }}>
+        <EventIcon sx={smallIconSx} />
         <Typography variant="caption">{start.toLocaleString()} - {end.toLocaleTimeString()}</Typography>
       </Stack>
     );
@@ -26,8 +36,8 @@ function TaskItem({ task, onStatusChange, onDeleteTask }) {
   const renderEstimated = () => {
     if (!task.estimatedMinutes) return null;
     return (
-      <Stack direction="row" spacing={0.5} alignItems="center">
-        <AccessTimeIcon sx={{ fontSize: 14 }} />
+      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ...metaRowSx }}>
+        <AccessTimeIcon sx={smallIconSx} />
         <Typography variant="caption">{task.estimatedMinutes} min</Typography>
       </Stack>
     );
@@ -35,20 +45,14 @@ function TaskItem({ task, onStatusChange, onDeleteTask }) {
 
   return (
     <StyledTaskCard elevation={0}>
-      <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" width="100%">
+      <Stack direction="row" spacing={2} alignItems="center" sx={taskCardInnerSx}>
         <Stack direction="row" spacing={2} alignItems="center" flex={1}>
           <Box>
             <Stack direction="row" spacing={1} alignItems="center">
               <Typography
                 variant="subtitle1"
-                sx={{
-                  fontWeight: 600,
-                  color: 'text.primary',
-                  textDecoration: isCompleted ? 'line-through' : 'none',
-                  opacity: isCompleted ? 0.6 : 1
-                }}
+                sx={titleTypographySx(isCompleted)}
               >
-                {/* Use 'title' from your backend model */}
                 {task.title}
               </Typography>
               <PriorityBadge priority={task.priority}>
@@ -56,9 +60,9 @@ function TaskItem({ task, onStatusChange, onDeleteTask }) {
               </PriorityBadge>
             </Stack>
 
-            <Stack direction="row" spacing={2} sx={{ mt: 0.5, color: 'text.secondary' }} alignItems="center">
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <CalendarTodayIcon sx={{ fontSize: 14 }} />
+            <Stack direction="row" spacing={2} sx={metaRowSx} alignItems="center">
+              <Stack direction="row" spacing={0.5} alignItems="center" sx={dueStackSx}>
+                <CalendarTodayIcon sx={smallIconSx} />
                 <Typography variant="caption">
                   {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No date'}
                 </Typography>
@@ -69,15 +73,11 @@ function TaskItem({ task, onStatusChange, onDeleteTask }) {
               {renderScheduled()}
 
               <Typography variant="caption">•</Typography>
-              <FormControl size="small" sx={{ minWidth: 120 }}>
+              <FormControl size="small" sx={formControlSx}>
                 <Select
                   value={task.status || 'Not Started'}
                   onChange={(e) => onStatusChange(task._id, e.target.value)} // Using MongoDB _id
-                  sx={{
-                    fontSize: '0.75rem',
-                    height: '24px',
-                    '& .MuiSelect-select': { py: 0 }
-                  }}
+                  sx={selectSx}
                 >
                   <MenuItem value="Not Started">Not Started</MenuItem>
                   <MenuItem value="In Progress">In Progress</MenuItem>
@@ -93,6 +93,7 @@ function TaskItem({ task, onStatusChange, onDeleteTask }) {
           size="small"
           color="error"
           onClick={() => onDeleteTask(task._id)} // Using MongoDB _id
+          sx={deleteButtonSx}
         >
           <DeleteIcon fontSize="small" />
         </IconButton>

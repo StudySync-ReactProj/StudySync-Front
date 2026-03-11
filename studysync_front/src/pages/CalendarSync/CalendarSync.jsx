@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
-import { Box, IconButton, Tooltip, Typography } from "@mui/material";
+import { Box, IconButton, Tooltip, Typography, Alert } from "@mui/material";
 import { Add as AddIcon, Refresh as RefreshIcon } from "@mui/icons-material";
 
 // Custom Hook
@@ -33,6 +33,9 @@ const CalendarSync = () => {
     // Local google loading state to avoid ReferenceError and to control loading during manual refetch
     const [googleLoading, setGoogleLoading] = useState(false);
 
+    // UI error state (replace usage of alert())
+    const [calendarError, setCalendarError] = useState(null);
+
     // Get user data from Redux Store (state.user.user based on userSlice)
     const user = useSelector((state) => state.user?.user);
 
@@ -60,10 +63,12 @@ const CalendarSync = () => {
     // Wrapper to refetch Google events with explicit loading state
     const refetchGoogleEventsWrapped = useCallback(async () => {
         setGoogleLoading(true);
+        setCalendarError(null);
         try {
             await refetchGoogleEvents();
         } catch (err) {
             console.error('Failed to refetch Google events', err);
+            setCalendarError('Failed to load Google Calendar events.');
         } finally {
             setGoogleLoading(false);
         }
@@ -113,7 +118,7 @@ const CalendarSync = () => {
         if (!events || !Array.isArray(events)) return [];
 
         return events
-            .filter(event => event.source === 'google' || event.source === 'google-calendar' || event.source === 'google_events' || true)
+            .filter(event => event && (event.source === 'google' || event.source === 'google-calendar' || event.source === 'google_events'))
             .map(event => {
                 const startSource = event.start?.dateTime || event.start?.date || event.start;
                 const endSource = event.end?.dateTime || event.end?.date || event.end;
@@ -151,7 +156,7 @@ const CalendarSync = () => {
         if (!events || !Array.isArray(events)) return [];
 
         return events
-            .filter(event => event.source !== 'google')
+            .filter(event => event && event.source !== 'google')
             .map(event => {
                 // Use startDateTime/endDateTime directly from event object (backend now saves these)
                 const startSource = event.startDateTime || event.selectedSlot?.startDateTime || event.createdAt;
@@ -188,7 +193,7 @@ const CalendarSync = () => {
     const formatScheduledTasks = (tasks) => {
         if (!tasks || !Array.isArray(tasks)) return [];
         return tasks
-            .filter(t => t.scheduledStart && t.scheduledEnd)
+            .filter(t => t && t.scheduledStart && t.scheduledEnd)
             .map(task => {
                 const start = new Date(task.scheduledStart);
                 const end = new Date(task.scheduledEnd);
@@ -245,6 +250,7 @@ const CalendarSync = () => {
         console.log('🚀 CalendarSync: handleSubmitMeetingPoll called with:', meetingData);
         console.log('📝 eventToEdit:', eventToEdit);
         setActionLoading(true);
+        setCalendarError(null);
 
         try {
             let response;
@@ -285,7 +291,7 @@ const CalendarSync = () => {
 
         } catch (error) {
             console.error('❌ CalendarSync: Failed to save event:', error);
-            alert(`Failed to ${eventToEdit ? 'update' : 'create'} meeting poll. Please try again.`);
+            setCalendarError(`Failed to ${eventToEdit ? 'update' : 'create'} meeting poll. Please try again.`);
         } finally {
             setActionLoading(false);
         }
@@ -296,6 +302,7 @@ const CalendarSync = () => {
      * Fetches the authorization URL from backend and redirects the user
      */
     const handleConnectGoogle = async () => {
+        setCalendarError(null);
         try {
             // Use environment variable with fallback
             const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -304,7 +311,7 @@ const CalendarSync = () => {
             const userId = user?._id || user?.id || localStorage.getItem('userId');
 
             if (!userId) {
-                alert('User ID not found. Please log in again.');
+                setCalendarError('User ID not found. Please log in again.');
                 return;
             }
 
@@ -325,11 +332,11 @@ const CalendarSync = () => {
             if (data.url) {
                 window.location.href = data.url;
             } else {
-                alert("Could not get Google Auth URL from server.");
+                setCalendarError("Could not get Google Auth URL from server.");
             }
         } catch (error) {
             console.error("Error connecting to Google:", error);
-            alert("Check your Server/Console for errors.");
+            setCalendarError("Check your Server/Console for errors.");
         }
     };
 
@@ -349,29 +356,14 @@ const CalendarSync = () => {
             {/* Header Section - Title and Action Buttons */}
             <Box sx={styles.headerContainer}>
                 <MainTitle title="CalendarSync" />
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={styles.headerButtonsContainer}>
                     <Tooltip title="Refresh Google Calendar Events" arrow>
                         <span>
                             <IconButton
                                 size="medium"
                                 onClick={handleRefreshGoogle}
                                 disabled={googleLoading || actionLoading}
-                                sx={{
-                                    bgcolor: 'background.paper',
-                                    color: 'text.primary',
-                                    border: 1,
-                                    borderColor: 'divider',
-                                    '&:hover': {
-                                        bgcolor: 'action.hover',
-                                    },
-                                    '&:disabled': {
-                                        bgcolor: 'action.disabledBackground',
-                                        color: 'action.disabled',
-                                    },
-                                    width: 40,
-                                    height: 40,
-                                    borderRadius: 2
-                                }}
+                                sx={styles.actionButton}
                             >
                                 <RefreshIcon />
                             </IconButton>
@@ -384,22 +376,7 @@ const CalendarSync = () => {
                                 size="medium"
                                 onClick={handleOpenPollModal}
                                 disabled={actionLoading}
-                                sx={{
-                                    bgcolor: 'background.paper',
-                                    color: 'text.primary',
-                                    border: 1,
-                                    borderColor: 'divider',
-                                    '&:hover': {
-                                        bgcolor: 'action.hover',
-                                    },
-                                    '&:disabled': {
-                                        bgcolor: 'action.disabledBackground',
-                                        color: 'action.disabled',
-                                    },
-                                    width: 40,
-                                    height: 40,
-                                    borderRadius: 2
-                                }}
+                                sx={styles.actionButton}
                             >
                                 <AddIcon />
                             </IconButton>
@@ -407,6 +384,8 @@ const CalendarSync = () => {
                     </Tooltip>
                 </Box>
             </Box>
+
+            {calendarError && <Alert severity="error" sx={styles.alertMargin}>{calendarError}</Alert>}
 
             {/* Main Calendar Section - Sidebar and Scheduler */}
             <Box sx={styles.mainContainer}>
@@ -419,35 +398,22 @@ const CalendarSync = () => {
 
                 <Box sx={styles.schedulerContainer}>
                     {/* Color Legend */}
-                    <Box sx={{
-                        display: 'flex',
-                        gap: 3,
-                        mb: 2,
-                        p: 1.5,
-                        backgroundColor: 'background.paper',
-                        borderRadius: 1,
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                        flexWrap: 'wrap'
-                    }}>
-                        {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box sx={{ width: 16, height: 16, backgroundColor: '#2196f3', borderRadius: 1 }} />
-                            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>Your Events</Typography>
-                            </Box> */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box sx={{ width: 16, height: 16, backgroundColor: '#C98BB9', borderRadius: 1 }} />
-                            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>My Events</Typography>
+                    <Box sx={styles.legendContainer}>
+                        <Box sx={styles.legendItem}>
+                            <Box sx={styles.legendColorBox('#C98BB9')} />
+                            <Typography variant="body2">My Events</Typography>
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box sx={{ width: 16, height: 16, backgroundColor: '#B0BEC5', borderRadius: 1 }} />
-                            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>Invited Events</Typography>
+                        <Box sx={styles.legendItem}>
+                            <Box sx={styles.legendColorBox('#B0BEC5')} />
+                            <Typography variant="body2">Invited Events</Typography>
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box sx={{ width: 16, height: 16, backgroundColor: '#4285F4', borderRadius: 1 }} />
-                            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>Google Calendar</Typography>
+                        <Box sx={styles.legendItem}>
+                            <Box sx={styles.legendColorBox('#4285F4')} />
+                            <Typography variant="body2">Google Calendar</Typography>
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box sx={{ width: 16, height: 16, backgroundColor: '#8BC34A', borderRadius: 1 }} />
-                            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>Scheduled Tasks</Typography>
+                        <Box sx={styles.legendItem}>
+                            <Box sx={styles.legendColorBox('#8BC34A')} />
+                            <Typography variant="body2">Scheduled Tasks</Typography>
                         </Box>
                     </Box>
 
