@@ -2,12 +2,36 @@ import * as React from 'react';
 import { Box, Typography, IconButton, Stack, Select, MenuItem, FormControl } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import EventIcon from '@mui/icons-material/Event';
 import { TasksWrapper, StyledTaskCard, PriorityBadge } from './TasksList.style.js';
 
 // Individual Task Item Component
 function TaskItem({ task, onStatusChange, onDeleteTask }) {
   // Check if task is completed based on status from backend
   const isCompleted = task.status === 'Completed';
+
+  const renderScheduled = () => {
+    if (!task.scheduledStart || !task.scheduledEnd) return null;
+    const start = new Date(task.scheduledStart);
+    const end = new Date(task.scheduledEnd);
+    return (
+      <Stack direction="row" spacing={0.5} alignItems="center">
+        <EventIcon sx={{ fontSize: 14 }} />
+        <Typography variant="caption">{start.toLocaleString()} - {end.toLocaleTimeString()}</Typography>
+      </Stack>
+    );
+  };
+
+  const renderEstimated = () => {
+    if (!task.estimatedMinutes) return null;
+    return (
+      <Stack direction="row" spacing={0.5} alignItems="center">
+        <AccessTimeIcon sx={{ fontSize: 14 }} />
+        <Typography variant="caption">{task.estimatedMinutes} min</Typography>
+      </Stack>
+    );
+  };
 
   return (
     <StyledTaskCard elevation={0}>
@@ -39,6 +63,11 @@ function TaskItem({ task, onStatusChange, onDeleteTask }) {
                   {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No date'}
                 </Typography>
               </Stack>
+
+              {/* Estimated time and scheduled info */}
+              {renderEstimated()}
+              {renderScheduled()}
+
               <Typography variant="caption">•</Typography>
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <Select
@@ -74,11 +103,11 @@ function TaskItem({ task, onStatusChange, onDeleteTask }) {
 
 // Main Task List Component
 export default function MobileStyleTaskList({ tasks = [], onStatusChange, onDeleteTask }) {
-  
+
   // Safe mapping - only map if tasks exist
   const rows = tasks.map(task => ({
-    _id: task._id, 
-    title: task.title, 
+    _id: task._id,
+    title: task.title,
     priority: task.priority || 'Low',
     dueDate: task.dueDate,
     status: task.status || 'Not Started',
@@ -87,11 +116,11 @@ export default function MobileStyleTaskList({ tasks = [], onStatusChange, onDele
   return (
     <TasksWrapper>
       {rows.map((row) => (
-        <TaskItem 
+        <TaskItem
           key={row._id} // Using the MongoDB unique ID
-          task={row} 
+          task={row}
           onStatusChange={onStatusChange}
-          onDeleteTask={() => onDeleteTask?.(row._id)} 
+          onDeleteTask={() => onDeleteTask?.(row._id)}
         />
       ))}
     </TasksWrapper>

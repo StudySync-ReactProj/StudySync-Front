@@ -21,31 +21,68 @@ const TasksPage = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState(null);
 
+  // New fields for scheduling
+  const [newTaskEstimatedMinutes, setNewTaskEstimatedMinutes] = useState(0);
+  const [newTaskSchedulingEnabled, setNewTaskSchedulingEnabled] = useState(false);
+  const [newTaskScheduledStart, setNewTaskScheduledStart] = useState("");
+
   // ========== HANDLERS ==========
 
   const handleAddTask = async () => {
-    if (newTaskText.trim()) {
-      const taskData = {
-        title: newTaskText,
-        priority: newTaskPriority.charAt(0).toUpperCase() + newTaskPriority.slice(1).toLowerCase(), 
-        dueDate: newTaskDueDate || new Date().toISOString(),
-        status: 'Not Started'
-      };
+    if (!newTaskText.trim()) return;
 
-      setActionLoading(true);
-      setActionError(null);
+    // If scheduling enabled, ensure a start is provided
+    if (newTaskSchedulingEnabled && !newTaskScheduledStart) {
+      setActionError('Please choose a start date and time for scheduling.');
+      return;
+    }
 
+    const taskData = {
+      title: newTaskText,
+      priority: newTaskPriority.charAt(0).toUpperCase() + newTaskPriority.slice(1).toLowerCase(),
+      dueDate: newTaskDueDate || new Date().toISOString(),
+      status: 'Not Started',
+      estimatedMinutes: Number(newTaskEstimatedMinutes) || 0,
+    };
+
+    if (newTaskSchedulingEnabled) {
+      // Convert local datetime-local to ISO string
       try {
-        await API.post('/tasks', taskData);
-        setNewTaskText("");
-        setShowAddForm(false);
-        // Refetch tasks to get updated list
-        refetch();
+        taskData.scheduledStart = new Date(newTaskScheduledStart).toISOString();
       } catch (err) {
-        setActionError(err.response?.data?.message || "Failed to add task");
-      } finally {
-        setActionLoading(false);
+        console.warn('Invalid scheduledStart value:', err);
+        // fallback to raw value
+        taskData.scheduledStart = newTaskScheduledStart;
       }
+    }
+
+    setActionLoading(true);
+    setActionError(null);
+
+    try {
+      await API.post('/tasks', taskData);
+      // Reset form
+      setNewTaskText("");
+      setNewTaskPriority("Medium");
+      setNewTaskDueDate("");
+      setShowAddForm(false);
+      setNewTaskEstimatedMinutes(0);
+      setNewTaskSchedulingEnabled(false);
+      setNewTaskScheduledStart("");
+
+      // Refetch tasks to get updated list
+      refetch();
+
+      // Notify CalendarSync to refresh its data (so scheduled tasks appear immediately)
+      window.dispatchEvent(new CustomEvent('studySync:tasksUpdated'));
+    } catch (err) {
+      if (err?.response?.status === 409) {
+        setActionError('This time slot is already occupied. Please choose another time.');
+      } else {
+        setActionError(err.response?.data?.message || "Failed to add task");
+      }
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -68,8 +105,17 @@ const TasksPage = () => {
     setActionError(null);
 
     try {
-      await API.put(`/tasks/${taskId}`, { status: newStatus });
+      // If marking as completed manually, tell backend no timer used
+      if (newStatus === 'Completed') {
+        await API.put(`/tasks/${taskId}`, { status: newStatus, completedWithTimer: false });
+      } else {
+        await API.put(`/tasks/${taskId}`, { status: newStatus });
+      }
+
       refetch();
+
+      // Also notify calendar to refresh (in case task scheduling changed)
+      window.dispatchEvent(new CustomEvent('studySync:tasksUpdated'));
     } catch (err) {
       setActionError(err.response?.data?.message || "Failed to update task");
     } finally {
@@ -112,6 +158,13 @@ const TasksPage = () => {
             newTaskDueDate={newTaskDueDate}
             setNewTaskDueDate={setNewTaskDueDate}
             onSave={handleAddTask}
+            onCancel={() => setShowAddForm(false)}
+            newTaskEstimatedMinutes={newTaskEstimatedMinutes}
+            setNewTaskEstimatedMinutes={setNewTaskEstimatedMinutes}
+            newTaskSchedulingEnabled={newTaskSchedulingEnabled}
+            setNewTaskSchedulingEnabled={setNewTaskSchedulingEnabled}
+            newTaskScheduledStart={newTaskScheduledStart}
+            setNewTaskScheduledStart={setNewTaskScheduledStart}
           />
         </Box>
       )}

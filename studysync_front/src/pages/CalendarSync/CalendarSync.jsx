@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { Add as AddIcon, Refresh as RefreshIcon } from "@mui/icons-material";
@@ -30,6 +30,9 @@ const CalendarSync = () => {
     const [eventToEdit, setEventToEdit] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
 
+    // Local google loading state to avoid ReferenceError and to control loading during manual refetch
+    const [googleLoading, setGoogleLoading] = useState(false);
+
     // Get user data from Redux Store (state.user.user based on userSlice)
     const user = useSelector((state) => state.user?.user);
 
@@ -38,18 +41,33 @@ const CalendarSync = () => {
     // ============================================
 
     // Fetch events from backend
-    const { data: events, loading: eventsLoading, error: eventsError, refetch: refetchEvents } = useApi('/events');
-    
+    const { data: events, refetch: refetchEvents } = useApi('/events');
+
     // Fetch Google Calendar events
-    const { data: googleEvents, loading: googleLoading, error: googleError, refetch: refetchGoogleEvents } = useApi('/google-calendar/events', {
+    const { data: googleEvents, refetch: refetchGoogleEvents } = useApi('/google-calendar/events', {
         skip: false,
         initialData: []
     });
-    
+
+    // Fetch tasks so scheduled tasks can be shown on calendar
+    const { data: tasksData, refetch: refetchTasks } = useApi('/tasks', { initialData: [] });
+
     // Debug: Log when events change
     useEffect(() => {
         console.log('📊 CalendarSync: Events state updated. Count:', events?.length || 0);
     }, [events]);
+
+    // Wrapper to refetch Google events with explicit loading state
+    const refetchGoogleEventsWrapped = useCallback(async () => {
+        setGoogleLoading(true);
+        try {
+            await refetchGoogleEvents();
+        } catch (err) {
+            console.error('Failed to refetch Google events', err);
+        } finally {
+            setGoogleLoading(false);
+        }
+    }, [refetchGoogleEvents]);
 
     // ============================================
     // EFFECTS - OAuth Handling
@@ -63,10 +81,24 @@ const CalendarSync = () => {
             window.history.replaceState({}, document.title, window.location.pathname);
             // Refetch Google Calendar events with a small delay to ensure DB is updated
             setTimeout(() => {
-                refetchGoogleEvents();
+                refetchGoogleEventsWrapped();
             }, 800);
         }
-    }, [refetchGoogleEvents]);
+    }, [refetchGoogleEventsWrapped]);
+
+    // Listen for task updates from other parts of the app (e.g., after creating a scheduled task)
+    useEffect(() => {
+        const handler = () => {
+            // Refetch tasks and events so scheduled tasks appear immediately
+            refetchTasks();
+            refetchEvents();
+            // Also refresh google events safely
+            refetchGoogleEventsWrapped();
+        };
+
+        window.addEventListener('studySync:tasksUpdated', handler);
+        return () => window.removeEventListener('studySync:tasksUpdated', handler);
+    }, [refetchTasks, refetchEvents, refetchGoogleEventsWrapped]);
 
     // ============================================
     // HELPER FUNCTIONS - Event Formatting
@@ -79,9 +111,9 @@ const CalendarSync = () => {
      */
     const formatGoogleEvents = (events) => {
         if (!events || !Array.isArray(events)) return [];
-        
+
         return events
-            .filter(event => event.source === 'google')
+            .filter(event => event.source === 'google' || event.source === 'google-calendar' || event.source === 'google_events' || true)
             .map(event => {
                 const startSource = event.start?.dateTime || event.start?.date || event.start;
                 const endSource = event.end?.dateTime || event.end?.date || event.end;
@@ -117,7 +149,7 @@ const CalendarSync = () => {
      */
     const formatDBEvents = (events) => {
         if (!events || !Array.isArray(events)) return [];
-        
+
         return events
             .filter(event => event.source !== 'google')
             .map(event => {
@@ -150,15 +182,40 @@ const CalendarSync = () => {
             .filter(event => event !== null);
     };
 
-    // Combine all events (from backend and Google Calendar)
+    /**
+     * Format scheduled tasks into calendar events
+     */
+    const formatScheduledTasks = (tasks) => {
+        if (!tasks || !Array.isArray(tasks)) return [];
+        return tasks
+            .filter(t => t.scheduledStart && t.scheduledEnd)
+            .map(task => {
+                const start = new Date(task.scheduledStart);
+                const end = new Date(task.scheduledEnd);
+                if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+                return {
+                    event_id: task._id,
+                    title: `📚 ${task.title}`,
+                    start,
+                    end,
+                    description: task.description || '',
+                    source: 'task',
+                    color: '#8BC34A',
+                    type: 'task'
+                };
+            })
+            .filter(e => e !== null);
+    };
+
+    // Prepare arrays and format events for display
     const allBackendEvents = events || [];
     const allGoogleEvents = googleEvents || [];
-    const combinedEvents = [...allBackendEvents, ...allGoogleEvents];
-    
-    // Format combined events for display
+    const allTasks = tasksData || [];
+
     const allEvents = [
-        ...formatGoogleEvents(combinedEvents),
-        ...formatDBEvents(combinedEvents)
+        ...formatGoogleEvents(allGoogleEvents),
+        ...formatDBEvents(allBackendEvents),
+        ...formatScheduledTasks(allTasks)
     ];
 
     // ============================================
@@ -181,33 +238,6 @@ const CalendarSync = () => {
     };
 
     /**
-     * Cleanup test events - Remove all events with test titles
-     * This is a temporary utility to clear old draft events
-     */
-    const handleCleanupTestEvents = async () => {
-        const testKeywords = ['test', 'please work', 'hello', 'djshcbbdsjb', 'hellp'];
-        const eventsToDelete = (events || []).filter(event =>
-            event.source !== 'google' &&
-            testKeywords.some(keyword => event.title?.toLowerCase().includes(keyword))
-        );
-
-        if (eventsToDelete.length === 0) {
-            alert('No test events found to delete');
-            return;
-        }
-
-        if (window.confirm(`Delete ${eventsToDelete.length} test event(s)?`)) {
-            try {
-                // You'll need to implement deleteEventAsync in your eventsSlice
-                // For now, we'll log the IDs that should be deleted
-                alert(`Found ${eventsToDelete.length} test events. Backend delete endpoint needed.`);
-            } catch (error) {
-                console.error('Failed to delete events:', error);
-            }
-        }
-    };
-
-    /**
      * Handle meeting poll submission
      * Creates a new event or updates an existing one based on eventToEdit
      */
@@ -215,44 +245,44 @@ const CalendarSync = () => {
         console.log('🚀 CalendarSync: handleSubmitMeetingPoll called with:', meetingData);
         console.log('📝 eventToEdit:', eventToEdit);
         setActionLoading(true);
-        
+
         try {
             let response;
-            
+
             if (eventToEdit) {
                 // UPDATE MODE: Edit existing event
                 const eventId = eventToEdit._id || eventToEdit.event_id || eventToEdit.id;
                 console.log('✏️ Updating event with ID:', eventId);
-                
+
                 response = await API.put(`/events/${eventId}`, {
                     ...meetingData,
                     status: eventToEdit.status || 'Draft' // Preserve original status or default to Draft
                 });
-                
+
                 console.log('✅ CalendarSync: Event updated successfully:', response.data);
             } else {
                 // CREATE MODE: Create new event
                 console.log('➕ Creating new event');
-                
+
                 response = await API.post('/events', {
                     ...meetingData,
                     status: 'Draft'
                 });
-                
+
                 console.log('✅ CalendarSync: Event created successfully:', response.data);
             }
-            
+
             // Close modal immediately for better UX
             handleClosePollModal();
-            
+
             // Small delay to ensure database transaction is complete
             await new Promise(resolve => setTimeout(resolve, 300));
-            
+
             // Refetch events to update the calendar
             console.log('🔄 CalendarSync: Refetching events...');
             const result = await refetchEvents();
             console.log('✅ CalendarSync: Events refetched successfully. New count:', result?.data?.length);
-            
+
         } catch (error) {
             console.error('❌ CalendarSync: Failed to save event:', error);
             alert(`Failed to ${eventToEdit ? 'update' : 'create'} meeting poll. Please try again.`);
@@ -269,15 +299,15 @@ const CalendarSync = () => {
         try {
             // Use environment variable with fallback
             const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-            
+
             // Get userId from Redux user state instead of hardcoding
             const userId = user?._id || user?.id || localStorage.getItem('userId');
-            
+
             if (!userId) {
                 alert('User ID not found. Please log in again.');
                 return;
             }
-            
+
             const url = `${API_BASE_URL}/api/google-calendar/auth-url?userId=${userId}`;
 
             const response = await fetch(url, {
@@ -302,12 +332,12 @@ const CalendarSync = () => {
             alert("Check your Server/Console for errors.");
         }
     };
-    
+
     /**
      * Refresh Google Calendar events
      */
     const handleRefreshGoogle = () => {
-        refetchGoogleEvents();
+        refetchGoogleEventsWrapped();
     };
 
     // ============================================
@@ -414,6 +444,10 @@ const CalendarSync = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Box sx={{ width: 16, height: 16, backgroundColor: '#4285F4', borderRadius: 1 }} />
                             <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>Google Calendar</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ width: 16, height: 16, backgroundColor: '#8BC34A', borderRadius: 1 }} />
+                            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>Scheduled Tasks</Typography>
                         </Box>
                     </Box>
 
