@@ -4,6 +4,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { UserProvider } from "./context/UserContext.jsx";
+import { NotificationProvider } from "./context/NotificationContext.jsx";
 
 import "./App.css";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
@@ -38,7 +39,7 @@ function App() {
   useEffect(() => {
     document.body.classList.remove("light", "dark");
     document.body.classList.add(theme);
-    
+
     // Cleanup function to remove theme class on unmount
     return () => {
       document.body.classList.remove("light", "dark");
@@ -47,66 +48,68 @@ function App() {
 
   return (
     <UserProvider>
-      <ThemeProvider theme={muiTheme}>
-        <CssBaseline />
-        <Routes>
+      <NotificationProvider>
+        <ThemeProvider theme={muiTheme}>
+          <CssBaseline />
+          <Routes>
 
-          {/* Redirect based on authentication status */}
-          <Route
-            path="/"
-            element={
-              isLoggedIn
-                ? <Navigate to="/dashboard" replace />
-                : <Navigate to="/login" replace />
-            }
-          />
+            {/* Redirect based on authentication status */}
+            <Route
+              path="/"
+              element={
+                isLoggedIn
+                  ? <Navigate to="/dashboard" replace />
+                  : <Navigate to="/login" replace />
+              }
+            />
 
-        {/* Login route */}
-        <Route path="/login" element={<Login />} />
+            {/* Login route */}
+            <Route path="/login" element={<Login />} />
 
-        {/* Signup route */}
-        <Route path="/signup" element={<Signup />} />
+            {/* Signup route */}
+            <Route path="/signup" element={<Signup />} />
 
-        {/* Protected routes */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Layout theme={theme} setTheme={setTheme}>
-                <Dashboard />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+            {/* Protected routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Layout theme={theme} setTheme={setTheme}>
+                    <Dashboard />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Tasks page route */}
-        <Route
-          path="/TasksPage"
-          element={
-            <ProtectedRoute>
-              <Layout theme={theme} setTheme={setTheme}>
-                <TasksPage />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+            {/* Tasks page route */}
+            <Route
+              path="/TasksPage"
+              element={
+                <ProtectedRoute>
+                  <Layout theme={theme} setTheme={setTheme}>
+                    <TasksPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Calendar Sync route */}
-        <Route
-          path="/CalendarSync"
-          element={
-            <ProtectedRoute>
-              <Layout theme={theme} setTheme={setTheme}>
-                <CalendarSync />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+            {/* Calendar Sync route */}
+            <Route
+              path="/CalendarSync"
+              element={
+                <ProtectedRoute>
+                  <Layout theme={theme} setTheme={setTheme}>
+                    <CalendarSync />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
 
-        {/* 404 */}
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
-    </ThemeProvider>
+            {/* 404 */}
+            <Route path="*" element={<PageNotFound />} />
+          </Routes>
+        </ThemeProvider>
+      </NotificationProvider>
     </UserProvider>
   );
 }

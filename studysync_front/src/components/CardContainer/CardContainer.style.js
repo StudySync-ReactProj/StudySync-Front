@@ -108,7 +108,7 @@ export const GoalButton = styled("button")(({ theme }) => {
         cursor: "pointer",
         fontWeight: 600,
         transition: "all 200ms ease",
-        backgroundColor: isDark ? "#7A6FF0" : theme.palette.primary.main,
+        backgroundColor: isDark ? "#6D63FF" : theme.palette.primary.main,
         color: isDark ? "#FFFFFF" : theme.palette.primary.contrastText,
 
         "&:hover:not(:disabled)": {

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useApi } from "../../hooks/useApi";
+import { useNotification } from "../../context/NotificationContext.jsx";
 import API from "../../api/axiosConfig";
 import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
@@ -13,6 +14,7 @@ import { styles } from './TasksPage.style';
 const TasksPage = () => {
   // ========== DATA FETCHING WITH useApi HOOK ==========
   const { data: tasks, loading, error, refetch } = useApi('/tasks');
+  const { showNotification } = useNotification();
 
   // Local state for UI toggles and form inputs
   const [showAddForm, setShowAddForm] = useState(false);
@@ -77,6 +79,11 @@ const TasksPage = () => {
     // If scheduling enabled, ensure a start is provided
     if (newTaskSchedulingEnabled && !newTaskScheduledStart) {
       setActionError('Please choose a start date and time for scheduling.');
+      showNotification({
+        severity: 'warning',
+        title: 'Missing data',
+        message: 'Please choose a start date and time for scheduling.',
+      });
       return;
     }
 
@@ -106,8 +113,18 @@ const TasksPage = () => {
     try {
       if (editingTaskId) {
         await API.put(`/tasks/${editingTaskId}`, taskData);
+        showNotification({
+          severity: 'success',
+          title: 'Task updated',
+          message: 'The task was updated successfully.',
+        });
       } else {
         await API.post('/tasks', taskData);
+        showNotification({
+          severity: 'success',
+          title: 'Task created',
+          message: 'The task was created successfully.',
+        });
       }
 
       resetTaskForm();
@@ -118,11 +135,18 @@ const TasksPage = () => {
       // Notify CalendarSync to refresh its data (so scheduled tasks appear immediately)
       window.dispatchEvent(new CustomEvent('studySync:tasksUpdated'));
     } catch (err) {
+      let errorMessage = "Failed to save task";
       if (err?.response?.status === 409) {
-        setActionError('This time slot is already occupied. Please choose another time.');
-      } else {
-        setActionError(err.response?.data?.message || "Failed to save task");
+        errorMessage = 'This time slot is already occupied. Please choose another time.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
       }
+      setActionError(errorMessage);
+      showNotification({
+        severity: 'error',
+        title: 'Save failed',
+        message: errorMessage,
+      });
     } finally {
       setActionLoading(false);
     }
@@ -134,9 +158,20 @@ const TasksPage = () => {
 
     try {
       await API.delete(`/tasks/${taskId}`);
+      showNotification({
+        severity: 'success',
+        title: 'Task deleted',
+        message: 'The task was deleted successfully.',
+      });
       await refetch();
     } catch (err) {
-      setActionError(err.response?.data?.message || "Failed to delete task");
+      const errorMessage = err.response?.data?.message || "Failed to delete task";
+      setActionError(errorMessage);
+      showNotification({
+        severity: 'error',
+        title: 'Delete failed',
+        message: errorMessage,
+      });
     } finally {
       setActionLoading(false);
     }
@@ -154,12 +189,24 @@ const TasksPage = () => {
         await API.put(`/tasks/${taskId}`, { status: newStatus });
       }
 
+      showNotification({
+        severity: 'success',
+        title: 'Task updated',
+        message: `Task status updated to ${newStatus}.`,
+      });
+
       await refetch();
 
       // Also notify calendar to refresh (in case task scheduling changed)
       window.dispatchEvent(new CustomEvent('studySync:tasksUpdated'));
     } catch (err) {
-      setActionError(err.response?.data?.message || "Failed to update task");
+      const errorMessage = err.response?.data?.message || "Failed to update task";
+      setActionError(errorMessage);
+      showNotification({
+        severity: 'error',
+        title: 'Update failed',
+        message: errorMessage,
+      });
     } finally {
       setActionLoading(false);
     }
