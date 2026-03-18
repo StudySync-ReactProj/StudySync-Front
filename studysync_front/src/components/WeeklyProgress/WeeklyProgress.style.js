@@ -170,9 +170,17 @@ export const GoalBar = styled("div", {
 
 export const DayLabel = styled("span", {
   shouldForwardProp: (prop) => prop !== "isToday",
-})(({ theme, isToday }) => ({
-  marginTop: "8px",
-  fontSize: "12px",
-  color: isToday ? theme.palette.primary.main : theme.palette.text.secondary,
-  fontWeight: isToday ? 700 : 400,
-}));
+})(({ theme, isToday }) => {
+  const isDark = theme.palette.mode === "dark";
+
+  return {
+    marginTop: "8px",
+    fontSize: "12px",
+    color: isToday
+      ? (isDark ? "#FFFFFF" : theme.palette.primary.main)
+      : theme.palette.text.secondary,
+    fontWeight: isToday ? 700 : 400,
+    textShadow: isToday && isDark ? "0 0 8px rgba(122, 111, 240, 0.4)" : "none",
+    letterSpacing: isToday ? "0.5px" : "normal",
+  };
+});

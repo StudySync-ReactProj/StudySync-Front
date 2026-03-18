@@ -98,15 +98,34 @@ export const GoalInput = styled("input")(({ theme }) => ({
     textAlign: "center",
 }));
 
-export const GoalButton = styled("button")(({ theme }) => ({
-    border: "none",
-    borderRadius: 10,
-    padding: "8px 12px",
-    cursor: "pointer",
-    background: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    fontWeight: 600,
-}));
+export const GoalButton = styled("button")(({ theme }) => {
+    const isDark = theme.palette.mode === "dark";
+
+    return {
+        border: "none",
+        borderRadius: 10,
+        padding: "8px 12px",
+        cursor: "pointer",
+        fontWeight: 600,
+        transition: "all 200ms ease",
+        backgroundColor: isDark ? "#7A6FF0" : theme.palette.primary.main,
+        color: isDark ? "#FFFFFF" : theme.palette.primary.contrastText,
+
+        "&:hover:not(:disabled)": {
+            backgroundColor: isDark ? "#8B7FF0" : theme.palette.primary.dark,
+            transform: "translateY(-1px)",
+        },
+
+        "&:active:not(:disabled)": {
+            transform: "translateY(0)",
+        },
+
+        "&:disabled": {
+            opacity: 0.6,
+            cursor: "not-allowed",
+        },
+    };
+});
 
 export const GoalHint = styled("p")(({ theme }) => ({
     marginTop: 0,
