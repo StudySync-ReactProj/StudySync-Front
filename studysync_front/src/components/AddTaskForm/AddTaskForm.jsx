@@ -28,7 +28,8 @@ import {
   StartFieldSx,
   SchedulingInnerSx,
   SaveButtonSx,
-  CancelButtonSx
+  CancelButtonSx,
+  SchedulingSwitchSx
 } from "./AddTaskForm.style.js";
 
 const AddTaskForm = ({
@@ -117,7 +118,7 @@ const AddTaskForm = ({
         {Number(newTaskEstimatedMinutes) > 0 && (
           <Box sx={SchedulingBox}>
             <FormControlLabel
-              control={<Switch checked={newTaskSchedulingEnabled} onChange={(e) => setNewTaskSchedulingEnabled(e.target.checked)} />}
+              control={<Switch checked={newTaskSchedulingEnabled} onChange={(e) => setNewTaskSchedulingEnabled(e.target.checked)} sx={SchedulingSwitchSx(theme)} />}
               label="Schedule this task in calendar"
             />
 

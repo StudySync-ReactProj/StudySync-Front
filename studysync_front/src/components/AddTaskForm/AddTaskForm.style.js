@@ -92,3 +92,36 @@ export const CancelButtonSx = (theme) => ({
     },
   }),
 });
+
+// Scheduling Switch styling for dark/light mode visibility
+export const SchedulingSwitchSx = (theme) => ({
+  ...(theme.palette.mode === 'dark' && {
+    '& .MuiSwitch-switchBase': {
+      color: '#90A4AE', // Light gray-blue for unchecked thumb
+      '&.Mui-checked': {
+        color: '#CE93D8', // Purple accent for checked thumb
+        '& + .MuiSwitch-track': {
+          backgroundColor: '#5E35B1', // Purple track when ON
+          opacity: 0.8,
+        },
+      },
+      '&.Mui-disabled': {
+        color: '#546E7A', // Muted color for disabled
+      },
+    },
+    '& .MuiSwitch-track': {
+      backgroundColor: '#455A64', // Medium slate-gray for unchecked track
+      opacity: 0.7,
+    },
+  }),
+  ...(theme.palette.mode === 'light' && {
+    '& .MuiSwitch-switchBase': {
+      '&.Mui-checked': {
+        color: '#7E57C2', // Purple accent for light mode
+        '& + .MuiSwitch-track': {
+          backgroundColor: '#CE93D8', // Lighter purple track
+        },
+      },
+    },
+  }),
+});
