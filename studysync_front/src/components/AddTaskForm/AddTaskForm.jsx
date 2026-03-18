@@ -11,7 +11,8 @@ import {
   InputLabel,
   FormControlLabel,
   Switch,
-  Alert
+  Alert,
+  useTheme
 } from "@mui/material";
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
@@ -25,7 +26,9 @@ import {
   AccessTimeIconSx,
   ButtonsSx,
   StartFieldSx,
-  SchedulingInnerSx
+  SchedulingInnerSx,
+  SaveButtonSx,
+  CancelButtonSx
 } from "./AddTaskForm.style.js";
 
 const AddTaskForm = ({
@@ -48,6 +51,8 @@ const AddTaskForm = ({
   actionLoading,
   isEditMode = false
 }) => {
+  const theme = useTheme();
+
   // Helper to format preview
   const renderPreview = () => {
     if (!newTaskSchedulingEnabled || !newTaskScheduledStart || !newTaskEstimatedMinutes) return null;
@@ -136,10 +141,10 @@ const AddTaskForm = ({
         )}
 
         <Stack direction={ButtonsRowStack.direction} spacing={ButtonsRowStack.spacing} sx={ButtonsSx}>
-          <Button variant="contained" onClick={onSave} disabled={actionLoading}>
+          <Button variant="contained" onClick={onSave} disabled={actionLoading} sx={SaveButtonSx(theme)}>
             {actionLoading ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update Task' : 'Save Task')}
           </Button>
-          <Button variant="outlined" onClick={onCancel} disabled={actionLoading}>
+          <Button variant="outlined" onClick={onCancel} disabled={actionLoading} sx={CancelButtonSx(theme)}>
             Cancel
           </Button>
         </Stack>

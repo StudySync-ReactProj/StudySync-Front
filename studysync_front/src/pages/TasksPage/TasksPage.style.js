@@ -26,3 +26,24 @@ export const styles = {
         mt: 4
     }
 };
+
+export const topActionButtonSx = (theme) => ({
+    ...(theme.palette.mode === 'dark' && {
+        bgcolor: '#5E35B1',
+        color: '#F3E5F5',
+        border: 'none',
+        '&:hover': {
+            bgcolor: '#7E57C2',
+            color: '#F3E5F5',
+        },
+        '&:disabled': {
+            bgcolor: '#3F2C70',
+            color: '#9575CD',
+        },
+    }),
+    ...(theme.palette.mode === 'light' && {
+        '&:disabled': {
+            opacity: 0.6,
+        },
+    }),
+});

@@ -9,17 +9,34 @@ export const styles = {
         display: 'flex',
         gap: 1
     },
-    actionButton: {
-        bgcolor: 'background.paper',
-        color: 'text.primary',
-        border: 1,
-        borderColor: 'divider',
-        '&:hover': { bgcolor: 'action.hover' },
-        '&:disabled': { bgcolor: 'action.disabledBackground', color: 'action.disabled' },
+    actionButton: (theme) => ({
         width: 40,
         height: 40,
-        borderRadius: 2
-    },
+        borderRadius: 2,
+        ...(theme.palette.mode === 'dark' && {
+            bgcolor: '#1E1B4B',
+            color: '#E9D5FF',
+            border: `2px solid #A78BFA`,
+            '&:hover': {
+                bgcolor: '#312E81',
+                borderColor: '#C4B5FD',
+                color: '#F3E8FF',
+            },
+            '&:disabled': {
+                bgcolor: '#1E1B4B',
+                borderColor: '#6366F1',
+                color: '#818CF8',
+            },
+        }),
+        ...(theme.palette.mode === 'light' && {
+            bgcolor: 'background.paper',
+            color: 'text.primary',
+            border: 1,
+            borderColor: 'divider',
+            '&:hover': { bgcolor: 'action.hover' },
+            '&:disabled': { bgcolor: 'action.disabledBackground', color: 'action.disabled' },
+        }),
+    }),
 
     buttonsContainer: {
         display: "flex",

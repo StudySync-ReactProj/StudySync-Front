@@ -8,10 +8,12 @@ import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
 import TasksList from "../../components/TasksList/TasksList.jsx";
 import AddTaskForm from "../../components/AddTaskForm/AddTaskForm.jsx";
-import { Button, Box, CircularProgress, Alert } from "@mui/material";
-import { styles } from './TasksPage.style';
+import { Button, Box, CircularProgress, Alert, useTheme } from "@mui/material";
+import { styles, topActionButtonSx } from './TasksPage.style';
 
 const TasksPage = () => {
+  const theme = useTheme();
+
   // ========== DATA FETCHING WITH useApi HOOK ==========
   const { data: tasks, loading, error, refetch } = useApi('/tasks');
   const { showNotification } = useNotification();
@@ -232,6 +234,7 @@ const TasksPage = () => {
           color={showAddForm ? "secondary" : "primary"}
           onClick={handleToggleAddForm}
           disabled={actionLoading}
+          sx={topActionButtonSx(theme)}
         >
           {showAddForm ? "Cancel" : "Add New Task"}
         </Button>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
-import { Box, IconButton, Tooltip, Typography, Alert } from "@mui/material";
+import { Box, IconButton, Tooltip, Typography, Alert, useTheme } from "@mui/material";
 import { Add as AddIcon, Refresh as RefreshIcon } from "@mui/icons-material";
 
 // Custom Hook
@@ -351,6 +351,8 @@ const CalendarSync = () => {
     // RENDER
     // ============================================
 
+    const theme = useTheme();
+
     return (
         <Wrapper>
             {/* Header Section - Title and Action Buttons */}
@@ -363,7 +365,7 @@ const CalendarSync = () => {
                                 size="medium"
                                 onClick={handleRefreshGoogle}
                                 disabled={googleLoading || actionLoading}
-                                sx={styles.actionButton}
+                                sx={styles.actionButton(theme)}
                             >
                                 <RefreshIcon />
                             </IconButton>
@@ -376,7 +378,7 @@ const CalendarSync = () => {
                                 size="medium"
                                 onClick={handleOpenPollModal}
                                 disabled={actionLoading}
-                                sx={styles.actionButton}
+                                sx={styles.actionButton(theme)}
                             >
                                 <AddIcon />
                             </IconButton>
