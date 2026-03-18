@@ -1,5 +1,5 @@
 // src/components/AddTaskForm/AddTaskForm.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -15,6 +15,7 @@ import {
   useTheme
 } from "@mui/material";
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import AvailabilityModal from '../AvailabilityModal/AvailabilityModal';
 
 import {
   AddTaskFormContainer,
@@ -53,6 +54,10 @@ const AddTaskForm = ({
   isEditMode = false
 }) => {
   const theme = useTheme();
+  const [availabilityModalOpen, setAvailabilityModalOpen] = useState(false);
+
+  // Ensure priority is always lowercase to match MenuItem values
+  const normalizedPriority = newTaskPriority.toLowerCase();
 
   // Helper to format preview
   const renderPreview = () => {
@@ -64,6 +69,17 @@ const AddTaskForm = ({
         This task will block: {start.toLocaleString()} - {end.toLocaleString()}
       </Box>
     );
+  };
+
+  const handleStartFieldClick = () => {
+    if (Number(newTaskEstimatedMinutes) > 0) {
+      setAvailabilityModalOpen(true);
+    }
+  };
+
+  const handleSlotSelect = (datetimeLocalValue) => {
+    setNewTaskScheduledStart(datetimeLocalValue);
+    setAvailabilityModalOpen(false);
   };
 
   return (
@@ -83,7 +99,7 @@ const AddTaskForm = ({
           <FormControl size="small" sx={PriorityFormControl}>
             <InputLabel>Priority</InputLabel>
             <Select
-              value={newTaskPriority}
+              value={normalizedPriority}
               label="Priority"
               onChange={(e) => setNewTaskPriority(e.target.value)}
             >
@@ -128,10 +144,12 @@ const AddTaskForm = ({
                   label="Start"
                   type="datetime-local"
                   value={newTaskScheduledStart}
+                  onClick={handleStartFieldClick}
                   onChange={(e) => setNewTaskScheduledStart(e.target.value)}
                   InputLabelProps={{ shrink: true }}
                   size="small"
                   sx={StartFieldSx}
+                  placeholder="Click to select available slot"
                 />
 
                 {/* Live preview */}
@@ -150,6 +168,15 @@ const AddTaskForm = ({
           </Button>
         </Stack>
       </Stack>
+
+      {/* Availability Modal */}
+      <AvailabilityModal
+        open={availabilityModalOpen}
+        onClose={() => setAvailabilityModalOpen(false)}
+        selectedDate={newTaskDueDate}
+        estimatedMinutes={Number(newTaskEstimatedMinutes) || 0}
+        onSlotSelect={handleSlotSelect}
+      />
     </Box>
   );
 };

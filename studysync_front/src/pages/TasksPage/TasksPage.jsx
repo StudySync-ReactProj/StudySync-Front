@@ -21,7 +21,7 @@ const TasksPage = () => {
   // Local state for UI toggles and form inputs
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
-  const [newTaskPriority, setNewTaskPriority] = useState("Medium");
+  const [newTaskPriority, setNewTaskPriority] = useState("medium");
   const [newTaskDueDate, setNewTaskDueDate] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState(null);
@@ -51,7 +51,7 @@ const TasksPage = () => {
 
   const resetTaskForm = () => {
     setNewTaskText("");
-    setNewTaskPriority("Medium");
+    setNewTaskPriority("medium");
     setNewTaskDueDate("");
     setNewTaskEstimatedMinutes(0);
     setNewTaskSchedulingEnabled(false);
@@ -65,7 +65,7 @@ const TasksPage = () => {
 
     const taskId = task._id || task.id;
     setNewTaskText(task.title || "");
-    setNewTaskPriority((task.priority || "Medium").toLowerCase());
+    setNewTaskPriority((task.priority || "medium").toLowerCase());
     setNewTaskDueDate(formatForDateInput(task.dueDate));
     setNewTaskEstimatedMinutes(Number(task.estimatedMinutes) || 0);
     setNewTaskScheduledStart(formatForDateTimeLocalInput(task.scheduledStart));
