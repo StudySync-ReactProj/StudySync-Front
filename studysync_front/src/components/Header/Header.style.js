@@ -4,7 +4,7 @@ import { AppBar, Box, Typography, Button, Toolbar } from "@mui/material";
 
 // Top navigation bar container
 export const NavAppBar = styled(AppBar)(({ theme }) => ({
-    backgroundColor: theme.palette.background.paper, // במקום צבע קשיח
+    backgroundColor: theme.palette.background.paper,
     color: theme.palette.text.primary,
     boxShadow: "none",
     height: "90px",
@@ -63,23 +63,28 @@ export const DesktopNavBox = styled(Box)(({ theme }) => ({
 
 // Navigation tabs (desktop links)
 export const NavButton = styled(Button, { shouldForwardProp: (prop) => prop !== 'active' })(
-    ({ theme, active }) => ({
-        margin: theme.spacing(2, 2, 0.5, 0),
-        color: active ? theme.palette.primary.main : theme.palette.text.primary, // active color
-        display: "block",
-        textTransform: "none",
-        fontSize: "20px",
-        fontWeight: active ? 700 : 400,
-        paddingBottom: active ? '6px' : undefined,
-        borderBottom: active ? `3px solid ${theme.palette.primary.main}` : '3px solid transparent',
+    ({ theme, active }) => {
+        const activeColor =
+            theme.palette.mode === "dark" ? "#fff" : theme.palette.primary.main;
 
-        "&:hover": {
-            backgroundColor:
-                theme.palette.mode === "dark"
-                    ? "rgba(255,255,255,0.08)"
-                    : "rgba(0,0,0,0.04)",
-        },
-    })
+        return {
+            margin: theme.spacing(2, 2, 0.5, 0),
+            color: active ? activeColor : theme.palette.text.primary,
+            display: "block",
+            textTransform: "none",
+            fontSize: "20px",
+            fontWeight: active ? 700 : 400,
+            paddingBottom: active ? '6px' : undefined,
+            borderBottom: active ? `3px solid ${activeColor}` : '3px solid transparent',
+
+            "&:hover": {
+                backgroundColor:
+                    theme.palette.mode === "dark"
+                        ? "rgba(255,255,255,0.08)"
+                        : "rgba(0,0,0,0.04)",
+            },
+        };
+    }
 );
 
 // Box that contains the avatar / user menu
