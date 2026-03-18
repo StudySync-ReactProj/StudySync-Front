@@ -45,7 +45,8 @@ const AddTaskForm = ({
   newTaskScheduledStart,
   setNewTaskScheduledStart,
   actionError,
-  actionLoading
+  actionLoading,
+  isEditMode = false
 }) => {
   // Helper to format preview
   const renderPreview = () => {
@@ -136,7 +137,7 @@ const AddTaskForm = ({
 
         <Stack direction={ButtonsRowStack.direction} spacing={ButtonsRowStack.spacing} sx={ButtonsSx}>
           <Button variant="contained" onClick={onSave} disabled={actionLoading}>
-            {actionLoading ? 'Saving...' : 'Save Task'}
+            {actionLoading ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update Task' : 'Save Task')}
           </Button>
           <Button variant="outlined" onClick={onCancel} disabled={actionLoading}>
             Cancel

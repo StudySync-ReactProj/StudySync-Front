@@ -31,6 +31,7 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
     return events.map(event => {
       const hasParticipants = event.participants && event.participants.length > 0;
       const isGoogle = event.source === 'google';
+      const isTask = event.source === 'task' || event.type === 'task';
 
       // Check if current user needs to RSVP (case-insensitive status check, email matching)
       const needsRsvp = event.participants?.some(
@@ -45,7 +46,9 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
         start: new Date(event.startDateTime || event.start),
         end: new Date(event.endDateTime || event.end),
         allDay: event.isAllDay || false,
-        editable: !hasParticipants && !isGoogle,
+        editable: isTask ? false : !hasParticipants && !isGoogle,
+        deletable: isTask ? false : !isGoogle,
+        draggable: isTask ? false : !isGoogle,
         title: needsRsvp ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{

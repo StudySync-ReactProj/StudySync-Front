@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Box, Typography, IconButton, Stack, Select, MenuItem, FormControl } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EventIcon from '@mui/icons-material/Event';
@@ -17,7 +18,7 @@ import {
 } from './TasksList.style.js';
 
 // Individual Task Item Component
-function TaskItem({ task, onStatusChange, onDeleteTask }) {
+function TaskItem({ task, onStatusChange, onDeleteTask, onEditTask }) {
   // Check if task is completed based on status from backend
   const isCompleted = task.status === 'Completed';
 
@@ -76,7 +77,7 @@ function TaskItem({ task, onStatusChange, onDeleteTask }) {
               <FormControl size="small" sx={formControlSx}>
                 <Select
                   value={task.status || 'Not Started'}
-                  onChange={(e) => onStatusChange(task._id, e.target.value)} // Using MongoDB _id
+                  onChange={(e) => onStatusChange(task._id || task.id, e.target.value)}
                   sx={selectSx}
                 >
                   <MenuItem value="Not Started">Not Started</MenuItem>
@@ -89,25 +90,35 @@ function TaskItem({ task, onStatusChange, onDeleteTask }) {
           </Box>
         </Stack>
 
-        <IconButton
-          size="small"
-          color="error"
-          onClick={() => onDeleteTask(task._id)} // Using MongoDB _id
-          sx={deleteButtonSx}
-        >
-          <DeleteIcon fontSize="small" />
-        </IconButton>
+        <Stack direction="row" spacing={0.5}>
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={() => onEditTask?.(task)}
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton
+            size="small"
+            color="error"
+            onClick={() => onDeleteTask(task._id || task.id)}
+            sx={deleteButtonSx}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Stack>
       </Stack>
     </StyledTaskCard>
   );
 }
 
 // Main Task List Component
-export default function MobileStyleTaskList({ tasks = [], onStatusChange, onDeleteTask }) {
+export default function MobileStyleTaskList({ tasks = [], onStatusChange, onDeleteTask, onEditTask }) {
 
   // Safe mapping - only map if tasks exist
   const rows = tasks.map(task => ({
-    _id: task._id,
+    ...task,
+    _id: task._id || task.id,
     title: task.title,
     priority: task.priority || 'Low',
     dueDate: task.dueDate,
@@ -122,6 +133,7 @@ export default function MobileStyleTaskList({ tasks = [], onStatusChange, onDele
           task={row}
           onStatusChange={onStatusChange}
           onDeleteTask={() => onDeleteTask?.(row._id)}
+          onEditTask={onEditTask}
         />
       ))}
     </TasksWrapper>

@@ -26,10 +26,52 @@ const TasksPage = () => {
   const [newTaskEstimatedMinutes, setNewTaskEstimatedMinutes] = useState(0);
   const [newTaskSchedulingEnabled, setNewTaskSchedulingEnabled] = useState(false);
   const [newTaskScheduledStart, setNewTaskScheduledStart] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState(null);
 
   // ========== HANDLERS ==========
 
-  const handleAddTask = async () => {
+  const formatForDateInput = (value) => {
+    if (!value) return "";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "";
+    return parsed.toISOString().split('T')[0];
+  };
+
+  const formatForDateTimeLocalInput = (value) => {
+    if (!value) return "";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "";
+    const localDate = new Date(parsed.getTime() - parsed.getTimezoneOffset() * 60000);
+    return localDate.toISOString().slice(0, 16);
+  };
+
+  const resetTaskForm = () => {
+    setNewTaskText("");
+    setNewTaskPriority("Medium");
+    setNewTaskDueDate("");
+    setNewTaskEstimatedMinutes(0);
+    setNewTaskSchedulingEnabled(false);
+    setNewTaskScheduledStart("");
+    setEditingTaskId(null);
+    setShowAddForm(false);
+  };
+
+  const handleEditTask = (task) => {
+    if (!task) return;
+
+    const taskId = task._id || task.id;
+    setNewTaskText(task.title || "");
+    setNewTaskPriority((task.priority || "Medium").toLowerCase());
+    setNewTaskDueDate(formatForDateInput(task.dueDate));
+    setNewTaskEstimatedMinutes(Number(task.estimatedMinutes) || 0);
+    setNewTaskScheduledStart(formatForDateTimeLocalInput(task.scheduledStart));
+    setNewTaskSchedulingEnabled(Boolean(task.scheduledStart && task.scheduledEnd));
+    setEditingTaskId(taskId || null);
+    setActionError(null);
+    setShowAddForm(true);
+  };
+
+  const handleSaveTask = async () => {
     if (!newTaskText.trim()) return;
 
     // If scheduling enabled, ensure a start is provided
@@ -62,15 +104,13 @@ const TasksPage = () => {
     setActionError(null);
 
     try {
-      await API.post('/tasks', taskData);
-      // Reset form
-      setNewTaskText("");
-      setNewTaskPriority("Medium");
-      setNewTaskDueDate("");
-      setShowAddForm(false);
-      setNewTaskEstimatedMinutes(0);
-      setNewTaskSchedulingEnabled(false);
-      setNewTaskScheduledStart("");
+      if (editingTaskId) {
+        await API.put(`/tasks/${editingTaskId}`, taskData);
+      } else {
+        await API.post('/tasks', taskData);
+      }
+
+      resetTaskForm();
 
       // Refetch tasks to get updated list
       await refetch();
@@ -81,7 +121,7 @@ const TasksPage = () => {
       if (err?.response?.status === 409) {
         setActionError('This time slot is already occupied. Please choose another time.');
       } else {
-        setActionError(err.response?.data?.message || "Failed to add task");
+        setActionError(err.response?.data?.message || "Failed to save task");
       }
     } finally {
       setActionLoading(false);
@@ -126,7 +166,12 @@ const TasksPage = () => {
   };
 
   const handleToggleAddForm = () => {
-    setShowAddForm(!showAddForm);
+    if (showAddForm) {
+      resetTaskForm();
+      return;
+    }
+    setActionError(null);
+    setShowAddForm(true);
   };
 
   // ========== RENDER LOGIC ==========
@@ -159,8 +204,8 @@ const TasksPage = () => {
             setNewTaskPriority={setNewTaskPriority}
             newTaskDueDate={newTaskDueDate}
             setNewTaskDueDate={setNewTaskDueDate}
-            onSave={handleAddTask}
-            onCancel={() => setShowAddForm(false)}
+            onSave={handleSaveTask}
+            onCancel={resetTaskForm}
             newTaskEstimatedMinutes={newTaskEstimatedMinutes}
             setNewTaskEstimatedMinutes={setNewTaskEstimatedMinutes}
             newTaskSchedulingEnabled={newTaskSchedulingEnabled}
@@ -169,6 +214,7 @@ const TasksPage = () => {
             setNewTaskScheduledStart={setNewTaskScheduledStart}
             actionError={actionError}
             actionLoading={actionLoading}
+            isEditMode={!!editingTaskId}
           />
         </Box>
       )}
@@ -185,6 +231,7 @@ const TasksPage = () => {
               tasks={tasks || []}
               onStatusChange={handleStatusChange}
               onDeleteTask={handleDeleteTask}
+              onEditTask={handleEditTask}
             />
           </Box>
         )}
