@@ -200,7 +200,7 @@ const CalendarSync = () => {
                 if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
                 return {
                     event_id: task._id,
-                    title: `📚 ${task.title}`,
+                    title: task.title,
                     start,
                     end,
                     description: task.description || '',
