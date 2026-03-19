@@ -8,6 +8,7 @@ import FormContainer from "../../components/FormContainer/FormContainer.jsx";
 import TextFieldComp from "../../components/TextFieldComp/TextFieldComp.jsx";
 import ButtonCont from "../../components/ButtonCont/ButtonCont.jsx";
 import { useNavigate } from "react-router-dom";
+import { useNotification } from "../../context/NotificationContext.jsx";
 import API from "../../api/axiosConfig";
 
 import { LoginFormStack, FooterText, FooterLink } from "./Login.style.js";
@@ -19,6 +20,9 @@ export default function Login() {
 
   // ========== REDUX ==========
   const dispatch = useDispatch();
+
+  // ========== NOTIFICATION ==========
+  const { showNotification } = useNotification();
 
   // ========== FORM & ERROR STATE ==========
   const [form, setForm] = useState({
@@ -110,7 +114,11 @@ export default function Login() {
     } catch (error) {
       const message = error.response?.data?.message || "Something went wrong";
       setErrors((prev) => ({ ...prev, general: message }));
-      alert(message);
+      showNotification({
+        title: "Login failed",
+        message: message,
+        severity: "error",
+      });
     }
   };
 

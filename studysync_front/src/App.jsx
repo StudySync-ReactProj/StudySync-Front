@@ -5,6 +5,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { UserProvider } from "./context/UserContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
+import Notifications from "./components/Notifications/Notifications.jsx";
+import { useNotification } from "./context/NotificationContext.jsx";
 
 import "./App.css";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
@@ -28,13 +30,28 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+/**
+ * GlobalNotificationRenderer - Separate component to use useNotification hook
+ * Must be rendered inside NotificationProvider
+ */
+function GlobalNotificationRenderer() {
+  const { notification, closeNotification } = useNotification();
+
+  return (
+    <Notifications
+      open={notification.open}
+      title={notification.title}
+      message={notification.message}
+      severity={notification.severity}
+      onClose={closeNotification}
+    />
+  );
+}
 
 function App() {
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const [theme, setTheme] = useLocalStorage("theme", "light");
   const muiTheme = getMuiTheme(theme);
-
-
 
   useEffect(() => {
     document.body.classList.remove("light", "dark");
@@ -49,6 +66,9 @@ function App() {
   return (
     <UserProvider>
       <NotificationProvider>
+        {/* Global notifications available on all routes */}
+        <GlobalNotificationRenderer />
+
         <ThemeProvider theme={muiTheme}>
           <CssBaseline />
           <Routes>

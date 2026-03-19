@@ -8,6 +8,7 @@ import FormContainer from "../../components/FormContainer/FormContainer.jsx";
 import TextFieldComp from "../../components/TextFieldComp/TextFieldComp.jsx";
 import ButtonCont from "../../components/ButtonCont/ButtonCont.jsx";
 import { useNavigate } from "react-router-dom";
+import { useNotification } from "../../context/NotificationContext.jsx";
 import API from "../../api/axiosConfig"; // הייבוא החשוב של ה-Axios
 
 import { LoginFormStack, FooterText, FooterLink } from "./Signup.style.js";
@@ -16,6 +17,7 @@ import { LoginFormStack, FooterText, FooterLink } from "./Signup.style.js";
 export default function Signup() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { showNotification } = useNotification();
 
     const [form, setForm] = useState({
         username: "",
@@ -84,7 +86,7 @@ export default function Signup() {
 
             // 2. Extract userId safely (supports multiple backend shapes)
             const userId = data?._id || data?.id || data?.userId || data?.user?._id || data?.user?.id;
-            
+
             if (userId) {
                 localStorage.setItem("userId", String(userId));
             }
@@ -100,12 +102,21 @@ export default function Signup() {
                 token: data.token,
             }));
 
-            alert("Welcome to StudySync!");
+            showNotification({
+                title: "Welcome to StudySync",
+                message: "Your account was created successfully.",
+                severity: "success",
+            });
+
             navigate("/dashboard");
 
         } catch (error) {
             const message = error.response?.data?.message || "Registration failed";
-            alert(message);
+            showNotification({
+                title: "Signup failed",
+                message: message,
+                severity: "error",
+            });
         }
     };
 
