@@ -9,32 +9,32 @@ export const ContainerWrapper = styled(Box)(({ theme }) => ({
     alignItems: "center",
     justifyContent: "center",
     // Use default background from Theme
-    backgroundColor: theme.palette.background.default, 
+    backgroundColor: theme.palette.background.default,
     // Adding a very subtle gradient in Dark Mode gives a sense of depth
-    backgroundImage: theme.palette.mode === 'dark' 
-        ? "radial-gradient(circle at center, rgba(30, 41, 59, 0.5) 0%, transparent 100%)" 
+    backgroundImage: theme.palette.mode === 'dark'
+        ? "radial-gradient(circle at center, rgba(30, 41, 59, 0.5) 0%, transparent 100%)"
         : "none",
 }));
 
 // The white/dark card that holds the form
 export const FormCard = styled(Paper)(({ theme }) => {
     const isDarkMode = theme.palette.mode === 'dark';
-    
+
     return {
         width: 420,
         padding: theme.spacing(5),
         borderRadius: 24,
         textAlign: "center",
         // In Dark Mode the card should be slightly lighter than the page background
-        backgroundColor: isDarkMode 
+        backgroundColor: isDarkMode
             ? "#1e293b" // Deep dark blue (Slate 800)
             : theme.palette.background.default,
-        
+
         // Adapted shadows
-        boxShadow: isDarkMode 
-            ? "0px 20px 50px rgba(0, 0, 0, 0.6)" 
+        boxShadow: isDarkMode
+            ? "0px 20px 50px rgba(0, 0, 0, 0.6)"
             : "0px 10px 30px rgba(15, 23, 42, 0.15)",
-            
+
         // Adding a thin border in Dark Mode helps separate the card from the background
         border: isDarkMode ? "1px solid rgba(255, 255, 255, 0.05)" : "none",
     };
@@ -43,7 +43,9 @@ export const FormCard = styled(Paper)(({ theme }) => {
 // StudySync title
 export const Title = styled(Typography)(({ theme }) => ({
     // In Dark Mode use Primary.light color for better readability
-    color: theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main,
+    color: theme.palette.mode === 'dark'
+        ? theme.palette.common.white
+        : theme.palette.primary.main,
     fontSize: "3rem",
     fontWeight: 700,
     marginBottom: theme.spacing(1),

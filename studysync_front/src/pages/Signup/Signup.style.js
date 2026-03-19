@@ -7,7 +7,6 @@ import { Stack, Typography, Box } from "@mui/material";
 export const LoginFormStack = styled(Stack)`
     margin-top: 20px;
     width: 100%;
-    background-color: #E0EAFC;
 `;
 
 // Footer text at the bottom - "Don't have an account?"
