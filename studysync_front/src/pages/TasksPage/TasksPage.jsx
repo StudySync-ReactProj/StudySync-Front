@@ -29,6 +29,7 @@ const TasksPage = () => {
   // New fields for scheduling
   const [newTaskEstimatedMinutes, setNewTaskEstimatedMinutes] = useState(0);
   const [newTaskSchedulingEnabled, setNewTaskSchedulingEnabled] = useState(false);
+  const [newTaskExecutionDate, setNewTaskExecutionDate] = useState("");
   const [newTaskScheduledStart, setNewTaskScheduledStart] = useState("");
   const [editingTaskId, setEditingTaskId] = useState(null);
 
@@ -55,6 +56,7 @@ const TasksPage = () => {
     setNewTaskDueDate("");
     setNewTaskEstimatedMinutes(0);
     setNewTaskSchedulingEnabled(false);
+    setNewTaskExecutionDate("");
     setNewTaskScheduledStart("");
     setEditingTaskId(null);
     setShowAddForm(false);
@@ -69,6 +71,8 @@ const TasksPage = () => {
     setNewTaskDueDate(formatForDateInput(task.dueDate));
     setNewTaskEstimatedMinutes(Number(task.estimatedMinutes) || 0);
     setNewTaskScheduledStart(formatForDateTimeLocalInput(task.scheduledStart));
+    // Initialize execution date from scheduledStart (not from dueDate)
+    setNewTaskExecutionDate(formatForDateInput(task.scheduledStart));
     setNewTaskSchedulingEnabled(Boolean(task.scheduledStart && task.scheduledEnd));
     setEditingTaskId(taskId || null);
     setActionError(null);
@@ -260,6 +264,8 @@ const TasksPage = () => {
             setNewTaskEstimatedMinutes={setNewTaskEstimatedMinutes}
             newTaskSchedulingEnabled={newTaskSchedulingEnabled}
             setNewTaskSchedulingEnabled={setNewTaskSchedulingEnabled}
+            newTaskExecutionDate={newTaskExecutionDate}
+            setNewTaskExecutionDate={setNewTaskExecutionDate}
             newTaskScheduledStart={newTaskScheduledStart}
             setNewTaskScheduledStart={setNewTaskScheduledStart}
             actionError={actionError}

@@ -32,7 +32,10 @@ import {
   CancelButtonSx,
   SchedulingSwitchSx,
   DueDateFieldSx,
-  MatchingOutlinedBorderSx
+  MatchingOutlinedBorderSx,
+  ExecutionDateFieldSx,
+  SelectTimeSlotFieldSx,
+  SchedulingFieldsRowSx
 } from "./AddTaskForm.style.js";
 
 const AddTaskForm = ({
@@ -49,6 +52,8 @@ const AddTaskForm = ({
   setNewTaskEstimatedMinutes,
   newTaskSchedulingEnabled,
   setNewTaskSchedulingEnabled,
+  newTaskExecutionDate,
+  setNewTaskExecutionDate,
   newTaskScheduledStart,
   setNewTaskScheduledStart,
   actionError,
@@ -73,10 +78,15 @@ const AddTaskForm = ({
     );
   };
 
-  const handleStartFieldClick = () => {
-    if (Number(newTaskEstimatedMinutes) > 0) {
-      setAvailabilityModalOpen(true);
+  const handleSelectTimeSlotClick = () => {
+    // Only open modal if execution date is selected and estimated minutes > 0
+    if (!newTaskExecutionDate) {
+      return;
     }
+    if (Number(newTaskEstimatedMinutes) <= 0) {
+      return;
+    }
+    setAvailabilityModalOpen(true);
   };
 
   const handleSlotSelect = (datetimeLocalValue) => {
@@ -143,16 +153,29 @@ const AddTaskForm = ({
 
             {newTaskSchedulingEnabled && (
               <Stack spacing={1} sx={SchedulingInnerSx}>
+                {/* Execution Date - separate from Due Date */}
                 <TextField
-                  label="Start"
-                  type="datetime-local"
-                  value={newTaskScheduledStart}
-                  onClick={handleStartFieldClick}
-                  onChange={(e) => setNewTaskScheduledStart(e.target.value)}
+                  label="Execution Date"
+                  type="date"
+                  value={newTaskExecutionDate}
+                  onChange={(e) => setNewTaskExecutionDate(e.target.value)}
                   InputLabelProps={{ shrink: true }}
                   size="small"
-                  sx={StartFieldSx}
-                  placeholder="Click to select available slot"
+                  sx={ExecutionDateFieldSx(theme)}
+                />
+
+                {/* Select Time Slot - only clickable if execution date is selected */}
+                <TextField
+                  label="Select Time Slot"
+                  type="text"
+                  value={newTaskScheduledStart ? new Date(newTaskScheduledStart).toLocaleString() : ''}
+                  onClick={handleSelectTimeSlotClick}
+                  placeholder={newTaskExecutionDate ? "Click to select available slot" : "Choose execution date first"}
+                  InputLabelProps={{ shrink: true }}
+                  size="small"
+                  sx={SelectTimeSlotFieldSx(theme, !!newTaskExecutionDate)}
+                  disabled={!newTaskExecutionDate}
+                  readOnly
                 />
 
                 {/* Live preview */}
@@ -172,11 +195,11 @@ const AddTaskForm = ({
         </Stack>
       </Stack>
 
-      {/* Availability Modal */}
+      {/* Availability Modal - now uses execution date instead of due date */}
       <AvailabilityModal
         open={availabilityModalOpen}
         onClose={() => setAvailabilityModalOpen(false)}
-        selectedDate={newTaskDueDate}
+        selectedDate={newTaskExecutionDate}
         estimatedMinutes={Number(newTaskEstimatedMinutes) || 0}
         onSlotSelect={handleSlotSelect}
       />

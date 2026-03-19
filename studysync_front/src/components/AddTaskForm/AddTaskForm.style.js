@@ -61,9 +61,15 @@ export const SchedulingBox = (theme) => ({
 
 export const SchedulingInnerSx = { mt: 1 };
 
+export const SchedulingFieldsRowSx = {
+  direction: "column",
+  spacing: 1,
+};
+
 export const PreviewText = {
   color: '#555',
-  fontSize: '0.9rem'
+  fontSize: '0.9rem',
+  mt: 1,
 };
 
 export const StartFieldSx = { mt: 0 };
@@ -71,6 +77,43 @@ export const StartFieldSx = { mt: 0 };
 export const AccessTimeIconSx = { mr: 1, fontSize: 18 };
 
 export const ButtonsSx = { mt: 1 };
+
+// Execution Date field styling - matches Due Date styling
+export const ExecutionDateFieldSx = (theme) => ({
+  ...MatchingOutlinedBorderSx(theme),
+  "& input": {
+    color: theme.palette.text.primary,
+  },
+  "& input[type='date']::-webkit-calendar-picker-indicator": {
+    filter: theme.palette.mode === "dark" ? "invert(1) brightness(1.2)" : "none",
+    opacity: 1,
+    cursor: "pointer",
+  },
+});
+
+// Select Time Slot field styling - disabled state when execution date not selected
+export const SelectTimeSlotFieldSx = (theme, isEnabled) => ({
+  ...MatchingOutlinedBorderSx(theme),
+  "& input": {
+    color: theme.palette.text.primary,
+  },
+  cursor: isEnabled ? "pointer" : "not-allowed",
+  "& .MuiOutlinedInput-root": {
+    ...(isEnabled && {
+      cursor: "pointer",
+      "&:hover": {
+        "& fieldset": {
+          borderColor: theme.palette.primary.main,
+        },
+      },
+    }),
+  },
+  ...(isEnabled && {
+    "& input:not(:disabled)": {
+      cursor: "pointer",
+    },
+  }),
+});
 
 // Dark mode button styling for Save/Update button
 export const SaveButtonSx = (theme) => ({
