@@ -31,7 +31,8 @@ import {
   SaveButtonSx,
   CancelButtonSx,
   SchedulingSwitchSx,
-  DueDateFieldSx
+  DueDateFieldSx,
+  MatchingOutlinedBorderSx
 } from "./AddTaskForm.style.js";
 
 const AddTaskForm = ({

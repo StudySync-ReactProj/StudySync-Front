@@ -1,5 +1,28 @@
 // src/components/AddTaskForm/AddTaskForm.style.js
 
+// Shared outlined border styling for Priority and Due Date fields
+// This ensures both fields have EXACTLY the same border appearance
+export const MatchingOutlinedBorderSx = (theme) => ({
+  "& .MuiOutlinedInput-root": {
+    "& fieldset": {
+      borderColor: theme.palette.action.disabled,
+    },
+    "&:hover fieldset": {
+      borderColor: theme.palette.action.active,
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: theme.palette.primary.main,
+      borderWidth: 2,
+    },
+  },
+  "& .MuiInputLabel-root": {
+    color: theme.palette.text.secondary,
+  },
+  "& .MuiInputLabel-root.Mui-focused": {
+    color: theme.palette.primary.main,
+  },
+});
+
 export const AddTaskFormContainer = (theme) => ({
   mb: 3,
   p: 2,
@@ -126,24 +149,11 @@ export const SchedulingSwitchSx = (theme) => ({
   }),
 });
 
-// Dark mode styling for Due Date field to improve calendar picker icon visibility
+// Due Date field styling: shares border with Priority, adds native date icon fix
 export const DueDateFieldSx = (theme) => ({
+  ...MatchingOutlinedBorderSx(theme),
   "& input": {
     color: theme.palette.text.primary,
-  },
-  "& .MuiInputLabel-root": {
-    color: theme.palette.text.secondary,
-  },
-  "& .MuiInputLabel-root.Mui-focused": {
-    color: theme.palette.text.secondary,
-  },
-  "& .MuiOutlinedInput-root": {
-    "& fieldset": {
-      borderColor: theme.palette.divider,
-    },
-    "&:hover fieldset": {
-      borderColor: theme.palette.common.white,
-    },
   },
   "& input[type='date']::-webkit-calendar-picker-indicator": {
     filter: theme.palette.mode === "dark" ? "invert(1) brightness(1.2)" : "none",
