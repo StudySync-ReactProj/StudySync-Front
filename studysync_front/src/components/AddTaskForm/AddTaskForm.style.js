@@ -52,11 +52,11 @@ export const ButtonsRowStack = {
 
 // New styling for scheduling preview and container
 export const SchedulingBox = (theme) => ({
-  border: `1px dashed ${theme.palette.divider}`,
+  border: `1px solid ${theme.palette.mode === 'dark' ? '#FFFFFF' : theme.palette.primary.main}`,
   p: 2,
   borderRadius: 1,
   mt: 1,
-  bgcolor: theme.palette.background.default,
+  backgroundColor: "transparent",
 });
 
 export const SchedulingInnerSx = { mt: 1 };
