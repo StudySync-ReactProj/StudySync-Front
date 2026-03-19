@@ -82,7 +82,6 @@ function TaskItem({ task, onStatusChange, onDeleteTask, onEditTask }) {
                 >
                   <MenuItem value="Not Started">Not Started</MenuItem>
                   <MenuItem value="In Progress">In Progress</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
                   <MenuItem value="Completed">Completed</MenuItem>
                 </Select>
               </FormControl>
