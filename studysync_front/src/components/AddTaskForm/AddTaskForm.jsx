@@ -30,7 +30,8 @@ import {
   SchedulingInnerSx,
   SaveButtonSx,
   CancelButtonSx,
-  SchedulingSwitchSx
+  SchedulingSwitchSx,
+  DueDateFieldSx
 } from "./AddTaskForm.style.js";
 
 const AddTaskForm = ({
@@ -117,6 +118,7 @@ const AddTaskForm = ({
             onChange={(e) => setNewTaskDueDate(e.target.value)}
             InputLabelProps={{ shrink: true }}
             size="small"
+            sx={DueDateFieldSx(theme)}
           />
         </Stack>
 

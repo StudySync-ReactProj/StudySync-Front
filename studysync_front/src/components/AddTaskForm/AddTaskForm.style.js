@@ -117,11 +117,37 @@ export const SchedulingSwitchSx = (theme) => ({
   ...(theme.palette.mode === 'light' && {
     '& .MuiSwitch-switchBase': {
       '&.Mui-checked': {
-        color: '#7E57C2', // Purple accent for light mode
+        color: '#FFFFFF', // Purple accent for light mode
         '& + .MuiSwitch-track': {
           backgroundColor: '#CE93D8', // Lighter purple track
         },
       },
     },
   }),
+});
+
+// Dark mode styling for Due Date field to improve calendar picker icon visibility
+export const DueDateFieldSx = (theme) => ({
+  "& input": {
+    color: theme.palette.text.primary,
+  },
+  "& .MuiInputLabel-root": {
+    color: theme.palette.text.secondary,
+  },
+  "& .MuiInputLabel-root.Mui-focused": {
+    color: theme.palette.text.secondary,
+  },
+  "& .MuiOutlinedInput-root": {
+    "& fieldset": {
+      borderColor: theme.palette.divider,
+    },
+    "&:hover fieldset": {
+      borderColor: theme.palette.common.white,
+    },
+  },
+  "& input[type='date']::-webkit-calendar-picker-indicator": {
+    filter: theme.palette.mode === "dark" ? "invert(1) brightness(1.2)" : "none",
+    opacity: 1,
+    cursor: "pointer",
+  },
 });
