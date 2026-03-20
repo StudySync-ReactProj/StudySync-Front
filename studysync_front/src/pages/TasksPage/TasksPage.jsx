@@ -246,7 +246,6 @@ const TasksPage = () => {
 
       {/* Show Error Alert if fetch fails */}
       {error && <Alert severity="error" sx={styles.alertMargin}>{error}</Alert>}
-      {actionError && <Alert severity="error" sx={styles.alertMargin}>{actionError}</Alert>}
 
       {/* Render Add Task Form */}
       {showAddForm && (

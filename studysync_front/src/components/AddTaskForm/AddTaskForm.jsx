@@ -128,6 +128,12 @@ const AddTaskForm = ({
             value={newTaskDueDate}
             onChange={(e) => setNewTaskDueDate(e.target.value)}
             InputLabelProps={{ shrink: true }}
+            inputProps={{
+              style: {
+                textAlign: 'left',
+                direction: 'ltr',
+              },
+            }}
             size="small"
             sx={DueDateFieldSx(theme)}
           />
@@ -153,30 +159,40 @@ const AddTaskForm = ({
 
             {newTaskSchedulingEnabled && (
               <Stack spacing={1} sx={SchedulingInnerSx}>
-                {/* Execution Date - separate from Due Date */}
-                <TextField
-                  label="Execution Date"
-                  type="date"
-                  value={newTaskExecutionDate}
-                  onChange={(e) => setNewTaskExecutionDate(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                  size="small"
-                  sx={ExecutionDateFieldSx(theme)}
-                />
+                <Stack direction="row" spacing={2} sx={{ width: '100%' }}>
+                  {/* Execution Date - separate from Due Date */}
+                  <TextField
+                    label="Execution Date"
+                    type="date"
+                    value={newTaskExecutionDate}
+                    onChange={(e) => setNewTaskExecutionDate(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{
+                      style: {
+                        textAlign: 'left',
+                        direction: 'ltr',
+                      },
+                    }}
+                    size="small"
+                    fullWidth
+                    sx={{ ...ExecutionDateFieldSx(theme), flex: 1 }}
+                  />
 
-                {/* Select Time Slot - only clickable if execution date is selected */}
-                <TextField
-                  label="Select Time Slot"
-                  type="text"
-                  value={newTaskScheduledStart ? new Date(newTaskScheduledStart).toLocaleString() : ''}
-                  onClick={handleSelectTimeSlotClick}
-                  placeholder={newTaskExecutionDate ? "Click to select available slot" : "Choose execution date first"}
-                  InputLabelProps={{ shrink: true }}
-                  size="small"
-                  sx={SelectTimeSlotFieldSx(theme, !!newTaskExecutionDate)}
-                  disabled={!newTaskExecutionDate}
-                  readOnly
-                />
+                  {/* Select Time Slot - only clickable if execution date is selected */}
+                  <TextField
+                    label="Select Time Slot"
+                    type="text"
+                    value={newTaskScheduledStart ? new Date(newTaskScheduledStart).toLocaleString() : ''}
+                    onClick={handleSelectTimeSlotClick}
+                    placeholder={newTaskExecutionDate ? "Click to select available slot" : "Choose execution date first"}
+                    InputLabelProps={{ shrink: true }}
+                    size="small"
+                    fullWidth
+                    sx={{ ...SelectTimeSlotFieldSx(theme, !!newTaskExecutionDate), flex: 1 }}
+                    disabled={!newTaskExecutionDate}
+                    readOnly
+                  />
+                </Stack>
 
                 {/* Live preview */}
                 {renderPreview()}

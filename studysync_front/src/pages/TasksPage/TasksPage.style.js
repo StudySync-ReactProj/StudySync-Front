@@ -9,11 +9,17 @@ export const styles = {
     },
 
     addFormWrapper: {
-        mb: 4
+        mb: 4,
+        width: '100%',
+        maxWidth: '800px',
+        margin: '0 0 32px 0'
     },
 
     tasksListContainer: {
-        mt: 2
+        mt: 2,
+        width: '100%',
+        maxWidth: '800px',
+        margin: 0
     },
 
     alertMargin: {
