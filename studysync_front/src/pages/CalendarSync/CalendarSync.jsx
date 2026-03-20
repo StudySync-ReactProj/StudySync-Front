@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Box, IconButton, Tooltip, Typography, useTheme } from "@mui/material";
 import { Add as AddIcon, Refresh as RefreshIcon } from "@mui/icons-material";
 
@@ -17,6 +17,9 @@ import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
 import MeetingPollModal from "../../components/MeetingPollModal/MeetingPollModal.jsx";
 import { useNotification } from "../../context/NotificationContext.jsx";
+
+// Redux
+import { updateUser } from "../../store/userSlice";
 
 // Styles
 import { styles } from "./CalendarSync.style";
@@ -36,6 +39,7 @@ const CalendarSync = () => {
 
     // Get user data from Redux Store (state.user.user based on userSlice)
     const user = useSelector((state) => state.user?.user);
+    const dispatch = useDispatch();
     const { showNotification } = useNotification();
 
     // ============================================
@@ -82,6 +86,8 @@ const CalendarSync = () => {
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('googleConnected') === 'true') {
+            // Update Redux store to persist Google connection status
+            dispatch(updateUser({ hasGoogleCalendar: true }));
             // Remove the query parameter from URL
             window.history.replaceState({}, document.title, window.location.pathname);
             // Refetch Google Calendar events with a small delay to ensure DB is updated
@@ -92,7 +98,7 @@ const CalendarSync = () => {
                 }
             }, 800);
         }
-    }, [refetchGoogleEventsWrapped, showNotification]);
+    }, [refetchGoogleEventsWrapped, showNotification, dispatch]);
 
     // Listen for task updates from other parts of the app (e.g., after creating a scheduled task)
     useEffect(() => {
@@ -358,6 +364,7 @@ const CalendarSync = () => {
     // ============================================
 
     const theme = useTheme();
+    const isGoogleConnected = Boolean(user?.hasGoogleCalendar);
 
     return (
         <Wrapper>
@@ -365,12 +372,15 @@ const CalendarSync = () => {
             <Box sx={styles.headerContainer}>
                 <MainTitle title="CalendarSync" />
                 <Box sx={styles.headerButtonsContainer}>
-                    <Tooltip title="Refresh Google Calendar Events" arrow>
+                    <Tooltip
+                        title={isGoogleConnected ? "Refresh Google Calendar Events" : "Connect Google Calendar first"}
+                        arrow
+                    >
                         <span>
                             <IconButton
                                 size="medium"
                                 onClick={handleRefreshGoogle}
-                                disabled={googleLoading || actionLoading}
+                                disabled={!isGoogleConnected || googleLoading || actionLoading}
                                 sx={styles.actionButton(theme)}
                             >
                                 <RefreshIcon />
