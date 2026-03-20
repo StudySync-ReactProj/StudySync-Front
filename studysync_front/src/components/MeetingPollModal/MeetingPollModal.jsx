@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     Dialog,
@@ -47,6 +47,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
     const [smartAvailableSlots, setSmartAvailableSlots] = useState([]);
     const [hasCalculatedSlots, setHasCalculatedSlots] = useState(false);
     const [showAssistant, setShowAssistant] = useState(false);
+    const previousDurationRef = useRef(null);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -203,6 +204,30 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
             handleCheckAvailability();
         }
     }, [formData.participants.length, open]); // האזנה לאורך המערך מבטיחה זיהוי שינוי
+
+    // Reset calculated slots when duration changes so users recalculate with updated duration
+    useEffect(() => {
+        if (!open) {
+            previousDurationRef.current = null;
+            return;
+        }
+
+        const currentDuration = `${formData.hours}:${formData.minutes}`;
+
+        if (previousDurationRef.current === null) {
+            previousDurationRef.current = currentDuration;
+            return;
+        }
+
+        if (previousDurationRef.current !== currentDuration) {
+            setSmartAvailableSlots([]);
+            setHasCalculatedSlots(false);
+            setAlert(null);
+            setFormData((prev) => ({ ...prev, selectedSlots: [] }));
+        }
+
+        previousDurationRef.current = currentDuration;
+    }, [formData.hours, formData.minutes, open]);
 
     const handleFindAvailableTimes = () => {
         if (!busyData) return;
