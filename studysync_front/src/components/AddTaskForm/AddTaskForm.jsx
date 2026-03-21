@@ -58,7 +58,8 @@ const AddTaskForm = ({
   setNewTaskScheduledStart,
   actionError,
   actionLoading,
-  isEditMode = false
+  isEditMode = false,
+  editingTaskId = null,
 }) => {
   const theme = useTheme();
   const [availabilityModalOpen, setAvailabilityModalOpen] = useState(false);
@@ -218,6 +219,7 @@ const AddTaskForm = ({
         selectedDate={newTaskExecutionDate}
         estimatedMinutes={Number(newTaskEstimatedMinutes) || 0}
         onSlotSelect={handleSlotSelect}
+        editingTaskId={editingTaskId}
       />
     </Box>
   );

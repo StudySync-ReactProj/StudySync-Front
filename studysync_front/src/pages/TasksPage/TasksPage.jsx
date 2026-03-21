@@ -291,6 +291,7 @@ const TasksPage = () => {
             actionError={actionError}
             actionLoading={actionLoading}
             isEditMode={!!editingTaskId}
+            editingTaskId={editingTaskId}
           />
         </Box>
       )}

@@ -21,6 +21,7 @@ const AvailabilityModal = ({
   selectedDate,
   estimatedMinutes,
   onSlotSelect,
+  editingTaskId = null,
 }) => {
   const theme = useTheme();
   const { slots, loading, error, fetchSlots } = useAvailableSlots();
@@ -30,9 +31,10 @@ const AvailabilityModal = ({
     if (open && selectedDate && estimatedMinutes > 0) {
       const dateObj = new Date(selectedDate);
       const dateString = dateObj.toISOString().split('T')[0];
-      fetchSlots(dateString, estimatedMinutes);
+      // Pass taskId (null for new tasks, taskId for editing)
+      fetchSlots(dateString, estimatedMinutes, editingTaskId);
     }
-  }, [open, selectedDate, estimatedMinutes, fetchSlots]);
+  }, [open, selectedDate, estimatedMinutes, fetchSlots, editingTaskId]);
 
   const handleSelectSlot = (slot) => {
     setSelectedSlot(slot);

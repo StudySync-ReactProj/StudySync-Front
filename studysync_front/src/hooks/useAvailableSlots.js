@@ -8,14 +8,14 @@ import API from "../api/axiosConfig";
  * - slots: Array of available slot objects with { start, end } times
  * - loading: Boolean indicating loading state
  * - error: Error message or null
- * - fetchSlots: Function to trigger fetching slots for a specific date and duration
+ * - fetchSlots: Function to trigger fetching slots for a specific date, duration, and optional taskId
  */
 export function useAvailableSlots() {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchSlots = useCallback(async (dateString, durationMinutes) => {
+  const fetchSlots = useCallback(async (dateString, durationMinutes, taskId = null) => {
     // Validate inputs
     if (!dateString || !durationMinutes || durationMinutes <= 0) {
       setSlots([]);
@@ -32,7 +32,14 @@ export function useAvailableSlots() {
 
       // Build the query string explicitly to ensure correct format
       // Expected format: /api/tasks/available-slots?date=2026-03-21&duration=90
-      const queryString = `?date=${encodeURIComponent(dateString)}&duration=${duration}`;
+      // When editing, also include taskId: /api/tasks/available-slots?date=2026-03-21&duration=90&taskId=<id>
+      let queryString = `?date=${encodeURIComponent(dateString)}&duration=${duration}`;
+
+      // Append taskId only when editing (taskId is provided)
+      if (taskId) {
+        queryString += `&taskId=${encodeURIComponent(taskId)}`;
+      }
+
       const url = `/tasks/available-slots${queryString}`;
 
       console.log('📡 Fetching available slots:', url);
