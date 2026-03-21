@@ -17,23 +17,36 @@ import {
   deleteButtonSx
 } from './TasksList.style.js';
 
+// Helper functions for date formatting (dd/mm/yyyy)
+const formatDate = (value) => {
+  return new Date(value).toLocaleDateString('en-GB', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+};
+
+const formatDateTime = (value) => {
+  return new Date(value).toLocaleDateString('en-GB', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+};
+
 // Individual Task Item Component
 function TaskItem({ task, onStatusChange, onDeleteTask, onEditTask }) {
   // Check if task is completed based on status from backend
   const isCompleted = task.status === 'Completed';
 
   const formatDateTimeNoSeconds = (value) =>
-    new Date(value).toLocaleString([], {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
+    formatDateTime(value);
 
   const formatTimeNoSeconds = (value) =>
-    new Date(value).toLocaleTimeString([], {
+    new Date(value).toLocaleTimeString('en-GB', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
@@ -82,7 +95,7 @@ function TaskItem({ task, onStatusChange, onDeleteTask, onEditTask }) {
               <Stack direction="row" spacing={0.5} alignItems="center" sx={dueStackSx}>
                 <CalendarTodayIcon sx={smallIconSx} />
                 <Typography variant="caption">
-                  {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No date'}
+                  {task.dueDate ? formatDate(task.dueDate) : 'No date'}
                 </Typography>
               </Stack>
 
