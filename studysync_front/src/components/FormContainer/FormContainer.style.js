@@ -40,16 +40,13 @@ export const FormCard = styled(Paper)(({ theme }) => {
     };
 });
 
-// StudySync title
-export const Title = styled(Typography)(({ theme }) => ({
-    // In Dark Mode use Primary.light color for better readability
-    color: theme.palette.mode === 'dark'
-        ? theme.palette.common.white
-        : theme.palette.primary.main,
-    fontSize: "3rem",
-    fontWeight: 700,
-    marginBottom: theme.spacing(1),
-    letterSpacing: "-0.02em",
+// StudySync Logo Image
+export const LogoImage = styled("img")(({ theme }) => ({
+    maxWidth: "100%",
+    height: "auto",
+    width: 260,
+    marginBottom: theme.spacing(0.1),
+    objectFit: "contain",
 }));
 
 // Sign-in subtitle

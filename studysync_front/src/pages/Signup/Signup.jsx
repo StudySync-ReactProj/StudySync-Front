@@ -3,13 +3,14 @@
 // ========== IMPORTS ==========
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { loginUser } from "../../store/userSlice"; // אנחנו משתמשים באותו Reducer לעדכון המשתמש המחובר
+import { loginUser } from "../../store/userSlice";
 import FormContainer from "../../components/FormContainer/FormContainer.jsx";
 import TextFieldComp from "../../components/TextFieldComp/TextFieldComp.jsx";
 import ButtonCont from "../../components/ButtonCont/ButtonCont.jsx";
 import { useNavigate } from "react-router-dom";
 import { useNotification } from "../../context/NotificationContext.jsx";
-import API from "../../api/axiosConfig"; // הייבוא החשוב של ה-Axios
+import API from "../../api/axiosConfig";
+
 
 import { LoginFormStack, FooterText, FooterLink } from "./Signup.style.js";
 
