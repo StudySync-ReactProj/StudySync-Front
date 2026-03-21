@@ -1,6 +1,7 @@
 // src/store/eventsSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import API from '../api/axiosConfig';
+import { getSafeId } from '../utils/idUtils';
 
 // Fetch all events
 export const fetchEvents = createAsyncThunk('events/fetchEvents', async (_, thunkAPI) => {
@@ -76,9 +77,9 @@ const eventsSlice = createSlice({
             })
             .addCase(updateEventAsync.fulfilled, (state, action) => {
                 state.isLoading = false;
-                // finds the old event in the state by matching _id or id (database field) and replaces it with the updated event from the server
+                // finds the old event in the state by matching id and replaces it with the updated event from the server
                 const index = state.events.findIndex(event =>
-                    event.id === action.payload.id
+                    String(getSafeId(event)) === String(getSafeId(action.payload))
                 );
                 // If event is found, update it in the state
                 if (index !== -1) {
@@ -110,9 +111,9 @@ const eventsSlice = createSlice({
             })
             .addCase(deleteEventAsync.fulfilled, (state, action) => {
                 state.isLoading = false;
-                // Filter out the deleted event using _id or id (database field)
+                // Filter out the deleted event by id
                 state.events = state.events.filter(event =>
-                    event.id !== action.payload
+                    String(getSafeId(event)) !== String(action.payload)
                 );
             })
             .addCase(deleteEventAsync.rejected, (state, action) => {
@@ -125,14 +126,17 @@ const eventsSlice = createSlice({
 });
 /*  
     Update existing event
-    we extract the event ID from the eventData (id or _id) and send the update request to the server. 
+    we extract the event ID from eventData and send the update request to the server. 
     The server will return the updated event, which we then use to update our Redux state and reflect changes in the UI. 
 */
 export const updateEventAsync = createAsyncThunk('events/updateEvent', async (eventData, thunkAPI) => {
     try {
-       
-        const eventId = eventData.id;
-        const response = await API.put(`/events/${eventId}`, eventData);
+        const eventId = getSafeId(eventData);
+        if (!eventId) {
+            return thunkAPI.rejectWithValue('Missing event ID for update');
+        }
+        const updateUrl = `/events/${eventId}`;
+        const response = await API.put(updateUrl, eventData);
         return response.data; // the updated event
     } catch (error) {
         return thunkAPI.rejectWithValue(error.response.data.message);
@@ -142,9 +146,19 @@ export const updateEventAsync = createAsyncThunk('events/updateEvent', async (ev
 // Delete event
 export const deleteEventAsync = createAsyncThunk('events/deleteEvent', async (eventId, thunkAPI) => {
     try {
-        await API.delete(`/events/${eventId}`);
-        return eventId;
+        const normalizedEventId = getSafeId(eventId);
+
+        if (!normalizedEventId) {
+            return thunkAPI.rejectWithValue('Missing event ID for delete');
+        }
+
+        const deleteUrl = `/events/${normalizedEventId}`;
+        await API.delete(deleteUrl);
+        return normalizedEventId;
     } catch (error) {
+        const failedDeleteId = getSafeId(eventId);
+        const failedDeleteUrl = failedDeleteId ? `/events/${failedDeleteId}` : '/events/undefined';
+        console.error('Delete request failed URL:', `${API.defaults.baseURL}${failedDeleteUrl}`);
         return thunkAPI.rejectWithValue(error.response.data.message);
     }
 });

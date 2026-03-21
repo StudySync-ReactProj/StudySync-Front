@@ -1,4 +1,5 @@
 // Use environment variable, fallback to same-origin API path
+import { getSafeId } from '../utils/idUtils';
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export const fetchFreeBusyData = async (userId, emails, excludeEventId = null) => {
@@ -12,17 +13,25 @@ export const fetchFreeBusyData = async (userId, emails, excludeEventId = null) =
             const parsedInfo = JSON.parse(storedUserInfo);
             authToken = parsedInfo.token;
         }
+
+        const safeUserId = getSafeId(userId);
+        const safeExcludeEventId = getSafeId(excludeEventId) || excludeEventId;
         
-        console.log('Frontend User ID:', userId, '(type:', typeof userId + ')');
+        console.log('Frontend User ID:', safeUserId, '(type:', typeof safeUserId + ')');
         
         if (!authToken) {
             console.error("❌ No authentication token found in localStorage");
             return { calendars: {} };
         }
+
+        if (!safeUserId) {
+            console.error("❌ Missing user ID for Google Calendar freebusy request");
+            return { calendars: {} };
+        }
         
         console.log("✅ Auth Token found, making freebusy request");
-        if (excludeEventId) {
-            console.log("🔍 Excluding event ID from availability check:", excludeEventId);
+        if (safeExcludeEventId) {
+            console.log("🔍 Excluding event ID from availability check:", safeExcludeEventId);
         }
 
         const response = await fetch(`${API_BASE_URL}/api/google-calendar/freebusy`, {
@@ -32,11 +41,11 @@ export const fetchFreeBusyData = async (userId, emails, excludeEventId = null) =
                 'Authorization': `Bearer ${authToken}`
             },
             body: JSON.stringify({
-                userId,
+                userId: safeUserId,
                 emails,
                 timeMin: new Date().toISOString(),
                 timeMax: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                excludeEventId
+                excludeEventId: safeExcludeEventId
             })
         });
         

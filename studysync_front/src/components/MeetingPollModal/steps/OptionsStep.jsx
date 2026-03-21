@@ -97,7 +97,8 @@ const OptionsStep = ({
                 <>
                     <List sx={{
                         width: '100%',
-                        bgcolor: 'background.paper',
+                        bgcolor: (theme) => theme.palette.background.paper,
+                        color: (theme) => theme.palette.text.primary,
                         maxHeight: '450px',
                         overflow: 'auto',
                         border: 1,
@@ -110,11 +111,11 @@ const OptionsStep = ({
                             backgroundColor: 'transparent',
                         },
                         '&::-webkit-scrollbar-thumb': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            backgroundColor: (theme) => theme.palette.divider,
                             borderRadius: '4px',
                         },
                         '&::-webkit-scrollbar-thumb:hover': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                            backgroundColor: (theme) => theme.palette.text.disabled,
                         },
                     }}>
                         {availableSlots.map((slot, index, array) => {
@@ -156,9 +157,10 @@ const OptionsStep = ({
                                             dense
                                             sx={{
                                                 py: 0.75,
-                                                bgcolor: isSelected ? 'rgba(25, 118, 210, 0.08)' : 'inherit',
+                                                color: 'text.primary',
+                                                bgcolor: isSelected ? 'action.selected' : 'inherit',
                                                 '&:hover': {
-                                                    bgcolor: isSelected ? 'rgba(25, 118, 210, 0.12)' : 'rgba(0, 0, 0, 0.04)'
+                                                    bgcolor: 'action.hover'
                                                 }
                                             }}
                                         >
@@ -193,7 +195,7 @@ const OptionsStep = ({
                                             </ListItemIcon>
                                             <ListItemText
                                                 primary={
-                                                    <Typography variant="body2" fontWeight={500}>
+                                                    <Typography variant="body2" fontWeight={500} color="text.primary">
                                                         {slot.date}
                                                     </Typography>
                                                 }

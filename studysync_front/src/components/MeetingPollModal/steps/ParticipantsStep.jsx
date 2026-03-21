@@ -22,7 +22,8 @@ const ParticipantsStep = ({
     formData, 
     onAddParticipant, 
     onRemoveParticipant,
-    updateForm
+    updateForm,
+    onDurationChange
 }) => {
     const [emailInput, setEmailInput] = useState('');
     const [error, setError] = useState('');
@@ -66,7 +67,14 @@ const ParticipantsStep = ({
                     type="number"
                     size="small"
                     value={formData.hours}
-                    onChange={(e) => updateForm('hours', e.target.value)}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        if (onDurationChange) {
+                            onDurationChange('hours', value);
+                            return;
+                        }
+                        updateForm('hours', value);
+                    }}
                     InputProps={{ inputProps: { min: 0, max: 23 } }}
                     sx={{ width: '50%' }}
                 />
@@ -75,7 +83,14 @@ const ParticipantsStep = ({
                     type="number"
                     size="small"
                     value={formData.minutes}
-                    onChange={(e) => updateForm('minutes', e.target.value)}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        if (onDurationChange) {
+                            onDurationChange('minutes', value);
+                            return;
+                        }
+                        updateForm('minutes', value);
+                    }}
                     InputProps={{ inputProps: { min: 0, max: 59, step: 15 } }}
                     sx={{ width: '50%' }}
                 />

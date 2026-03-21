@@ -106,6 +106,17 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
+    const handleDurationChange = (field, value) => {
+        setFormData((prev) => ({
+            ...prev,
+            [field]: value,
+            selectedSlots: []
+        }));
+        setSmartAvailableSlots([]);
+        setHasCalculatedSlots(false);
+        setIsCalculatingSlots(false);
+    };
+
     // Pre-fill form when editing an existing event
     useEffect(() => {
         if (open && eventToEdit) {
@@ -352,6 +363,14 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
             setSmartAvailableSlots(slots);
             setHasCalculatedSlots(true);
             setIsCalculatingSlots(false);
+
+            if (slots.length === 0) {
+                showNotification({
+                    title: 'No slots found',
+                    message: 'No available slots found for the selected duration. Please adjust the duration and search again.',
+                    severity: 'info',
+                });
+            }
         }, 600);
     };
 
@@ -462,17 +481,29 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            maxWidth="lg"
+            fullWidth
+            PaperProps={{
+                sx: {
+                    bgcolor: 'background.paper',
+                    color: 'text.primary',
+                },
+            }}
+        >
             <Box sx={{ position: 'relative' }}>
                 <IconButton onClick={handleClose} sx={{ position: 'absolute', right: 8, top: 8, zIndex: 1, color: 'text.secondary' }}>
                     <CloseIcon />
                 </IconButton>
                 <DialogContent sx={{ p: 0, height: '75vh', display: 'flex', overflow: 'hidden' }}>
-                    <Box sx={{ width: '35%', p: 3, borderRight: '1px solid #eee', overflowY: 'auto' }}>
+                    <Box sx={{ width: '35%', p: 3, borderRight: 1, borderColor: 'divider', overflowY: 'auto' }}>
                         <DetailsStep formData={formData} updateForm={updateForm} />
                         <ParticipantsStep 
                             formData={formData} 
                             updateForm={updateForm}
+                            onDurationChange={handleDurationChange}
                             onAddParticipant={(p) => {
                                 setFormData(prev => ({ ...prev, participants: [...prev.participants, p] }));
                                 // Show assistant when adding a new participant
@@ -503,7 +534,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'space-between',
-                                        bgcolor: '#F4F8FB',
+                                        bgcolor: 'background.paper',
                                         p: 2,
                                         borderRadius: 2,
                                         mb: 2,
@@ -515,12 +546,12 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                                             checked={true}
                                             disabled
                                             sx={{
-                                                color: '#112240',
+                                                color: 'text.primary',
                                                 '&.Mui-checked': {
-                                                    color: '#112240',
+                                                    color: 'text.primary',
                                                 },
                                                 '&.Mui-disabled': {
-                                                    color: '#112240',
+                                                    color: 'text.primary',
                                                 },
                                             }}
                                         />
@@ -577,16 +608,17 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
 
                                     {/* Right Side: Available Badge */}
                                     <Chip
-                                        icon={<CheckCircleIcon sx={{ fontSize: '1rem', color: '#2E7D32' }} />}
+                                        icon={<CheckCircleIcon sx={{ fontSize: '1rem', color: 'success.main' }} />}
                                         label="Available"
                                         sx={{
                                             bgcolor: 'background.paper',
-                                            border: '1px solid #2E7D32',
-                                            color: '#2E7D32',
+                                            border: '1px solid',
+                                            borderColor: 'success.main',
+                                            color: 'success.main',
                                             fontWeight: 500,
                                             fontSize: '0.85rem',
                                             '& .MuiChip-icon': {
-                                                color: '#2E7D32',
+                                                color: 'success.main',
                                             },
                                         }}
                                     />
@@ -626,7 +658,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                         )}
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #eee' }}>
+                <DialogActions sx={{ px: 3, py: 2, borderTop: 1, borderColor: 'divider' }}>
                     <ButtonCont text="Cancel" variant="outlined" onClick={handleClose} />
                     <ButtonCont 
                         text="Send Invitations" 

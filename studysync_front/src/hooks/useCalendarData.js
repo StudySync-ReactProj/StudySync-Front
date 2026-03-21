@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { deleteEventAsync, updateEventAsync, createEventAsync } from "../store/eventsSlice";
 import { getEventColor } from "../utils/eventUtils";
 import { useNotification } from "../context/NotificationContext.jsx";
+import { getSafeId } from "../utils/idUtils";
 
 /*
   Custom hook to manage calendar data and actions
@@ -18,14 +19,37 @@ export const useCalendarData = (refetchCallback = null) => {
   const currentUser = useSelector((state) => state.user?.user);
   const { showNotification } = useNotification();
 
-  const handleDeleteEvent = async (event, closeViewer) => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this event?');
-    if (!confirmDelete) {
-      throw new Error('User cancelled deletion');
-    }
+  const handleDeleteEvent = async (event, closeViewer, options = {}) => {
+    const { suppressNotifications = false } = options;
     try {
-      // making sure we sending the correct ID field to the API
-      await dispatch(deleteEventAsync(event.id || event.event_id)).unwrap();
+      const eventId = getSafeId(event);
+      const currentUserId = getSafeId(currentUser);
+      const eventCreatorId = getSafeId(event?.creator);
+
+      if (!eventId) {
+        if (!suppressNotifications) {
+          showNotification({
+            title: 'Delete failed',
+            message: 'Missing event ID. Please refresh and try again.',
+            severity: 'error',
+          });
+        }
+        throw new Error('Missing event ID');
+      }
+
+      if (eventCreatorId && currentUserId && String(eventCreatorId) !== String(currentUserId)) {
+        if (!suppressNotifications) {
+          showNotification({
+            title: 'Delete blocked',
+            message: 'You can only delete events you created.',
+            severity: 'error',
+          });
+        }
+        throw new Error('Unauthorized delete attempt');
+      }
+
+      // making sure we are sending the correct ID field to the API
+      await dispatch(deleteEventAsync(eventId)).unwrap();
 
       // Trigger refetch to update UI with latest data
       if (refetchCallback) {
@@ -38,11 +62,13 @@ export const useCalendarData = (refetchCallback = null) => {
       return true;
     } catch (error) {
       console.error('Failed to delete event:', error);
-      showNotification({
-        title: 'Delete failed',
-        message: 'Failed to delete event. Please try again.',
-        severity: 'error',
-      });
+      if (!suppressNotifications) {
+        showNotification({
+          title: 'Delete failed',
+          message: 'Failed to delete event. Please try again.',
+          severity: 'error',
+        });
+      }
       throw error; // throw error to prevent the scheduler from removing the event from the UI
     }
   };
@@ -87,11 +113,21 @@ export const useCalendarData = (refetchCallback = null) => {
 
   const handleEditEvent = async (event) => {
     try {
+      const eventId = getSafeId(event);
+      if (!eventId) {
+        showNotification({
+          title: 'Update failed',
+          message: 'Missing event ID. Please refresh and try again.',
+          severity: 'error',
+        });
+        throw new Error('Missing event ID');
+      }
+
       const updatedEventPayload = {
         ...event,
         startDateTime: event.start,
         endDateTime: event.end,
-        id: event.event_id || event.id
+        id: eventId
       };
 
       const updatedEvent = await dispatch(updateEventAsync(updatedEventPayload)).unwrap();

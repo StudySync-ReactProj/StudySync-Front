@@ -1,6 +1,7 @@
 // src/store/tasksSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import API from '../api/axiosConfig';
+import { getSafeId } from '../utils/idUtils';
 
 // Fetch all tasks
 export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async (_, thunkAPI) => {
@@ -25,8 +26,13 @@ export const addTaskAsync = createAsyncThunk('tasks/addTask', async (taskData, t
 // Delete Task - CRITICAL: Use id for the URL
 export const deleteTaskAsync = createAsyncThunk('tasks/deleteTask', async (id, thunkAPI) => {
   try {
-    await API.delete(`/tasks/${id}`);
-    return id;
+    const taskId = getSafeId(id);
+    if (!taskId) {
+      return thunkAPI.rejectWithValue('Missing task ID for delete');
+    }
+
+    await API.delete(`/tasks/${taskId}`);
+    return taskId;
   } catch (error) {
     return thunkAPI.rejectWithValue(error.response.data.message);
   }
@@ -35,7 +41,12 @@ export const deleteTaskAsync = createAsyncThunk('tasks/deleteTask', async (id, t
 // Update Task Status
 export const updateTaskStatus = createAsyncThunk('tasks/updateTaskStatus', async ({ id, status }, thunkAPI) => {
   try {
-    const response = await API.put(`/tasks/${id}`, { status });
+    const taskId = getSafeId(id);
+    if (!taskId) {
+      return thunkAPI.rejectWithValue('Missing task ID for update');
+    }
+
+    const response = await API.put(`/tasks/${taskId}`, { status });
     return response.data; // Returns updated task
   } catch (error) {
     console.error('Error updating task status:', error.response || error);
@@ -66,10 +77,10 @@ const tasksSlice = createSlice({
         state.tasks.push(action.payload);
       })
       .addCase(deleteTaskAsync.fulfilled, (state, action) => {
-        state.tasks = state.tasks.filter(t => t.id !== action.payload);
+        state.tasks = state.tasks.filter(t => String(getSafeId(t)) !== String(action.payload));
       })
       .addCase(updateTaskStatus.fulfilled, (state, action) => {
-        const index = state.tasks.findIndex(t => t.id === action.payload.id);
+        const index = state.tasks.findIndex(t => String(getSafeId(t)) === String(getSafeId(action.payload)));
         if (index !== -1) {
           state.tasks[index] = action.payload;
         }

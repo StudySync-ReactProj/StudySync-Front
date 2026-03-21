@@ -1,7 +1,7 @@
 // src/components/Calendar/MainScheduler.jsx
 import React, { useMemo, useRef, useEffect } from "react";
 import { Scheduler } from "@aldabil/react-scheduler";
-import { Box, IconButton, Tooltip, Typography } from "@mui/material";
+import { Box, IconButton, Tooltip, Typography, useTheme } from "@mui/material";
 import { ChevronLeft, ChevronRight, Today } from "@mui/icons-material";
 import { SchedulerWrapper } from "./MainScheduler.style";
 import { useCalendarData } from "../../hooks/useCalendarData";
@@ -12,6 +12,7 @@ import EmptyStateOverlay from "./EmptyStateOverlay";
 import { enGB } from "date-fns/locale";
 import API from "../../api/axiosConfig";
 import { useNotification } from "../../context/NotificationContext.jsx";
+import { getSafeId } from "../../utils/idUtils";
 
 /**
  * MainScheduler Component
@@ -26,14 +27,22 @@ import { useNotification } from "../../context/NotificationContext.jsx";
 const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate, onEditPoll }) => {
   const { isLoading, currentUser, handleDeleteEvent, handleCreateEvent, handleEditEvent } = useCalendarData(onEventUpdate);
   const { showNotification } = useNotification();
+  const theme = useTheme();
   const scrollToTime = "08:00"; // Always scroll to 8 AM
 
   // Format events for the scheduler - ensure correct date types and ID field
   const formattedEvents = useMemo(() => {
+    const currentUserId = getSafeId(currentUser);
+
     return events.map(event => {
       const hasParticipants = event.participants && event.participants.length > 0;
       const isGoogle = event.source === 'google';
       const isTask = event.source === 'task' || event.type === 'task';
+      const eventCreatorId = getSafeId(event?.creator);
+      const isCreatorById = eventCreatorId && currentUserId
+        ? String(eventCreatorId) === String(currentUserId)
+        : !eventCreatorId;
+      const isCreator = typeof event?.isCreator === 'boolean' ? event.isCreator : isCreatorById;
 
       // Check if current user needs to RSVP (case-insensitive status check, email matching)
       const needsRsvp = event.participants?.some(
@@ -44,19 +53,19 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
 
       return {
         ...event,
-        event_id: event.id || event.event_id,
+        event_id: getSafeId(event),
         start: new Date(event.startDateTime || event.start),
         end: new Date(event.endDateTime || event.end),
         allDay: event.isAllDay || false,
         editable: isTask ? false : !hasParticipants && !isGoogle,
-        deletable: isTask ? false : !isGoogle,
+        deletable: isTask ? false : (!isGoogle && isCreator),
         draggable: isTask ? false : !isGoogle,
         title: needsRsvp ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{
               width: '8px',
               height: '8px',
-              backgroundColor: '#EF4444',
+              backgroundColor: theme.palette.error.main,
               borderRadius: '50%',
               display: 'inline-block',
               flexShrink: 0
@@ -68,7 +77,7 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
         ) : displayTitle
       };
     });
-  }, [events, currentUser]);
+  }, [events, currentUser, theme.palette.error.main]);
 
   // Use ref to always have access to latest formatted events (solves closure issue)
   const formattedEventsRef = useRef(formattedEvents);
@@ -95,7 +104,9 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
       return Promise.reject('Cannot delete Google Calendar events');
     }
     // If event has a creator field, check if it matches current user ID
-    if (eventToDelete.creator && currentUser?.id && String(eventToDelete.creator) !== String(currentUser.id)) {
+    const currentUserId = getSafeId(currentUser);
+    const eventCreatorId = getSafeId(eventToDelete?.creator);
+    if (eventCreatorId && currentUserId && String(eventCreatorId) !== String(currentUserId)) {
       showNotification({
         title: 'Delete blocked',
         message: 'You can only delete events you created.',
@@ -104,12 +115,27 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
       return Promise.reject('Unauthorized');
     }
 
+    const eventId = eventToDelete?.id || eventToDelete?._id || eventToDelete?.event_id;
     try {
-      // Await the delete operation to ensure it completes before allowing the scheduler to remove the event from the UI
-      await handleDeleteEvent(eventToDelete);
-      return deletedId; // Return the deleted ID to allow the scheduler to remove it from the UI
+      if (!eventId) {
+        throw new Error('Missing event ID');
+      }
+
+      await handleDeleteEvent({ ...eventToDelete, id: eventId }, null, { suppressNotifications: true });
+      showNotification({
+        title: 'Event deleted',
+        message: 'Event deleted successfully',
+        severity: 'success',
+      });
+      return deletedId;
     } catch (error) {
-      return Promise.reject(error); // if user cancels or if delete fails, reject to prevent the scheduler from removing the event from the UI
+      console.error('Failed to delete event:', error);
+      showNotification({
+        title: 'Delete failed',
+        message: 'Failed to delete event',
+        severity: 'error',
+      });
+      return Promise.reject(error);
     }
   };
 
@@ -171,11 +197,19 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
 
   // Handle RSVP status update
   const handleRsvp = async (eventId, status) => {
-    const currentEvent = formattedEventsRef.current.find((event) => String(event.event_id) === String(eventId));
-
     // Allow RSVP for all events regardless of date (including past events)
     try {
-      await API.put(`/events/${eventId}/rsvp`, { status });
+      const safeEventId = getSafeId(eventId);
+      if (!safeEventId) {
+        showNotification({
+          title: 'RSVP failed',
+          message: 'Missing event ID. Please refresh and try again.',
+          severity: 'error',
+        });
+        return;
+      }
+
+      await API.put(`/events/${safeEventId}/rsvp`, { status });
 
       // Trigger refetch to update the UI
       if (onEventUpdate) {
@@ -357,6 +391,7 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
           }}
         />
       </Box>
+
     </SchedulerWrapper>
   );
 };
