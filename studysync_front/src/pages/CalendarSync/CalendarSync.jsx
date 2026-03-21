@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useSelector } from "react-redux";
-import { Box, IconButton, Tooltip, Typography, Alert, useTheme } from "@mui/material";
+import { useSelector, useDispatch } from "react-redux";
+import { Box, IconButton, Tooltip, Typography, useTheme } from "@mui/material";
 import { Add as AddIcon, Refresh as RefreshIcon } from "@mui/icons-material";
 
 // Custom Hook
@@ -16,6 +16,10 @@ import CalendarSidebar from "../../components/CalendarSideBar/CalendarSidebar.js
 import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
 import MeetingPollModal from "../../components/MeetingPollModal/MeetingPollModal.jsx";
+import { useNotification } from "../../context/NotificationContext.jsx";
+
+// Redux
+import { updateUser } from "../../store/userSlice";
 
 // Styles
 import { styles } from "./CalendarSync.style";
@@ -33,11 +37,10 @@ const CalendarSync = () => {
     // Local google loading state to avoid ReferenceError and to control loading during manual refetch
     const [googleLoading, setGoogleLoading] = useState(false);
 
-    // UI error state (replace usage of alert())
-    const [calendarError, setCalendarError] = useState(null);
-
     // Get user data from Redux Store (state.user.user based on userSlice)
     const user = useSelector((state) => state.user?.user);
+    const dispatch = useDispatch();
+    const { showNotification } = useNotification();
 
     // ============================================
     // DATA FETCHING WITH useApi HOOK
@@ -63,16 +66,17 @@ const CalendarSync = () => {
     // Wrapper to refetch Google events with explicit loading state
     const refetchGoogleEventsWrapped = useCallback(async () => {
         setGoogleLoading(true);
-        setCalendarError(null);
         try {
             await refetchGoogleEvents();
+            return true;
         } catch (err) {
             console.error('Failed to refetch Google events', err);
-            setCalendarError('Failed to load Google Calendar events.');
+            showNotification('Failed to load Google Calendar events.', 'error');
+            return false;
         } finally {
             setGoogleLoading(false);
         }
-    }, [refetchGoogleEvents]);
+    }, [refetchGoogleEvents, showNotification]);
 
     // ============================================
     // EFFECTS - OAuth Handling
@@ -82,14 +86,19 @@ const CalendarSync = () => {
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('googleConnected') === 'true') {
+            // Update Redux store to persist Google connection status
+            dispatch(updateUser({ hasGoogleCalendar: true }));
             // Remove the query parameter from URL
             window.history.replaceState({}, document.title, window.location.pathname);
             // Refetch Google Calendar events with a small delay to ensure DB is updated
-            setTimeout(() => {
-                refetchGoogleEventsWrapped();
+            setTimeout(async () => {
+                const refreshed = await refetchGoogleEventsWrapped();
+                if (refreshed) {
+                    showNotification('Google Calendar connected and refreshed successfully!', 'success');
+                }
             }, 800);
         }
-    }, [refetchGoogleEventsWrapped]);
+    }, [refetchGoogleEventsWrapped, showNotification, dispatch]);
 
     // Listen for task updates from other parts of the app (e.g., after creating a scheduled task)
     useEffect(() => {
@@ -250,7 +259,6 @@ const CalendarSync = () => {
         console.log('🚀 CalendarSync: handleSubmitMeetingPoll called with:', meetingData);
         console.log('📝 eventToEdit:', eventToEdit);
         setActionLoading(true);
-        setCalendarError(null);
 
         try {
             let response;
@@ -289,9 +297,11 @@ const CalendarSync = () => {
             const result = await refetchEvents();
             console.log('✅ CalendarSync: Events refetched successfully. New count:', result?.data?.length);
 
+            showNotification('Meeting poll saved successfully!', 'success');
+
         } catch (error) {
             console.error('❌ CalendarSync: Failed to save event:', error);
-            setCalendarError(`Failed to ${eventToEdit ? 'update' : 'create'} meeting poll. Please try again.`);
+            showNotification(`Failed to ${eventToEdit ? 'update' : 'create'} meeting poll. Please try again.`, 'error');
         } finally {
             setActionLoading(false);
         }
@@ -302,7 +312,6 @@ const CalendarSync = () => {
      * Fetches the authorization URL from backend and redirects the user
      */
     const handleConnectGoogle = async () => {
-        setCalendarError(null);
         try {
             // Use environment variable with fallback
             const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -311,7 +320,7 @@ const CalendarSync = () => {
             const userId = user?._id || user?.id || localStorage.getItem('userId');
 
             if (!userId) {
-                setCalendarError('User ID not found. Please log in again.');
+                showNotification('User ID not found. Please log in again.', 'error');
                 return;
             }
 
@@ -332,19 +341,22 @@ const CalendarSync = () => {
             if (data.url) {
                 window.location.href = data.url;
             } else {
-                setCalendarError("Could not get Google Auth URL from server.");
+                showNotification("Could not get Google Auth URL from server.", 'error');
             }
         } catch (error) {
             console.error("Error connecting to Google:", error);
-            setCalendarError("Check your Server/Console for errors.");
+            showNotification("Check your Server/Console for errors.", 'error');
         }
     };
 
     /**
      * Refresh Google Calendar events
      */
-    const handleRefreshGoogle = () => {
-        refetchGoogleEventsWrapped();
+    const handleRefreshGoogle = async () => {
+        const refreshed = await refetchGoogleEventsWrapped();
+        if (refreshed) {
+            showNotification('Google Calendar refreshed successfully!', 'success');
+        }
     };
 
     // ============================================
@@ -352,6 +364,7 @@ const CalendarSync = () => {
     // ============================================
 
     const theme = useTheme();
+    const isGoogleConnected = Boolean(user?.hasGoogleCalendar);
 
     return (
         <Wrapper>
@@ -359,12 +372,15 @@ const CalendarSync = () => {
             <Box sx={styles.headerContainer}>
                 <MainTitle title="CalendarSync" />
                 <Box sx={styles.headerButtonsContainer}>
-                    <Tooltip title="Refresh Google Calendar Events" arrow>
+                    <Tooltip
+                        title={isGoogleConnected ? "Refresh Google Calendar Events" : "Connect Google Calendar first"}
+                        arrow
+                    >
                         <span>
                             <IconButton
                                 size="medium"
                                 onClick={handleRefreshGoogle}
-                                disabled={googleLoading || actionLoading}
+                                disabled={!isGoogleConnected || googleLoading || actionLoading}
                                 sx={styles.actionButton(theme)}
                             >
                                 <RefreshIcon />
@@ -386,8 +402,6 @@ const CalendarSync = () => {
                     </Tooltip>
                 </Box>
             </Box>
-
-            {calendarError && <Alert severity="error" sx={styles.alertMargin}>{calendarError}</Alert>}
 
             {/* Main Calendar Section - Sidebar and Scheduler */}
             <Box sx={styles.mainContainer}>

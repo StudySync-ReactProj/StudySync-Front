@@ -38,8 +38,21 @@ const userSlice = createSlice({
       localStorage.removeItem("userInfo");
       localStorage.removeItem("userId");
     },
+    updateUser: (state, action) => {
+      // Merge the payload with the existing user data
+      if (state.user) {
+        state.user = {
+          ...state.user,
+          ...action.payload,
+        };
+        // Also update localStorage with the merged user data
+        const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+        Object.assign(userInfo, action.payload);
+        localStorage.setItem("userInfo", JSON.stringify(userInfo));
+      }
+    },
   },
 });
 
-export const { loginUser, logoutUser } = userSlice.actions;
+export const { loginUser, logoutUser, updateUser } = userSlice.actions;
 export default userSlice.reducer;

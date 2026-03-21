@@ -8,7 +8,20 @@ import MainTitle from "../../components/MainTitle/MainTitle.jsx";
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
 import TasksList from "../../components/TasksList/TasksList.jsx";
 import AddTaskForm from "../../components/AddTaskForm/AddTaskForm.jsx";
-import { Button, Box, CircularProgress, Alert, useTheme } from "@mui/material";
+import {
+  Button,
+  Box,
+  CircularProgress,
+  Alert,
+  useTheme,
+  Stack,
+  FormControlLabel,
+  Switch,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
 import { styles, topActionButtonSx } from './TasksPage.style';
 
 const TasksPage = () => {
@@ -32,6 +45,8 @@ const TasksPage = () => {
   const [newTaskExecutionDate, setNewTaskExecutionDate] = useState("");
   const [newTaskScheduledStart, setNewTaskScheduledStart] = useState("");
   const [editingTaskId, setEditingTaskId] = useState(null);
+  const [hideCompleted, setHideCompleted] = useState(false);
+  const [priorityFilter, setPriorityFilter] = useState("All");
 
   // ========== HANDLERS ==========
 
@@ -229,6 +244,12 @@ const TasksPage = () => {
 
   // ========== RENDER LOGIC ==========
 
+  const filteredTasks = (tasks || []).filter(task => {
+    if (hideCompleted && task.status === 'Completed') return false;
+    if (priorityFilter !== 'All' && task.priority !== priorityFilter) return false;
+    return true;
+  });
+
   return (
     <Wrapper>
       <Box sx={styles.headerContainer}>
@@ -246,7 +267,6 @@ const TasksPage = () => {
 
       {/* Show Error Alert if fetch fails */}
       {error && <Alert severity="error" sx={styles.alertMargin}>{error}</Alert>}
-      {actionError && <Alert severity="error" sx={styles.alertMargin}>{actionError}</Alert>}
 
       {/* Render Add Task Form */}
       {showAddForm && (
@@ -283,8 +303,35 @@ const TasksPage = () => {
           </Box>
         ) : (
           <Box sx={styles.tasksListContainer}>
+            <Stack direction="row" spacing={3} alignItems="center" sx={{ mb: 2, justifyContent: 'flex-start' }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={hideCompleted}
+                    onChange={(e) => setHideCompleted(e.target.checked)}
+                  />
+                }
+                label="Hide Completed"
+              />
+
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>Priority</InputLabel>
+                <Select
+                  value={priorityFilter}
+                  label="Priority"
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Low">Low</MenuItem>
+                  <MenuItem value="Medium">Medium</MenuItem>
+                  <MenuItem value="High">High</MenuItem>
+                  <MenuItem value="Critical">Critical</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+
             <TasksList
-              tasks={tasks || []}
+              tasks={filteredTasks}
               onStatusChange={handleStatusChange}
               onDeleteTask={handleDeleteTask}
               onEditTask={handleEditTask}

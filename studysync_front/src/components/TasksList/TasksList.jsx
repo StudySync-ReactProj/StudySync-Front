@@ -22,6 +22,23 @@ function TaskItem({ task, onStatusChange, onDeleteTask, onEditTask }) {
   // Check if task is completed based on status from backend
   const isCompleted = task.status === 'Completed';
 
+  const formatDateTimeNoSeconds = (value) =>
+    new Date(value).toLocaleString([], {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+
+  const formatTimeNoSeconds = (value) =>
+    new Date(value).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+
   const renderScheduled = () => {
     if (!task.scheduledStart || !task.scheduledEnd) return null;
     const start = new Date(task.scheduledStart);
@@ -29,7 +46,7 @@ function TaskItem({ task, onStatusChange, onDeleteTask, onEditTask }) {
     return (
       <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ...metaRowSx }}>
         <EventIcon sx={smallIconSx} />
-        <Typography variant="caption">{start.toLocaleString()} - {end.toLocaleTimeString()}</Typography>
+        <Typography variant="caption">{formatDateTimeNoSeconds(start)} - {formatTimeNoSeconds(end)}</Typography>
       </Stack>
     );
   };

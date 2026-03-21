@@ -20,12 +20,21 @@ export const NotificationProvider = ({ children }) => {
 
   /**
    * Display a notification with the provided details
-   * @param {Object} config - Notification configuration
-   * @param {string} config.title - Notification title
-   * @param {string} config.message - Notification message
-   * @param {string} config.severity - Alert severity: 'success', 'error', 'warning', 'info'
+   * Supports both signatures:
+   * 1) showNotification({ title, message, severity })
+   * 2) showNotification(message, severity, title)
    */
-  const showNotification = ({ title, message, severity = 'info' }) => {
+  const showNotification = (input, severityArg = 'info', titleArg = '') => {
+    const config = typeof input === 'string'
+      ? { title: titleArg, message: input, severity: severityArg }
+      : (input || {});
+
+    const {
+      title = '',
+      message = '',
+      severity = 'info',
+    } = config;
+
     setNotification({
       open: true,
       title,
