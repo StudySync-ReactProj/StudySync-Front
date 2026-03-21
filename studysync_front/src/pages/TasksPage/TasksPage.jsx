@@ -28,10 +28,14 @@ import { styles, topActionButtonSx } from './TasksPage.style';
 const TasksPage = () => {
   const theme = useTheme();
   const user = useSelector((state) => state.user?.user);
+  const reduxLoading = useSelector((state) => state.tasks.loading);
+  const reduxError = useSelector((state) => state.tasks.error);
 
   // ========== DATA FETCHING WITH useApi HOOK ==========
   const { data: tasks, loading, error, refetch } = useApi('/tasks');
   const { showNotification } = useNotification();
+  const listLoading = reduxLoading || loading;
+  const listError = reduxError || error;
 
   // Local state for UI toggles and form inputs
   const [showAddForm, setShowAddForm] = useState(false);
@@ -269,7 +273,7 @@ const TasksPage = () => {
       </Box>
 
       {/* Show Error Alert if fetch fails */}
-      {error && <Alert severity="error" sx={styles.alertMargin}>{error}</Alert>}
+      {listError && <Alert severity="error" sx={styles.alertMargin}>{listError}</Alert>}
 
       {/* Render Add Task Form */}
       {showAddForm && (
@@ -301,7 +305,7 @@ const TasksPage = () => {
 
       {/* Show Loading Spinner or Task List */}
       <div id="tasks--list">
-        {loading ? (
+        {listLoading ? (
           <Box sx={styles.spinnerBox}>
             <CircularProgress />
           </Box>

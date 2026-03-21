@@ -49,9 +49,18 @@ const tasksSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(fetchTasks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchTasks.fulfilled, (state, action) => {
         state.tasks = action.payload;
         state.loading = false;
+        state.error = null;
+      })
+      .addCase(fetchTasks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch tasks';
       })
       .addCase(addTaskAsync.fulfilled, (state, action) => {
         state.tasks.push(action.payload);

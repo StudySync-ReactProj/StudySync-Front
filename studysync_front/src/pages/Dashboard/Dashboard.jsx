@@ -9,7 +9,7 @@ import CardContainerComp from "../../components/CardContainer/CardContainer.jsx"
 import DashboardSkeleton from "../../components/DashboardSkeleton/DashboardSkeleton.jsx";
 import DashboardError from "../../components/DashboardError/DashboardError.jsx";
 import PendingEventsStat from '../../components/PendingEventsStat/PendingEventsStat';
-import { Box } from "@mui/material"; // הוספתי Box מ-MUI כדי שנוכל לעשות רווח קטן
+import { Box, CircularProgress } from "@mui/material"; // הוספתי Box מ-MUI כדי שנוכל לעשות רווח קטן
 import { styles } from './Dashboard.style';
 
 // Use environment variable with fallback
@@ -18,6 +18,8 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const Dashboard = () => {
   const user = useSelector((state) => state.user.user);
   const username = user?.username || "User";
+  const reduxEventsLoading = useSelector((state) => state.events.loading);
+  const reduxEventsError = useSelector((state) => state.events.error);
 
   // Fetch dashboard statistics (tasks, deadlines)
   const {
@@ -42,12 +44,16 @@ const Dashboard = () => {
   const {
     data: events,
     loading: eventsLoading,
+    error: eventsError,
   } = useApi(`${API_BASE_URL}/api/events`, {
     initialData: [] // נותן מערך ריק כברירת מחדל עד שיגיעו הנתונים
   });
 
+  const eventsStatusLoading = reduxEventsLoading || eventsLoading;
+  const eventsStatusError = reduxEventsError || eventsError;
+
   // 3. הוספנו את eventsLoading למצב הטעינה המשולב
-  const isLoading = statsLoading || progressLoading || eventsLoading;
+  const isLoading = statsLoading || progressLoading;
 
   // Only show error if stats fails (progress is optional)
   const hasError = statsError;
@@ -65,7 +71,15 @@ const Dashboard = () => {
       {/* Header with Pending Invitations on same line */}
       <Box sx={styles.headerRow}>
         <WelcomeHeader username={username} />
-        <PendingEventsStat events={events} currentUser={user} />
+        {eventsStatusLoading ? (
+          <CircularProgress size={24} />
+        ) : eventsStatusError ? (
+          <Box sx={{ color: "error.main", fontSize: "0.875rem" }}>
+            Failed to load events
+          </Box>
+        ) : (
+          <PendingEventsStat events={events} currentUser={user} />
+        )}
       </Box>
 
       {/* Loading State */}
