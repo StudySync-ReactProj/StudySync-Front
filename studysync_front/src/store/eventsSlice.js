@@ -8,7 +8,7 @@ export const fetchEvents = createAsyncThunk('events/fetchEvents', async (_, thun
         const response = await API.get('/events');
         return response.data;
     } catch (error) {
-        return thunkAPI.rejectWithValue(error.response.data.message);
+        return thunkAPI.rejectWithValue(error.response?.data?.message || 'Failed to fetch events');
     }
 });
 
@@ -42,21 +42,31 @@ export const fetchGoogleCalendarEvents = createAsyncThunk(
 
 const eventsSlice = createSlice({
     name: 'events',
-    initialState: { events: [], isLoading: false, error: null },
+    initialState: { events: [], isLoading: false, loading: false, error: null },
     reducers: {},
     extraReducers: (builder) => {
         builder
             .addCase(fetchEvents.pending, (state) => {
                 state.isLoading = true;
+                state.loading = true;
                 state.error = null;
             })
             .addCase(fetchEvents.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.events = action.payload;
+                state.loading = false;
+                if (Array.isArray(action.payload)) {
+                    state.events = action.payload;
+                } else if (Array.isArray(action.payload?.events)) {
+                    state.events = action.payload.events;
+                } else {
+                    state.events = [];
+                }
+                state.error = null;
             })
             .addCase(fetchEvents.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = action.payload;
+                state.loading = false;
+                state.error = action.payload || 'Failed to fetch events';
             })
             .addCase(createEventAsync.fulfilled, (state, action) => {
                 state.events.push(action.payload);
@@ -68,7 +78,7 @@ const eventsSlice = createSlice({
                 state.isLoading = false;
                 // finds the old event in the state by matching _id or id (database field) and replaces it with the updated event from the server
                 const index = state.events.findIndex(event =>
-                    (event._id || event.id) === (action.payload._id || action.payload.id)
+                    event.id === action.payload.id
                 );
                 // If event is found, update it in the state
                 if (index !== -1) {
@@ -102,7 +112,7 @@ const eventsSlice = createSlice({
                 state.isLoading = false;
                 // Filter out the deleted event using _id or id (database field)
                 state.events = state.events.filter(event =>
-                    (event._id || event.id) !== action.payload
+                    event.id !== action.payload
                 );
             })
             .addCase(deleteEventAsync.rejected, (state, action) => {
@@ -121,7 +131,7 @@ const eventsSlice = createSlice({
 export const updateEventAsync = createAsyncThunk('events/updateEvent', async (eventData, thunkAPI) => {
     try {
        
-        const eventId = eventData._id || eventData.id;
+        const eventId = eventData.id;
         const response = await API.put(`/events/${eventId}`, eventData);
         return response.data; // the updated event
     } catch (error) {

@@ -86,7 +86,7 @@ const TasksPage = () => {
   const handleEditTask = (task) => {
     if (!task) return;
 
-    const taskId = task._id || task.id;
+    const taskId = task.id;
     setNewTaskText(task.title || "");
     setNewTaskPriority((task.priority || "medium").toLowerCase());
     setNewTaskDueDate(formatForDateInput(task.dueDate));

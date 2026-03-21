@@ -163,14 +163,14 @@ const CalendarSync = () => {
                 }
 
                 return {
-                    event_id: `google-${event.id || event._id}`,
+                    event_id: `google-${event.id}`,
                     title: `${event.summary || event.title}`,
                     start: startDate,
                     end: endDate,
                     description: event.description || '',
                     source: 'google',
                     isAllDay: event.isAllDay || false,
-                    color: getEventColor({ ...event, source: 'google' }, user?._id)
+                    color: getEventColor({ ...event, source: 'google' }, user?.id)
                 };
             })
             .filter(event => event !== null);
@@ -201,7 +201,7 @@ const CalendarSync = () => {
                 }
 
                 return {
-                    event_id: event._id || event.id,
+                    event_id: event.id,
                     title: event.status === 'Draft' ? `${event.title}` : event.title,
                     start: startDate,
                     end: endDate,
@@ -210,7 +210,7 @@ const CalendarSync = () => {
                     creator: event.creator,
                     isInvited: event.isInvited || false,
                     source: 'local',
-                    color: getEventColor(event, user?._id)
+                    color: getEventColor(event, user?.id)
                 };
             })
             .filter(event => event !== null);
@@ -228,7 +228,7 @@ const CalendarSync = () => {
                 const end = new Date(task.scheduledEnd);
                 if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
                 return {
-                    event_id: task._id,
+                    event_id: task.id,
                     title: task.title,
                     start,
                     end,
@@ -285,7 +285,7 @@ const CalendarSync = () => {
 
             if (eventToEdit) {
                 // UPDATE MODE: Edit existing event
-                const eventId = eventToEdit._id || eventToEdit.event_id || eventToEdit.id;
+                const eventId = eventToEdit.id || eventToEdit.event_id;
                 console.log('✏️ Updating event with ID:', eventId);
 
                 response = await API.put(`/events/${eventId}`, {
@@ -337,7 +337,7 @@ const CalendarSync = () => {
             const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
             // Get userId from Redux user state instead of hardcoding
-            const userId = user?._id || user?.id || localStorage.getItem('userId');
+            const userId = user?.id || localStorage.getItem('userId');
 
             if (!userId) {
                 showNotification('User ID not found. Please log in again.', 'error');

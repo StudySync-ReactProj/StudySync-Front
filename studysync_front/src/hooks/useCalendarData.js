@@ -2,6 +2,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import { deleteEventAsync, updateEventAsync, createEventAsync } from "../store/eventsSlice";
 import { getEventColor } from "../utils/eventUtils";
+import { useNotification } from "../context/NotificationContext.jsx";
 
 /*
   Custom hook to manage calendar data and actions
@@ -15,6 +16,7 @@ export const useCalendarData = (refetchCallback = null) => {
   const dispatch = useDispatch();
   const { isLoading } = useSelector((state) => state.events);
   const currentUser = useSelector((state) => state.user?.user);
+  const { showNotification } = useNotification();
 
   const handleDeleteEvent = async (event, closeViewer) => {
     const confirmDelete = window.confirm('Are you sure you want to delete this event?');
@@ -23,7 +25,7 @@ export const useCalendarData = (refetchCallback = null) => {
     }
     try {
       // making sure we sending the correct ID field to the API
-      await dispatch(deleteEventAsync(event._id || event.event_id || event.id)).unwrap();
+      await dispatch(deleteEventAsync(event.id || event.event_id)).unwrap();
 
       // Trigger refetch to update UI with latest data
       if (refetchCallback) {
@@ -36,7 +38,11 @@ export const useCalendarData = (refetchCallback = null) => {
       return true;
     } catch (error) {
       console.error('Failed to delete event:', error);
-      alert('Failed to delete event. Please try again.');
+      showNotification({
+        title: 'Delete failed',
+        message: 'Failed to delete event. Please try again.',
+        severity: 'error',
+      });
       throw error; // throw error to prevent the scheduler from removing the event from the UI
     }
   };
@@ -55,10 +61,10 @@ export const useCalendarData = (refetchCallback = null) => {
 
       const returnedEvent = {
         ...event,
-        event_id: createdEvent._id || createdEvent.id,
+        event_id: createdEvent.id,
         start: new Date(createdEvent.startDateTime),
         end: new Date(createdEvent.endDateTime),
-        color: getEventColor(createdEvent, currentUser?._id)
+        color: getEventColor(createdEvent, currentUser?.id)
       };
 
       // Trigger refetch if callback provided
@@ -70,7 +76,11 @@ export const useCalendarData = (refetchCallback = null) => {
 
     } catch (error) {
       console.error('Failed to create event:', error);
-      alert('Failed to create event. Please try again.');
+      showNotification({
+        title: 'Create failed',
+        message: 'Failed to create event. Please try again.',
+        severity: 'error',
+      });
       throw error;
     }
   };
@@ -81,7 +91,7 @@ export const useCalendarData = (refetchCallback = null) => {
         ...event,
         startDateTime: event.start,
         endDateTime: event.end,
-        _id: event.event_id || event._id || event.id
+        id: event.event_id || event.id
       };
 
       const updatedEvent = await dispatch(updateEventAsync(updatedEventPayload)).unwrap();
@@ -103,7 +113,11 @@ export const useCalendarData = (refetchCallback = null) => {
 
     } catch (error) {
       console.error('Failed to update event:', error);
-      alert('Failed to update event. Please try again.');
+      showNotification({
+        title: 'Update failed',
+        message: 'Failed to update event. Please try again.',
+        severity: 'error',
+      });
       throw error;
     }
   };

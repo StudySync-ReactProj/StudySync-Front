@@ -58,7 +58,7 @@ const EventDetailsPopup = ({ event, currentUser, currentUserId, showActions, has
   // Handle RSVP button clicks
   const handleRsvp = (status) => {
     if (onRsvp) {
-      onRsvp(event._id || event.event_id || event.id, status);
+      onRsvp(event.id || event.event_id, status);
     }
   };
   // Always render content - the scheduler handles visibility

@@ -66,10 +66,10 @@ const tasksSlice = createSlice({
         state.tasks.push(action.payload);
       })
       .addCase(deleteTaskAsync.fulfilled, (state, action) => {
-        state.tasks = state.tasks.filter(t => (t._id || t.id) !== action.payload);
+        state.tasks = state.tasks.filter(t => t.id !== action.payload);
       })
       .addCase(updateTaskStatus.fulfilled, (state, action) => {
-        const index = state.tasks.findIndex(t => (t._id || t.id) === action.payload._id);
+        const index = state.tasks.findIndex(t => t.id === action.payload.id);
         if (index !== -1) {
           state.tasks[index] = action.payload;
         }

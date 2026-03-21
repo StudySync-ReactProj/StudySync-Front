@@ -4,15 +4,26 @@ import { Box, Typography, Tooltip } from '@mui/material';
 import { styles as pendingStyles } from './PendingEventsStat.style';
 
 const PendingEventsStat = ({ events = [], currentUser }) => {
-    // Calculate pending count - events waiting for user's RSVP
-    const pendingCount = events.filter(event =>
-        event.participants?.some(
-            p => p.email === currentUser?.email && p.status?.toLowerCase() === 'pending'
-        )
-    ).length;
+    const now = new Date();
 
-    // Don't render if no pending invitations
-    if (pendingCount === 0) return null;
+    const pendingCount = (Array.isArray(events) ? events : [])
+        .filter((event) => {
+            const eventStartRaw = event.startDateTime || event.start;
+            if (!eventStartRaw) return false;
+
+            const eventStartDate = new Date(eventStartRaw);
+            if (Number.isNaN(eventStartDate.getTime())) return false;
+
+            return eventStartDate >= now;
+        })
+        .filter((event) =>
+            event.participants?.some(
+                (participant) =>
+                    participant.email === currentUser?.email &&
+                    participant.status?.toLowerCase() === 'pending'
+            )
+        )
+        .length;
 
     return (
         <Tooltip

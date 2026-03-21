@@ -107,7 +107,7 @@ function TaskItem({ task, onStatusChange, onDeleteTask, onEditTask }) {
               <FormControl size="small" sx={formControlSx}>
                 <Select
                   value={task.status || 'Not Started'}
-                  onChange={(e) => onStatusChange(task._id || task.id, e.target.value)}
+                  onChange={(e) => onStatusChange(task.id, e.target.value)}
                   sx={selectSx}
                 >
                   <MenuItem value="Not Started">Not Started</MenuItem>
@@ -130,7 +130,7 @@ function TaskItem({ task, onStatusChange, onDeleteTask, onEditTask }) {
           <IconButton
             size="small"
             color="error"
-            onClick={() => onDeleteTask(task._id || task.id)}
+            onClick={() => onDeleteTask(task.id)}
             sx={deleteButtonSx}
           >
             <DeleteIcon fontSize="small" />
@@ -147,7 +147,7 @@ export default function MobileStyleTaskList({ tasks = [], onStatusChange, onDele
   // Safe mapping - only map if tasks exist
   const rows = tasks.map(task => ({
     ...task,
-    _id: task._id || task.id,
+    id: task.id,
     title: task.title,
     priority: task.priority || 'Low',
     dueDate: task.dueDate,
@@ -158,10 +158,10 @@ export default function MobileStyleTaskList({ tasks = [], onStatusChange, onDele
     <TasksWrapper>
       {rows.map((row) => (
         <TaskItem
-          key={row._id} // Using the MongoDB unique ID
+          key={row.id}
           task={row}
           onStatusChange={onStatusChange}
-          onDeleteTask={() => onDeleteTask?.(row._id)}
+          onDeleteTask={() => onDeleteTask?.(row.id)}
           onEditTask={onEditTask}
         />
       ))}

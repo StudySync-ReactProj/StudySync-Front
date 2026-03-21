@@ -45,7 +45,7 @@ const TaskItem = ({ task, onDeleteTask }) => {
 
             <IconButton
                 aria-label="delete task"
-                onClick={() => onDeleteTask(task._id)}
+                onClick={() => onDeleteTask(task.id)}
                 sx={deleteButtonSx}
                 size="small"
             >

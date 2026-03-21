@@ -7,7 +7,7 @@ const normalizeUser = (payload) => {
 
   return {
     ...payload,
-    _id: payload._id || payload.id || payload.userId || payload.user?._id || payload.user?.id,
+    id: payload.id || payload.userId || payload.user?.id,
     username: payload.username || payload.user?.username,
     email: payload.email || payload.user?.email,
     token: payload.token || payload.user?.token,
@@ -47,8 +47,8 @@ const userSlice = createSlice({
 
         if (normalizedUser) {
           localStorage.setItem("userInfo", JSON.stringify(normalizedUser));
-          if (normalizedUser._id) {
-            localStorage.setItem("userId", String(normalizedUser._id));
+          if (normalizedUser.id) {
+            localStorage.setItem("userId", String(normalizedUser.id));
           }
         }
       })

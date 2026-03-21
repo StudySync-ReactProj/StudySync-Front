@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useApi } from "../../hooks/useApi";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchEvents } from "../../store/eventsSlice";
 
 // Components
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
@@ -16,10 +17,17 @@ import { styles } from './Dashboard.style';
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const Dashboard = () => {
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
   const username = user?.username || "User";
-  const reduxEventsLoading = useSelector((state) => state.events.loading);
-  const reduxEventsError = useSelector((state) => state.events.error);
+  const events = useSelector((state) => state.events.events || []);
+  const reduxEventsLoading = useSelector((state) => state.events.loading ?? state.events.isLoading);
+
+  useEffect(() => {
+    dispatch(fetchEvents());
+  }, [dispatch]);
+
+  console.log('Dashboard Events Data:', events);
 
   // Fetch dashboard statistics (tasks, deadlines)
   const {
@@ -40,17 +48,8 @@ const Dashboard = () => {
     initialData: { weekly: [] }
   });
 
-  // 2. הוספנו פה שליפה של האירועים מהשרת (וודאי שהנתיב /api/events תואם לשרת שלך)
-  const {
-    data: events,
-    loading: eventsLoading,
-    error: eventsError,
-  } = useApi(`${API_BASE_URL}/api/events`, {
-    initialData: [] // נותן מערך ריק כברירת מחדל עד שיגיעו הנתונים
-  });
-
-  const eventsStatusLoading = reduxEventsLoading || eventsLoading;
-  const eventsStatusError = reduxEventsError || eventsError;
+  const eventsStatusLoading = reduxEventsLoading;
+  const safeEvents = Array.isArray(events) ? events : [];
 
   // 3. הוספנו את eventsLoading למצב הטעינה המשולב
   const isLoading = statsLoading || progressLoading;
@@ -73,12 +72,8 @@ const Dashboard = () => {
         <WelcomeHeader username={username} />
         {eventsStatusLoading ? (
           <CircularProgress size={24} />
-        ) : eventsStatusError ? (
-          <Box sx={{ color: "error.main", fontSize: "0.875rem" }}>
-            Failed to load events
-          </Box>
         ) : (
-          <PendingEventsStat events={events} currentUser={user} />
+          <PendingEventsStat events={safeEvents} currentUser={user} />
         )}
       </Box>
 

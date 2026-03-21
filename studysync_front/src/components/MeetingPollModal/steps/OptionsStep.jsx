@@ -25,7 +25,6 @@ const OptionsStep = ({
     isCalculatingSlots,
     hasCalculatedSlots,
     hasBusyData,
-    alert,
     onFindAvailableTimes
 }) => {
     return (
@@ -86,8 +85,6 @@ const OptionsStep = ({
                     </Typography>
                 </Box>
             )}
-
-            {alert && !isCalculatingSlots && <Alert severity="warning" sx={{ mb: 1.5 }}>{alert}</Alert>}
 
             {!isLoadingBusyData && !hasBusyData && !isCalculatingSlots && (
                 <Alert severity="info" sx={{ mb: 1.5 }}>

@@ -15,6 +15,7 @@ import {
 import { Close as CloseIcon, CheckCircle as CheckCircleIcon, EditCalendar as EditCalendarIcon } from '@mui/icons-material';
 import { createEventAsync } from '../../store/eventsSlice';
 import { fetchFreeBusyData } from '../../services/googleCalendarService';
+import { useNotification } from '../../context/NotificationContext.jsx';
 
 import DetailsStep from './steps/DetailsStep';
 import ParticipantsStep from './steps/ParticipantsStep';
@@ -53,7 +54,7 @@ const normalizeParticipants = (participants = []) => participants
     .map((participant) => ({
         email: participant?.email || '',
         name: participant?.name || '',
-        id: participant?.id || participant?._id || participant?.email || ''
+        id: participant?.id || participant?.email || ''
     }))
     .sort((a, b) => a.email.localeCompare(b.email));
 
@@ -64,6 +65,7 @@ const getSlotSignature = (slot) => {
 
 export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit }) {
     const dispatch = useDispatch();
+    const { showNotification } = useNotification();
     
     // Correctly access user from Redux store with fallback
     const user = useSelector((state) => state.user.user || state.user);
@@ -74,7 +76,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
         try {
             const payload = token.split('.')[1];
             const decodedPayload = JSON.parse(atob(payload));
-            return decodedPayload.id || decodedPayload._id || decodedPayload.userId;
+            return decodedPayload.id || decodedPayload.userId;
         } catch (error) {
             console.error('Failed to decode token:', error);
             return null;
@@ -84,7 +86,6 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
     const [isLoadingBusyData, setIsLoadingBusyData] = useState(false);
     const [isCalculatingSlots, setIsCalculatingSlots] = useState(false);
     const [busyData, setBusyData] = useState(null);
-    const [alert, setAlert] = useState(null);
     const [smartAvailableSlots, setSmartAvailableSlots] = useState([]);
     const [hasCalculatedSlots, setHasCalculatedSlots] = useState(false);
     const [showAssistant, setShowAssistant] = useState(false);
@@ -144,7 +145,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
             // Ensure participants have an id field for proper removal
             const participantsWithIds = (eventToEdit.participants || []).map(p => ({
                 ...p,
-                id: p.id || p._id || p.email // Use existing id, _id, or email as fallback
+                id: p.id || p.email
             }));
 
             const prefilledForm = {
@@ -223,18 +224,21 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
     // Check participant availability using Google Calendar data
     const handleCheckAvailability = async () => {
         // Extract user ID from JWT token or direct property
-        const currentUserId = user?._id || user?.id || getUserIdFromToken(user?.token);
+        const currentUserId = user?.id || getUserIdFromToken(user?.token);
         console.log('Final User ID:', currentUserId);
         console.log("🔍 Checking availability for user:", currentUserId);
         
         if (!currentUserId || formData.participants.length === 0) {
             console.log("⚠️ Aborting availability check: No user or no participants");
-            setAlert("Please add participants to check availability");
+            showNotification({
+                title: 'Missing participants',
+                message: 'Please add participants to check availability.',
+                severity: 'warning',
+            });
             return;
         }
 
         setIsLoadingBusyData(true);
-        setAlert(null);
         try {
             const emails = formData.participants
                 .map(p => p.email)
@@ -244,7 +248,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
             console.log("📡 Fetching availability for:", allEmails);
 
             // Pass the current event ID to exclude it from availability check
-            const excludeEventId = eventToEdit?._id || eventToEdit?.event_id || eventToEdit?.id || null;
+            const excludeEventId = eventToEdit?.id || eventToEdit?.event_id || null;
             console.log("🔍 Excluding event from availability check:", excludeEventId);
             const data = await fetchFreeBusyData(currentUserId, allEmails, excludeEventId);
             
@@ -255,7 +259,11 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
             }
         } catch (err) {
             console.error("❌ Sync error:", err);
-            setAlert("Failed to sync calendars.");
+            showNotification({
+                title: 'Sync failed',
+                message: 'Failed to sync calendars.',
+                severity: 'error',
+            });
         } finally {
             setIsLoadingBusyData(false);
         }
@@ -286,7 +294,6 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
         if (previousDurationRef.current !== currentDuration) {
             setSmartAvailableSlots([]);
             setHasCalculatedSlots(false);
-            setAlert(null);
             setFormData((prev) => ({ ...prev, selectedSlots: [] }));
         }
 
@@ -446,7 +453,11 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
             }
         } catch (err) { 
             console.error('❌ Save error:', err);
-            alert('Failed to create meeting poll. Please try again.');
+            showNotification({
+                title: 'Create failed',
+                message: 'Failed to create meeting poll. Please try again.',
+                severity: 'error',
+            });
         }
     };
 
@@ -611,7 +622,6 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                                 hasCalculatedSlots={hasCalculatedSlots}
                                 hasBusyData={!!busyData}
                                 onFindAvailableTimes={handleFindAvailableTimes}
-                                alert={alert}
                             />
                         )}
                     </Box>

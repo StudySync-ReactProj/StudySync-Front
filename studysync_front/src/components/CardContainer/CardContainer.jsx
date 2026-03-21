@@ -241,7 +241,7 @@ const CardContainerComp = ({ stats, progressData, onRefreshProgress }) => {
           {todayTasks.length ? (
             <CardList>
               {todayTasks.map((t) => (
-                <li key={t._id || t.id} data-status={t.status}>
+                <li key={t.id} data-status={t.status}>
                   {t.title}
                 </li>
               ))}
@@ -327,7 +327,7 @@ const CardContainerComp = ({ stats, progressData, onRefreshProgress }) => {
           {upcomingDeadlines.length ? (
             <CardList>
               {upcomingDeadlines.slice(0, 6).map((d) => (
-                <li key={d._id || d.id}>
+                <li key={d.id}>
                   {d.title} — {new Date(d.due).toLocaleDateString()}
                 </li>
               ))}

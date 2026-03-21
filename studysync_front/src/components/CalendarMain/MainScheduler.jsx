@@ -11,6 +11,7 @@ import LoadingOverlay from "./LoadingOverlay";
 import EmptyStateOverlay from "./EmptyStateOverlay";
 import { enGB } from "date-fns/locale";
 import API from "../../api/axiosConfig";
+import { useNotification } from "../../context/NotificationContext.jsx";
 
 /**
  * MainScheduler Component
@@ -24,6 +25,7 @@ import API from "../../api/axiosConfig";
 
 const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate, onEditPoll }) => {
   const { isLoading, currentUser, handleDeleteEvent, handleCreateEvent, handleEditEvent } = useCalendarData(onEventUpdate);
+  const { showNotification } = useNotification();
   const scrollToTime = "08:00"; // Always scroll to 8 AM
 
   // Format events for the scheduler - ensure correct date types and ID field
@@ -42,7 +44,7 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
 
       return {
         ...event,
-        event_id: event._id || event.event_id || event.id,
+        event_id: event.id || event.event_id,
         start: new Date(event.startDateTime || event.start),
         end: new Date(event.endDateTime || event.end),
         allDay: event.isAllDay || false,
@@ -85,12 +87,20 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
     }
     // Permission check
     if (eventToDelete.source === 'google') {
-      alert('Cannot delete Google Calendar events from this app');
+      showNotification({
+        title: 'Delete blocked',
+        message: 'Cannot delete Google Calendar events from this app.',
+        severity: 'error',
+      });
       return Promise.reject('Cannot delete Google Calendar events');
     }
     // If event has a creator field, check if it matches current user ID
-    if (eventToDelete.creator && currentUser?._id && String(eventToDelete.creator) !== String(currentUser._id)) {
-      alert('You can only delete events you created');
+    if (eventToDelete.creator && currentUser?.id && String(eventToDelete.creator) !== String(currentUser.id)) {
+      showNotification({
+        title: 'Delete blocked',
+        message: 'You can only delete events you created.',
+        severity: 'error',
+      });
       return Promise.reject('Unauthorized');
     }
 
@@ -110,12 +120,20 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
     } else if (action === "edit") {
       // Permission check: Only allow editing local events created by current user (no Google events)
       if (event.source === 'google') {
-        alert('Cannot edit Google Calendar events from this app');
+        showNotification({
+          title: 'Edit blocked',
+          message: 'Cannot edit Google Calendar events from this app.',
+          severity: 'error',
+        });
         return Promise.reject('Cannot edit Google Calendar events');
       }
       // If event has a creator field, check if it matches current user ID
-      if (event.creator && currentUser?._id && String(event.creator) !== String(currentUser._id)) {
-        alert('You can only edit events you created');
+      if (event.creator && currentUser?.id && String(event.creator) !== String(currentUser.id)) {
+        showNotification({
+          title: 'Edit blocked',
+          message: 'You can only edit events you created.',
+          severity: 'error',
+        });
         return Promise.reject('Unauthorized');
       }
 
@@ -153,6 +171,18 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
 
   // Handle RSVP status update
   const handleRsvp = async (eventId, status) => {
+    const currentEvent = formattedEventsRef.current.find((event) => String(event.event_id) === String(eventId));
+    const eventEnd = currentEvent?.end ? new Date(currentEvent.end) : null;
+
+    if (eventEnd && eventEnd.getTime() < Date.now()) {
+      showNotification({
+        title: 'RSVP unavailable',
+        message: 'Cannot respond to an event that has already passed.',
+        severity: 'error',
+      });
+      return;
+    }
+
     try {
       await API.put(`/events/${eventId}/rsvp`, { status });
 
@@ -162,7 +192,11 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
       }
     } catch (error) {
       console.error('Failed to update RSVP status:', error);
-      alert('Failed to update your response. Please try again.');
+      showNotification({
+        title: 'RSVP failed',
+        message: 'Failed to update your response. Please try again.',
+        severity: 'error',
+      });
     }
   };
 
@@ -301,7 +335,7 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
           // Custom content in the viewer popup (description + participants only)
           viewerExtraComponent={(fields, event) => {
             // Only show delete button in viewer if user is the creator
-            const isCreator = currentUser?._id && event.creator === currentUser?._id;
+            const isCreator = currentUser?.id && event.creator === currentUser?.id;
             const isLocalEvent = event.source !== 'google';
             const hasParticipants = event.participants && event.participants.length > 0;
 
@@ -310,7 +344,7 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
                 event={event}
                 // Don't pass onDeleteEvent - let the library handle it
                 currentUser={currentUser}
-                currentUserId={currentUser?._id}
+                currentUserId={currentUser?.id}
                 // Hide the library's delete button for non-creators or Google events
                 showActions={isLocalEvent && isCreator}
                 hasParticipants={hasParticipants}
