@@ -1,5 +1,5 @@
-// Use environment variable with fallback
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// Use environment variable, fallback to same-origin API path
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export const fetchFreeBusyData = async (userId, emails, excludeEventId = null) => {
     // Get JWT token from localStorage

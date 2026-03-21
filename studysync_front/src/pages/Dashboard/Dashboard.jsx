@@ -13,8 +13,8 @@ import PendingEventsStat from '../../components/PendingEventsStat/PendingEventsS
 import { Box, CircularProgress } from "@mui/material"; // הוספתי Box מ-MUI כדי שנוכל לעשות רווח קטן
 import { styles } from './Dashboard.style';
 
-// Use environment variable with fallback
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+// Use environment variable, fallback to same-origin API path
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const Dashboard = () => {
   const dispatch = useDispatch();

@@ -1,8 +1,9 @@
 ﻿import axios from 'axios';
 
-// Use environment variable with fallback
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-const serverURL = `${API_BASE_URL}/api`;
+// Use environment variable, fallback to same-origin API path
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const serverURL = API_BASE_URL ? `${API_BASE_URL}/api` : '/api';
+let isRedirectingToLogin = false;
 
 const API = axios.create({
   baseURL: serverURL,
@@ -52,20 +53,13 @@ API.interceptors.response.use(
       localStorage.removeItem('userId');
       localStorage.removeItem('studySyncState');
       console.log('localStorage cleared');
-      
-      // Step 2: Dispatch Redux logout action
-      try {
-        const { store } = require('../store/store');
-        const { logoutUser } = require('../store/userSlice');
-        store.dispatch(logoutUser());
-        console.log('Redux state cleared - user logged out');
-      } catch (err) {
-        console.error('Failed to dispatch logout action:', err);
+
+      // Step 2: Redirect to login (without require/import cycles in browser build)
+      if (!isRedirectingToLogin && window.location.pathname !== '/login') {
+        isRedirectingToLogin = true;
+        console.log('Redirecting to login...');
+        window.location.assign('/login');
       }
-      
-      // Step 3: Redirect to login
-      console.log('Redirecting to login...');
-      window.location.href = '/login';
     }
     return Promise.reject(error);
   }

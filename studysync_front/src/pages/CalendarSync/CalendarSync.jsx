@@ -333,8 +333,8 @@ const CalendarSync = () => {
      */
     const handleConnectGoogle = async () => {
         try {
-            // Use environment variable with fallback
-            const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            // Use environment variable, fallback to same-origin API path
+            const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
             // Get userId from Redux user state instead of hardcoding
             const userId = user?.id || localStorage.getItem('userId');
