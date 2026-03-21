@@ -1,6 +1,7 @@
 // src/pages/TasksPage/TasksPage.jsx
 
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import { useApi } from "../../hooks/useApi";
 import { useNotification } from "../../context/NotificationContext.jsx";
 import API from "../../api/axiosConfig";
@@ -26,6 +27,7 @@ import { styles, topActionButtonSx } from './TasksPage.style';
 
 const TasksPage = () => {
   const theme = useTheme();
+  const user = useSelector((state) => state.user?.user);
 
   // ========== DATA FETCHING WITH useApi HOOK ==========
   const { data: tasks, loading, error, refetch } = useApi('/tasks');
@@ -114,6 +116,7 @@ const TasksPage = () => {
       dueDate: newTaskDueDate || new Date().toISOString(),
       status: 'Not Started',
       estimatedMinutes: Number(newTaskEstimatedMinutes) || 0,
+      scheduleInCalendar: Boolean(newTaskSchedulingEnabled && user?.hasGoogleCalendar),
     };
 
     if (newTaskSchedulingEnabled) {

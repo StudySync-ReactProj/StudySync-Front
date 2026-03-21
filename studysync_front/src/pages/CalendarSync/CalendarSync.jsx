@@ -46,11 +46,31 @@ const CalendarSync = () => {
     // DATA FETCHING WITH useApi HOOK
     // ============================================
 
+    // Helper function to calculate month start and end dates in ISO format
+    const getMonthDateRange = (date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        
+        // Start of month (midnight UTC)
+        const monthStart = new Date(year, month, 1);
+        const timeMin = monthStart.toISOString();
+        
+        // End of month (last second of last day in UTC)
+        const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
+        const timeMax = monthEnd.toISOString();
+        
+        return { timeMin, timeMax };
+    };
+
+    // Calculate month range for the current date and build the API URL with query parameters
+    const { timeMin, timeMax } = getMonthDateRange(currentDate);
+    const googleEventsUrl = `/google-calendar/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`;
+
     // Fetch events from backend
     const { data: events, refetch: refetchEvents } = useApi('/events');
 
-    // Fetch Google Calendar events
-    const { data: googleEvents, refetch: refetchGoogleEvents } = useApi('/google-calendar/events', {
+    // Fetch Google Calendar events with month-based date range
+    const { data: googleEvents, refetch: refetchGoogleEvents } = useApi(googleEventsUrl, {
         skip: false,
         initialData: []
     });
