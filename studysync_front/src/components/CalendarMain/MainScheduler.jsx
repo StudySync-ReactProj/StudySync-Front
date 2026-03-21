@@ -172,17 +172,8 @@ const MainScheduler = ({ selectedDate, onDateChange, events = [], onEventUpdate,
   // Handle RSVP status update
   const handleRsvp = async (eventId, status) => {
     const currentEvent = formattedEventsRef.current.find((event) => String(event.event_id) === String(eventId));
-    const eventEnd = currentEvent?.end ? new Date(currentEvent.end) : null;
 
-    if (eventEnd && eventEnd.getTime() < Date.now()) {
-      showNotification({
-        title: 'RSVP unavailable',
-        message: 'Cannot respond to an event that has already passed.',
-        severity: 'error',
-      });
-      return;
-    }
-
+    // Allow RSVP for all events regardless of date (including past events)
     try {
       await API.put(`/events/${eventId}/rsvp`, { status });
 
