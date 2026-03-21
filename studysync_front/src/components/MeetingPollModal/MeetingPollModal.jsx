@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     Dialog,
@@ -20,6 +20,47 @@ import DetailsStep from './steps/DetailsStep';
 import ParticipantsStep from './steps/ParticipantsStep';
 import OptionsStep from './steps/OptionsStep';
 import ButtonCont from '../ButtonCont/ButtonCont';
+
+const parseDateTimeValue = (value) => {
+    if (!value) return null;
+
+    if (value instanceof Date) {
+        return Number.isNaN(value.getTime()) ? null : value;
+    }
+
+    if (typeof value === 'object') {
+        const nestedValue = value.dateTime || value.date;
+        if (!nestedValue) return null;
+        const nestedDate = new Date(nestedValue);
+        return Number.isNaN(nestedDate.getTime()) ? null : nestedDate;
+    }
+
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const getEventStartDate = (event) => {
+    if (!event) return null;
+    return parseDateTimeValue(event.start) || parseDateTimeValue(event.startDateTime);
+};
+
+const getEventEndDate = (event) => {
+    if (!event) return null;
+    return parseDateTimeValue(event.end) || parseDateTimeValue(event.endDateTime);
+};
+
+const normalizeParticipants = (participants = []) => participants
+    .map((participant) => ({
+        email: participant?.email || '',
+        name: participant?.name || '',
+        id: participant?.id || participant?._id || participant?.email || ''
+    }))
+    .sort((a, b) => a.email.localeCompare(b.email));
+
+const getSlotSignature = (slot) => {
+    if (!slot || typeof slot !== 'object') return '';
+    return `${slot.startDateTime || ''}|${slot.endDateTime || ''}|${slot.id || ''}`;
+};
 
 export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit }) {
     const dispatch = useDispatch();
@@ -48,6 +89,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
     const [hasCalculatedSlots, setHasCalculatedSlots] = useState(false);
     const [showAssistant, setShowAssistant] = useState(false);
     const previousDurationRef = useRef(null);
+    const initialEditFormRef = useRef(null);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -75,25 +117,29 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                 const totalMinutes = eventToEdit.duration.minutes || 60;
                 hours = Math.floor(totalMinutes / 60).toString();
                 minutes = (totalMinutes % 60).toString();
-            } else if (eventToEdit.start && eventToEdit.end) {
+            } else {
                 // Calculate from start/end times
-                const startTime = new Date(eventToEdit.start || eventToEdit.startDateTime).getTime();
-                const endTime = new Date(eventToEdit.end || eventToEdit.endDateTime).getTime();
-                const totalMinutes = (endTime - startTime) / (1000 * 60);
-                hours = Math.floor(totalMinutes / 60).toString();
-                minutes = (totalMinutes % 60).toString();
+                const startDate = getEventStartDate(eventToEdit);
+                const endDate = getEventEndDate(eventToEdit);
+                if (startDate && endDate) {
+                    const totalMinutes = (endDate.getTime() - startDate.getTime()) / (1000 * 60);
+                    hours = Math.floor(totalMinutes / 60).toString();
+                    minutes = (totalMinutes % 60).toString();
+                }
             }
 
             // Create a slot object for the event's original time slot
-            const originalStartDate = new Date(eventToEdit.start || eventToEdit.startDateTime);
-            const originalEndDate = new Date(eventToEdit.end || eventToEdit.endDateTime);
-            const originalSlot = {
-                id: originalStartDate.getTime().toString(),
-                date: originalStartDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-                time: `${originalStartDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${originalEndDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
-                startDateTime: originalStartDate.toISOString(),
-                endDateTime: originalEndDate.toISOString()
-            };
+            const originalStartDate = getEventStartDate(eventToEdit);
+            const originalEndDate = getEventEndDate(eventToEdit);
+            const originalSlot = (originalStartDate && originalEndDate)
+                ? {
+                    id: originalStartDate.getTime().toString(),
+                    date: originalStartDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+                    time: `${originalStartDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${originalEndDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+                    startDateTime: originalStartDate.toISOString(),
+                    endDateTime: originalEndDate.toISOString()
+                }
+                : null;
 
             // Ensure participants have an id field for proper removal
             const participantsWithIds = (eventToEdit.participants || []).map(p => ({
@@ -101,18 +147,31 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                 id: p.id || p._id || p.email // Use existing id, _id, or email as fallback
             }));
 
-            setFormData({
+            const prefilledForm = {
                 title: eventToEdit.title || '',
                 description: eventToEdit.description || '',
                 locationType: eventToEdit.locationType || 'online',
                 participants: participantsWithIds,
-                selectedSlots: [originalSlot], // Pre-select the original time slot
+                selectedSlots: originalSlot ? [originalSlot] : [],
                 hours,
                 minutes
-            });
+            };
+
+            previousDurationRef.current = `${hours}:${minutes}`;
+            initialEditFormRef.current = {
+                title: prefilledForm.title.trim(),
+                description: prefilledForm.description.trim(),
+                locationType: prefilledForm.locationType,
+                hours: prefilledForm.hours,
+                minutes: prefilledForm.minutes,
+                selectedSlotSignature: getSlotSignature(prefilledForm.selectedSlots[0]),
+                participants: normalizeParticipants(prefilledForm.participants)
+            };
+
+            setFormData(prefilledForm);
 
             // Also add the original slot to the available slots list
-            setSmartAvailableSlots([originalSlot]);
+            setSmartAvailableSlots(originalSlot ? [originalSlot] : []);
             setHasCalculatedSlots(true);
             
             // When editing, hide the assistant initially
@@ -121,6 +180,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
             console.log('🎯 Pre-selected original time slot:', originalSlot);
         } else if (open && !eventToEdit) {
             // When creating a new event, show the assistant
+            initialEditFormRef.current = null;
             setShowAssistant(true);
         } else if (!open) {
             // Reset form when modal closes
@@ -137,6 +197,8 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
             setSmartAvailableSlots([]);
             setHasCalculatedSlots(false);
             setShowAssistant(false);
+            previousDurationRef.current = null;
+            initialEditFormRef.current = null;
         }
     }, [open, eventToEdit]);
 
@@ -144,6 +206,8 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
         setBusyData(null);
         setSmartAvailableSlots([]);
         setHasCalculatedSlots(false);
+        previousDurationRef.current = null;
+        initialEditFormRef.current = null;
         setFormData({
             title: '',
             description: '',
@@ -229,6 +293,49 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
         previousDurationRef.current = currentDuration;
     }, [formData.hours, formData.minutes, open]);
 
+    const currentSelectedSlot = formData.selectedSlots[0] || (() => {
+        const startDate = getEventStartDate(eventToEdit);
+        const endDate = getEventEndDate(eventToEdit);
+
+        if (!startDate || !endDate) return null;
+
+        return {
+            id: startDate.getTime().toString(),
+            date: startDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+            time: `${startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+            startDateTime: startDate.toISOString(),
+            endDateTime: endDate.toISOString()
+        };
+    })();
+
+    const hasRequiredFields = formData.title.trim().length > 0 && !!currentSelectedSlot;
+
+    const isEditDirty = (() => {
+        if (!eventToEdit || !initialEditFormRef.current) return true;
+
+        const currentSnapshot = {
+            title: formData.title.trim(),
+            description: formData.description.trim(),
+            locationType: formData.locationType,
+            hours: formData.hours,
+            minutes: formData.minutes,
+            selectedSlotSignature: getSlotSignature(currentSelectedSlot),
+            participants: normalizeParticipants(formData.participants)
+        };
+
+        const initialSnapshot = initialEditFormRef.current;
+
+        return (
+            currentSnapshot.title !== initialSnapshot.title ||
+            currentSnapshot.description !== initialSnapshot.description ||
+            currentSnapshot.locationType !== initialSnapshot.locationType ||
+            currentSnapshot.hours !== initialSnapshot.hours ||
+            currentSnapshot.minutes !== initialSnapshot.minutes ||
+            currentSnapshot.selectedSlotSignature !== initialSnapshot.selectedSlotSignature ||
+            JSON.stringify(currentSnapshot.participants) !== JSON.stringify(initialSnapshot.participants)
+        );
+    })();
+
     const handleFindAvailableTimes = () => {
         if (!busyData) return;
         setIsCalculatingSlots(true);
@@ -290,7 +397,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
     };
 
     const handleSendInvitations = async () => {
-        const selectedSlot = formData.selectedSlots[0];
+        const selectedSlot = currentSelectedSlot;
         if (!selectedSlot) {
             console.log('⚠️ No slot selected');
             return;
@@ -407,8 +514,8 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                                             }}
                                         />
                                         <Box>
-                                            {formData.selectedSlots.length > 0 && (() => {
-                                                const slot = formData.selectedSlots[0];
+                                            {currentSelectedSlot && (() => {
+                                                const slot = currentSelectedSlot;
                                                 const startDate = new Date(slot.startDateTime);
                                                 const endDate = new Date(slot.endDateTime);
                                                 
@@ -495,7 +602,10 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                             <OptionsStep 
                                 formData={formData}
                                 availableSlots={smartAvailableSlots}
-                                onToggleSlot={(id) => updateForm('selectedSlots', formData.selectedSlots.includes(id) ? [] : [id])}
+                                onToggleSlot={(slot) => {
+                                    const isSelected = formData.selectedSlots.some((selectedSlot) => selectedSlot.id === slot.id);
+                                    updateForm('selectedSlots', isSelected ? [] : [slot]);
+                                }}
                                 isLoadingBusyData={isLoadingBusyData}
                                 isCalculatingSlots={isCalculatingSlots}
                                 hasCalculatedSlots={hasCalculatedSlots}
@@ -511,7 +621,7 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
                     <ButtonCont 
                         text="Send Invitations" 
                         onClick={handleSendInvitations}
-                        disabled={!formData.title.trim() || formData.selectedSlots.length === 0}
+                        disabled={!hasRequiredFields || (eventToEdit && !isEditDirty)}
                     />
                 </DialogActions>
             </Box>
