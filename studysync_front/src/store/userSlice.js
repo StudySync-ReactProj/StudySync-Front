@@ -5,13 +5,21 @@ const normalizeUser = (payload) => {
     return null;
   }
 
-  return {
+  // Build the normalized user object
+  const normalized = {
     ...payload,
-    id: payload.id || payload.userId || payload.user?.id,
+    id: payload.id || payload._id || payload.userId || payload.user?.id,
     username: payload.username || payload.user?.username,
     email: payload.email || payload.user?.email,
     token: payload.token || payload.user?.token,
   };
+  
+  console.log('Frontend normalizing user payload:');
+  console.log('  - Input has id?', !!payload.id, 'value:', payload.id);
+  console.log('  - Input has _id?', !!payload._id, 'value:', payload._id);
+  console.log('  - Normalized id:', normalized.id, '(type:', typeof normalized.id + ')');
+  
+  return normalized;
 };
 
 const getStoredUser = () => {
@@ -46,9 +54,17 @@ const userSlice = createSlice({
         state.isLoggedIn = Boolean(normalizedUser?.token);
 
         if (normalizedUser) {
+          console.log('Redux: storing user to localStorage:', {
+            id: normalizedUser.id,
+            email: normalizedUser.email,
+            hasToken: !!normalizedUser.token
+          });
           localStorage.setItem("userInfo", JSON.stringify(normalizedUser));
           if (normalizedUser.id) {
+            console.log('Redux: storing userId to localStorage:', normalizedUser.id);
             localStorage.setItem("userId", String(normalizedUser.id));
+          } else {
+            console.error('Redux: ❌ normalizedUser.id is undefined! Cannot store to localStorage');
           }
         }
       })

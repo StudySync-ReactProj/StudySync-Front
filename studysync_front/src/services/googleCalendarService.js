@@ -13,6 +13,8 @@ export const fetchFreeBusyData = async (userId, emails, excludeEventId = null) =
             authToken = parsedInfo.token;
         }
         
+        console.log('Frontend User ID:', userId, '(type:', typeof userId + ')');
+        
         if (!authToken) {
             console.error("❌ No authentication token found in localStorage");
             return { calendars: {} };

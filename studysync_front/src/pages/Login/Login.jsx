@@ -78,6 +78,9 @@ export default function Login() {
       });
 
       console.log("Login successful! Data from server:", data);
+      console.log("  - data.id:", data.id, "(type:", typeof data.id + ")");
+      console.log("  - data._id:", data._id, "(type:", typeof data._id + ")");
+      console.log("  - data.token:", data.token ? "✅ exists" : "❌ missing");
 
       dispatch(loginUser(data));
 

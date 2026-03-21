@@ -338,8 +338,13 @@ const CalendarSync = () => {
 
             // Get userId from Redux user state instead of hardcoding
             const userId = user?.id || localStorage.getItem('userId');
+            
+            console.log('Frontend User ID (from Redux):', user?.id, '(type:', typeof user?.id + ')');
+            console.log('Frontend User ID (from localStorage):', localStorage.getItem('userId'));
+            console.log('Final userId being sent:', userId, '(type:', typeof userId + ')');
 
             if (!userId) {
+                console.error('❌ User ID not found - user?.id is', user?.id, 'and localStorage.getItem("userId") is', localStorage.getItem('userId'));
                 showNotification('User ID not found. Please log in again.', 'error');
                 return;
             }
