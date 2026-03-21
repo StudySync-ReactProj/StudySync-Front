@@ -223,8 +223,8 @@ export default function MeetingPollModal({ open, onClose, onSubmit, eventToEdit 
 
     // Check participant availability using Google Calendar data
     const handleCheckAvailability = async () => {
-        // Extract user ID from JWT token or direct property
-        const currentUserId = user?.id || getUserIdFromToken(user?.token);
+        // Extract user ID from JWT token or direct property with safe fallback for ID refactor transition
+        const currentUserId = user?.id || user?._id || getUserIdFromToken(user?.token);
         console.log('Final User ID:', currentUserId);
         console.log("🔍 Checking availability for user:", currentUserId);
         

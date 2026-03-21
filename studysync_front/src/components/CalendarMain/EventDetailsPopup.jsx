@@ -17,7 +17,7 @@
  * Props:
  * @param {Object} event - The event object containing description, participants, and metadata
  * @param {Function} close - Callback to close the viewer (provided by scheduler)
- * @param {Object} currentUser - Current user object with _id and email
+ * @param {Object} currentUser - Current user object with id and email
  * @param {string} currentUserId - Current user's ID for permission check
  * @param {boolean} showActions - Whether action buttons should be shown (controlled by parent)
  * @param {Function} onRsvp - Callback to handle RSVP status update (eventId, status)
