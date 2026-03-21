@@ -10,21 +10,30 @@ export const LoginFormStack = styled(Stack)`
 `;
 
 // Footer text at the bottom - "Don't have an account?"
-export const FooterText = styled(Typography)`
-    margin-top: 24px;
-    font-size: 0.9rem;
-    color: #4b5563
-`;
+export const FooterText = styled(Typography)(({ theme }) => ({
+    marginTop: "24px",
+    fontSize: "0.9rem",
+    color: theme.palette.text.secondary,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+}));
 
 // Footer link styled as a clickable text
-export const FooterLink = styled(Box)`
-    margin-left: 4px;
-    color: ${({ theme }) => theme.palette.primary.main};
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
+export const FooterLink = styled(Box)(({ theme }) => {
+    return {
+        marginLeft: "4px",
+        // In Dark Mode use a lighter shade of blue for better readability (Contrast)
+        color: theme.palette.mode === 'dark' ? "rgb(224, 234, 252)" : theme.palette.primary.main,
+        fontWeight: 600,
+        cursor: "pointer",
+        display: "inline-block",
+        transition: "all 0.2s ease-in-out",
 
-    &:hover {
-        text-decoration: underline;
-    }
-`;
+        "&:hover": {
+            textDecoration: "underline",
+            // Small hover effect adds a lot to the UI feel
+            filter: theme.palette.mode === 'dark' ? "brightness(1.2)" : "brightness(0.8)",
+        },
+    };
+});
