@@ -1,6 +1,6 @@
 import React from "react";
 import { useApi } from "../../hooks/useApi";
-import { useUser } from "../../context/UserContext";
+import { useSelector } from "react-redux";
 
 // Components
 import Wrapper from "../../components/Wrapper/Wrapper.jsx";
@@ -16,8 +16,8 @@ import { styles } from './Dashboard.style';
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const Dashboard = () => {
-  // 1. הוספנו פה שליפה של ה-user המלא כדי להעביר לקומפוננטה (תלוי איך קראת לזה בקונטקסט, לפעמים זה נקרא currentUser)
-  const { username, user } = useUser();
+  const user = useSelector((state) => state.user.user);
+  const username = user?.username || "User";
 
   // Fetch dashboard statistics (tasks, deadlines)
   const {

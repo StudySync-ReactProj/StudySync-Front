@@ -79,37 +79,8 @@ export default function Login() {
 
       console.log("Login successful! Data from server:", data);
 
-      // ✅ 2. Extract userId safely (supports multiple backend shapes)
-      const userId =
-        data?._id ||
-        data?.id ||
-        data?.userId ||
-        data?.user?._id ||
-        data?.user?.id;
+      dispatch(loginUser(data));
 
-      if (userId) {
-        localStorage.setItem("userId", String(userId));
-      } else {
-        console.warn(
-          "⚠️ userId not found in login response. Check backend response shape.",
-          data
-        );
-      }
-
-      // 3. Save user info and token in LocalStorage
-      localStorage.setItem("userInfo", JSON.stringify(data));
-
-      // 4. Update Redux with the data returned from server (including username, email, token, and _id)
-      dispatch(
-        loginUser({
-          _id: userId,
-          username: data.username,
-          email: data.email,
-          token: data.token,
-        })
-      );
-
-      // 5. Navigation
       navigate("/dashboard");
     } catch (error) {
       const message = error.response?.data?.message || "Something went wrong";

@@ -1,58 +1,72 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAction, createSlice } from "@reduxjs/toolkit";
 
-// Attempt to retrieve existing user from browser storage (if exists)
-const storedUser = JSON.parse(localStorage.getItem("userInfo"));
+const normalizeUser = (payload) => {
+  if (!payload) {
+    return null;
+  }
+
+  return {
+    ...payload,
+    _id: payload._id || payload.id || payload.userId || payload.user?._id || payload.user?.id,
+    username: payload.username || payload.user?.username,
+    email: payload.email || payload.user?.email,
+    token: payload.token || payload.user?.token,
+  };
+};
+
+const getStoredUser = () => {
+  try {
+    const stored = localStorage.getItem("userInfo");
+    return stored ? normalizeUser(JSON.parse(stored)) : null;
+  } catch (_error) {
+    return null;
+  }
+};
+
+const persistedUser = getStoredUser();
 
 const initialState = {
-  user: storedUser ? {
-    username: storedUser.username,
-    email: storedUser.email,
-    token: storedUser.token,
-    _id:storedUser._id || storedUser.id,
-  } : null,
-  isLoggedIn: !!storedUser,
+  user: persistedUser,
+  isLoggedIn: Boolean(persistedUser?.token),
 };
+
+export const loginUser = createAction("user/loginUser");
+export const logoutUser = createAction("user/logoutUser");
+export const updateUser = createAction("user/updateUser");
 
 const userSlice = createSlice({
   name: "user",
   initialState,
-  reducers: {
-    loginUser: (state, action) => {
-      // action.payload should contain { username, email, token, _id or id }
-      state.user = {
-        ...action.payload,
-        // Ensure we have _id stored (backend might send 'id' or '_id')
-        _id: action.payload._id || action.payload.id,
-      };
-      state.isLoggedIn = true;
-      
-      // Also update localStorage to include _id
-      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
-      userInfo._id = action.payload._id || action.payload.id;
-      localStorage.setItem("userInfo", JSON.stringify(userInfo));
-    },
-    logoutUser: (state) => {
-      state.user = null;
-      state.isLoggedIn = false;
-      // Clear browser storage on logout
-      localStorage.removeItem("userInfo");
-      localStorage.removeItem("userId");
-    },
-    updateUser: (state, action) => {
-      // Merge the payload with the existing user data
-      if (state.user) {
-        state.user = {
-          ...state.user,
-          ...action.payload,
-        };
-        // Also update localStorage with the merged user data
-        const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
-        Object.assign(userInfo, action.payload);
-        localStorage.setItem("userInfo", JSON.stringify(userInfo));
-      }
-    },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(loginUser, (state, action) => {
+        const normalizedUser = normalizeUser(action.payload);
+        state.user = normalizedUser;
+        state.isLoggedIn = Boolean(normalizedUser?.token);
+
+        if (normalizedUser) {
+          localStorage.setItem("userInfo", JSON.stringify(normalizedUser));
+          if (normalizedUser._id) {
+            localStorage.setItem("userId", String(normalizedUser._id));
+          }
+        }
+      })
+      .addCase(updateUser, (state, action) => {
+        if (!state.user) {
+          return;
+        }
+
+        state.user = normalizeUser({ ...state.user, ...action.payload });
+        localStorage.setItem("userInfo", JSON.stringify(state.user));
+      })
+      .addCase(logoutUser, (state) => {
+        state.user = null;
+        state.isLoggedIn = false;
+        localStorage.removeItem("userInfo");
+        localStorage.removeItem("userId");
+      });
   },
 });
 
-export const { loginUser, logoutUser, updateUser } = userSlice.actions;
 export default userSlice.reducer;

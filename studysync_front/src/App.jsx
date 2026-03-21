@@ -3,7 +3,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { UserProvider } from "./context/UserContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
 import Notifications from "./components/Notifications/Notifications.jsx";
 import { useNotification } from "./context/NotificationContext.jsx";
@@ -64,14 +63,13 @@ function App() {
   }, [theme]);
 
   return (
-    <UserProvider>
-      <NotificationProvider>
-        {/* Global notifications available on all routes */}
-        <GlobalNotificationRenderer />
+    <NotificationProvider>
+      {/* Global notifications available on all routes */}
+      <GlobalNotificationRenderer />
 
-        <ThemeProvider theme={muiTheme}>
-          <CssBaseline />
-          <Routes>
+      <ThemeProvider theme={muiTheme}>
+        <CssBaseline />
+        <Routes>
 
             {/* Redirect based on authentication status */}
             <Route
@@ -127,10 +125,9 @@ function App() {
 
             {/* 404 */}
             <Route path="*" element={<PageNotFound />} />
-          </Routes>
-        </ThemeProvider>
-      </NotificationProvider>
-    </UserProvider>
+        </Routes>
+      </ThemeProvider>
+    </NotificationProvider>
   );
 }
 export default App;

@@ -1,8 +1,7 @@
 // src/components/Header/Header.jsx
 import * as React from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../store/userSlice";
-import { useUser } from "../../context/UserContext";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
@@ -40,8 +39,7 @@ const settings = ["Logout"];
 function Header({ theme, setTheme }) {
   const navigate = useNavigate();
   const location = useLocation();
-  // Use centralized user context instead of direct Redux selector
-  const { user } = useUser();
+  const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
